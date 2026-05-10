@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IESS Platform — Integrated Energy & Smart Systems Ltd</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:   #1A5C2A;
+  --green2:  #2D8A45;
+  --green3:  #0d3317;
+  --gold:    #C87D2A;
+  --goldt:   #D4A93C;
+  --goldk:   #8B5E0A;
+  --white:   #FFFFFF;
+  --cream:   #FAF7F2;
+  --ink:     #0C1E0F;
+  --grey:    #4A5568;
+  --lgrey:   #F0F4F1;
+  --border:  #D4E4D8;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--ink); overflow-x:hidden; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-thumb { background:var(--green); border-radius:2px; }
+
+/* ── SCREENS ── */
+.screen { display:none; min-height:100vh; }
+.screen.active { display:block; }
+
+/* ══════════════════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════════════════ */
+#login-screen {
+  display:flex; align-items:center; justify-content:center;
+  min-height:100vh;
+  background: linear-gradient(135deg, #0C1E0F 0%, #1A5C2A 50%, #0C1E0F 100%);
+  position:relative; overflow:hidden;
+}
+#login-screen::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse 800px 600px at 70% 30%, rgba(200,125,42,0.08), transparent),
+              radial-gradient(ellipse 600px 800px at 20% 80%, rgba(26,92,42,0.2), transparent);
+}
+.login-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(200,125,42,0.2);
+  border-radius: 24px;
+  padding: 52px 48px;
+  width: 420px;
+  max-width: 94vw;
+  position: relative; z-index:1;
+  backdrop-filter: blur(20px);
+}
+.login-logo {
+  text-align:center; margin-bottom:32px;
+}
+.login-logo-circle {
+  width:80px; height:80px; border-radius:50%;
+  background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(200,125,42,0.4);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 16px;
+  font-size:32px;
+}
+.login-logo h1 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px; color:#fff; font-weight:600;
+  letter-spacing:2px;
+}
+.login-logo p { font-size:12px; color:rgba(255,255,255,0.4); letter-spacing:3px; margin-top:4px; }
+.login-divider {
+  height:1px; background:linear-gradient(90deg,transparent,rgba(200,125,42,0.4),transparent);
+  margin:24px 0;
+}
+.login-label { font-size:11px; color:rgba(255,255,255,0.5); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; display:block; font-family:'DM Mono',monospace; }
+.login-input {
+  width:100%; padding:14px 18px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px; color:#fff;
+  font-family:'DM Sans',sans-serif; font-size:15px;
+  outline:none; transition:all 0.2s;
+  margin-bottom:20px;
+}
+.login-input:focus { border-color:rgba(200,125,42,0.5); background:rgba(255,255,255,0.09); }
+.login-btn {
+  width:100%; padding:15px;
+  background:linear-gradient(135deg,var(--gold),var(--goldk));
+  border:none; border-radius:10px;
+  color:#fff; font-family:'DM Sans',sans-serif;
+  font-size:15px; font-weight:600;
+  cursor:pointer; transition:all 0.3s;
+  letter-spacing:1px;
+}
+.login-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(200,125,42,0.4); }
+.login-error { color:#ff6b6b; font-size:13px; text-align:center; margin-top:12px; display:none; }
+.login-footer { text-align:center; margin-top:24px; font-size:11px; color:rgba(255,255,255,0.25); font-family:'DM Mono',monospace; }
+
+/* ══════════════════════════════════════════
+   MAIN PLATFORM
+══════════════════════════════════════════ */
+#platform-screen { display:none; }
+#platform-screen.active { display:flex; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:260px; min-height:100vh;
+  background:var(--ink);
+  display:flex; flex-direction:column;
+  position:fixed; left:0; top:0; bottom:0;
+  z-index:100;
+  border-right:1px solid rgba(200,125,42,0.1);
+}
+.sidebar-logo {
+  padding:28px 24px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.sidebar-logo .brand { font-family:'Cormorant Garamond',serif; font-size:20px; color:#fff; font-weight:600; letter-spacing:1px; }
+.sidebar-logo .sub { font-size:9px; color:rgba(255,255,255,0.3); letter-spacing:3px; margin-top:2px; font-family:'DM Mono',monospace; }
+.sidebar-nav { flex:1; padding:20px 12px; display:flex; flex-direction:column; gap:4px; }
+.nav-item {
+  display:flex; align-items:center; gap:12px;
+  padding:11px 14px; border-radius:10px;
+  color:rgba(255,255,255,0.5); font-size:13px; font-weight:500;
+  cursor:pointer; transition:all 0.2s; border:none; background:none;
+  width:100%; text-align:left;
+}
+.nav-item:hover { background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.8); }
+.nav-item.active { background:rgba(26,92,42,0.3); color:#fff; border-left:3px solid var(--gold); }
+.nav-item .nav-icon { font-size:17px; width:22px; text-align:center; flex-shrink:0; }
+.nav-section { font-size:9px; color:rgba(255,255,255,0.2); letter-spacing:3px; text-transform:uppercase; padding:14px 14px 6px; font-family:'DM Mono',monospace; }
+.sidebar-footer {
+  padding:16px 12px;
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.sidebar-user {
+  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px;
+  background:rgba(255,255,255,0.04);
+}
+.user-avatar {
+  width:34px; height:34px; border-radius:50%;
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:#fff; font-weight:700; flex-shrink:0;
+}
+.user-name { font-size:12px; color:rgba(255,255,255,0.7); font-weight:500; }
+.user-role { font-size:10px; color:rgba(255,255,255,0.3); margin-top:1px; font-family:'DM Mono',monospace; }
+.logout-btn {
+  background:none; border:none; color:rgba(255,255,255,0.3);
+  cursor:pointer; font-size:18px; margin-left:auto;
+  transition:color 0.2s; padding:4px;
+}
+.logout-btn:hover { color:#ff6b6b; }
+
+/* ── MAIN CONTENT ── */
+.main-content { margin-left:260px; flex:1; min-height:100vh; }
+.page { display:none; padding:36px 40px; }
+.page.active { display:block; }
+
+/* ── PAGE HEADER ── */
+.page-header { margin-bottom:32px; }
+.page-tag { font-family:'DM Mono',monospace; font-size:10px; color:var(--gold); letter-spacing:3px; text-transform:uppercase; margin-bottom:8px; display:block; }
+.page-title { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:700; color:var(--ink); }
+.page-sub { font-size:14px; color:var(--grey); margin-top:4px; }
+
+/* ── STAT CARDS ── */
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:32px; }
+.stat-card {
+  background:#fff; border:1px solid var(--border); border-radius:16px;
+  padding:24px; position:relative; overflow:hidden;
+  transition:all 0.3s;
+}
+.stat-card:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(26,92,42,0.08); }
+.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--green),var(--gold)); }
+.stat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:14px; }
+.stat-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:700; color:var(--ink); }
+.stat-label { font-size:12px; color:var(--grey); margin-top:2px; font-weight:500; }
+.stat-change { font-size:11px; color:var(--green2); margin-top:6px; font-family:'DM Mono',monospace; }
+
+/* ── CONTENT GRID ── */
+.content-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px; }
+.card { background:#fff; border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+.card-header { padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; }
+.card-title { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:600; color:var(--ink); }
+.card-body { padding:20px 24px 24px; }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+thead th { padding:10px 14px; text-align:left; font-size:10px; font-weight:600; color:var(--grey); letter-spacing:2px; text-transform:uppercase; border-bottom:1px solid var(--border); font-family:'DM Mono',monospace; }
+tbody td { padding:12px 14px; font-size:13px; color:var(--ink); border-bottom:1px solid rgba(0,0,0,0.04); }
+tbody tr:hover { background:var(--lgrey); }
+tbody tr:last-child td { border:none; }
+
+/* ── BADGE ── */
+.badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; font-family:'DM Mono',monospace; }
+.badge-green { background:rgba(26,92,42,0.1); color:var(--green); }
+.badge-gold { background:rgba(200,125,42,0.1); color:var(--gold); }
+.badge-grey { background:rgba(74,85,104,0.1); color:var(--grey); }
+.badge-red { background:rgba(220,53,69,0.1); color:#dc3545; }
+
+/* ── BUTTON ── */
+.btn { padding:10px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; border:none; font-family:'DM Sans',sans-serif; display:inline-flex; align-items:center; gap:6px; }
+.btn-primary { background:var(--green); color:#fff; }
+.btn-primary:hover { background:var(--green3); transform:translateY(-1px); }
+.btn-gold { background:var(--gold); color:#fff; }
+.btn-gold:hover { background:var(--goldk); }
+.btn-outline { background:transparent; color:var(--green); border:1px solid var(--green); }
+.btn-outline:hover { background:var(--green); color:#fff; }
+.btn-sm { padding:7px 14px; font-size:12px; }
+
+/* ── FORM ── */
+.form-group { margin-bottom:18px; }
+.form-label { display:block; font-size:12px; font-weight:600; color:var(--ink); margin-bottom:6px; letter-spacing:0.5px; }
+.form-input, .form-select {
+  width:100%; padding:11px 14px;
+  border:1px solid var(--border); border-radius:8px;
+  font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink);
+  outline:none; transition:all 0.2s; background:#fff;
+}
+.form-input:focus, .form-select:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(26,92,42,0.08); }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+/* ── PROGRESS ── */
+.progress-bar { height:6px; background:var(--lgrey); border-radius:3px; overflow:hidden; margin-top:6px; }
+.progress-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--green),var(--green2)); transition:width 1s ease; }
+
+/* ══════════════════════════════════════════
+   DASHBOARD PAGE
+══════════════════════════════════════════ */
+.welcome-banner {
+  background:linear-gradient(135deg,var(--ink),var(--green3));
+  border-radius:20px; padding:32px 36px;
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:28px; position:relative; overflow:hidden;
+}
+.welcome-banner::before {
+  content:''; position:absolute;
+  top:-60px; right:-60px; width:300px; height:300px;
+  background:radial-gradient(circle,rgba(200,125,42,0.1),transparent);
+  border-radius:50%;
+}
+.welcome-text h2 { font-family:'Cormorant Garamond',serif; font-size:28px; color:#fff; font-weight:600; }
+.welcome-text p { font-size:13px; color:rgba(255,255,255,0.55); margin-top:6px; }
+.welcome-stats { display:flex; gap:28px; }
+.ws { text-align:center; }
+.ws .wn { font-family:'Cormorant Garamond',serif; font-size:32px; color:var(--goldt); font-weight:700; }
+.ws .wl { font-size:10px; color:rgba(255,255,255,0.4); margin-top:2px; letter-spacing:1px; font-family:'DM Mono',monospace; }
+
+.activity-item { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.04); }
+.activity-item:last-child { border:none; }
+.activity-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.activity-dot.green { background:var(--green2); }
+.activity-dot.gold { background:var(--gold); }
+.activity-dot.grey { background:var(--grey); }
+.activity-text { font-size:13px; color:var(--ink); flex:1; }
+.activity-time { font-size:11px; color:var(--grey); font-family:'DM Mono',monospace; white-space:nowrap; }
+
+/* ══════════════════════════════════════════
+   PARTICIPANTS PAGE
+══════════════════════════════════════════ */
+.search-bar {
+  display:flex; gap:12px; margin-bottom:20px; align-items:center;
+}
+.search-input {
+  flex:1; padding:10px 16px;
+  border:1px solid var(--border); border-radius:8px;
+  font-family:'DM Sans',sans-serif; font-size:14px;
+  outline:none; transition:all 0.2s;
+}
+.search-input:focus { border-color:var(--green); }
+.filter-select {
+  padding:10px 14px; border:1px solid var(--border); border-radius:8px;
+  font-family:'DM Sans',sans-serif; font-size:13px; outline:none;
+  background:#fff; cursor:pointer;
+}
+.attendance-dots { display:flex; gap:4px; }
+.att-dot { width:10px; height:10px; border-radius:50%; }
+.att-green { background:var(--green2); }
+.att-grey { background:var(--lgrey); border:1px solid var(--border); }
+
+/* ══════════════════════════════════════════
+   CERTIFICATE PAGE
+══════════════════════════════════════════ */
+.cert-preview {
+  background:linear-gradient(135deg,#FAF7F2,#FFF);
+  border:2px solid var(--gold);
+  border-radius:16px; padding:48px;
+  text-align:center; position:relative;
+  overflow:hidden; max-width:700px; margin:0 auto;
+}
+.cert-preview::before {
+  content:''; position:absolute; inset:8px;
+  border:1px solid rgba(200,125,42,0.2); border-radius:12px; pointer-events:none;
+}
+.cert-badge { font-size:48px; margin-bottom:12px; }
+.cert-title { font-family:'Cormorant Garamond',serif; font-size:13px; color:var(--gold); letter-spacing:4px; text-transform:uppercase; margin-bottom:8px; font-family:'DM Mono',monospace; }
+.cert-org { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:700; color:var(--green); }
+.cert-presents { font-size:13px; color:var(--grey); margin:12px 0; }
+.cert-name { font-family:'Cormorant Garamond',serif; font-size:44px; font-weight:600; color:var(--ink); border-bottom:2px solid var(--gold); padding-bottom:8px; display:inline-block; margin-bottom:16px; }
+.cert-desc { font-size:14px; color:var(--grey); line-height:1.7; max-width:500px; margin:0 auto 24px; }
+.cert-meta { display:flex; justify-content:space-between; align-items:flex-end; margin-top:24px; padding-top:24px; border-top:1px solid rgba(200,125,42,0.2); }
+.cert-sig { text-align:center; }
+.cert-sig-line { width:120px; height:1px; background:var(--ink); margin:0 auto 4px; }
+.cert-sig-name { font-size:11px; color:var(--grey); font-family:'DM Mono',monospace; }
+.cert-number { font-family:'DM Mono',monospace; font-size:10px; color:var(--grey); letter-spacing:2px; }
+.cert-grade { display:inline-block; padding:4px 14px; border-radius:20px; font-size:12px; font-weight:600; font-family:'DM Mono',monospace; }
+.grade-distinction { background:rgba(200,125,42,0.1); color:var(--gold); border:1px solid rgba(200,125,42,0.3); }
+.grade-merit { background:rgba(26,92,42,0.1); color:var(--green); border:1px solid rgba(26,92,42,0.3); }
+
+/* ══════════════════════════════════════════
+   SOLAR CALCULATOR PAGE
+══════════════════════════════════════════ */
+.calc-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.appliance-item { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.05); }
+.appliance-item:last-child { border:none; }
+.appliance-name { font-size:13px; color:var(--ink); flex:1; }
+.appliance-input { width:70px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px; text-align:center; outline:none; }
+.appliance-input:focus { border-color:var(--green); }
+.appliance-watts { width:80px; font-size:12px; color:var(--grey); text-align:right; font-family:'DM Mono',monospace; }
+.result-card { background:linear-gradient(135deg,var(--ink),var(--green3)); border-radius:16px; padding:28px; color:#fff; }
+.result-item { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.08); }
+.result-item:last-child { border:none; }
+.result-label { font-size:12px; color:rgba(255,255,255,0.55); font-family:'DM Mono',monospace; }
+.result-value { font-family:'Cormorant Garamond',serif; font-size:22px; color:var(--goldt); font-weight:600; }
+.calc-add-btn { display:flex; align-items:center; gap:8px; padding:10px 0; font-size:13px; color:var(--green); cursor:pointer; border:none; background:none; font-family:'DM Sans',sans-serif; font-weight:600; margin-top:8px; }
+
+/* ══════════════════════════════════════════
+   VERIFY PAGE (PUBLIC)
+══════════════════════════════════════════ */
+#verify-screen {
+  display:none; min-height:100vh;
+  background:linear-gradient(135deg,#0C1E0F,#1A5C2A,#0C1E0F);
+  align-items:center; justify-content:center;
+}
+#verify-screen.active { display:flex; }
+.verify-card {
+  background:rgba(255,255,255,0.04); border:1px solid rgba(200,125,42,0.2);
+  border-radius:24px; padding:48px; width:520px; max-width:94vw;
+  backdrop-filter:blur(20px); text-align:center;
+}
+.verify-title { font-family:'Cormorant Garamond',serif; font-size:32px; color:#fff; margin-bottom:8px; }
+.verify-sub { font-size:13px; color:rgba(255,255,255,0.45); margin-bottom:32px; }
+.verify-input { width:100%; padding:14px 18px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; font-family:'DM Mono',monospace; font-size:16px; outline:none; text-align:center; letter-spacing:3px; margin-bottom:16px; }
+.verify-input:focus { border-color:rgba(200,125,42,0.5); }
+.verify-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--gold),var(--goldk)); border:none; border-radius:10px; color:#fff; font-size:15px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; }
+.verify-result { margin-top:24px; padding:24px; border-radius:12px; display:none; }
+.verify-success { background:rgba(26,92,42,0.15); border:1px solid rgba(26,92,42,0.3); }
+.verify-fail { background:rgba(220,53,69,0.1); border:1px solid rgba(220,53,69,0.3); }
+
+/* ── MOBILE ── */
+.mobile-header { display:none; }
+@media(max-width:768px) {
+  .sidebar { transform:translateX(-100%); transition:transform 0.3s; }
+  .sidebar.open { transform:translateX(0); }
+  .main-content { margin-left:0; }
+  .page { padding:20px 16px; }
+  .stats-grid { grid-template-columns:1fr 1fr; }
+  .content-grid { grid-template-columns:1fr; }
+  .form-grid { grid-template-columns:1fr; }
+  .calc-grid { grid-template-columns:1fr; }
+  .welcome-stats { display:none; }
+  .mobile-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 20px; background:var(--ink);
+    position:sticky; top:0; z-index:99;
+  }
+  .mobile-header .brand { font-family:'Cormorant Garamond',serif; font-size:18px; color:#fff; }
+  .hamburger { background:none; border:none; color:#fff; font-size:22px; cursor:pointer; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- LOGIN SCREEN                              -->
+<!-- ══════════════════════════════════════════ -->
+<div id="login-screen" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-circle">☀️</div>
+      <h1>IESS</h1>
+      <p>PLATFORM · MANAGEMENT SYSTEM</p>
+    </div>
+    <div class="login-divider"></div>
+    <label class="login-label">Access Password</label>
+    <input type="password" class="login-input" id="passwordInput" placeholder="Enter team password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">ACCESS PLATFORM →</button>
+    <div class="login-error" id="loginError">❌ Incorrect password. Please try again.</div>
+    <div class="login-footer">IESS Ltd · COREN Reg. 80576 · Est. 2021</div>
+    <div style="margin-top:16px;text-align:center;">
+      <a href="#" onclick="showVerify()" style="font-size:12px;color:rgba(255,255,255,0.3);text-decoration:none;">Verify a Certificate →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- VERIFY SCREEN (PUBLIC)                    -->
+<!-- ══════════════════════════════════════════ -->
+<div id="verify-screen" class="screen">
+  <div class="verify-card">
+    <div style="font-size:48px;margin-bottom:16px;">🏆</div>
+    <div class="verify-title">Certificate Verification</div>
+    <div class="verify-sub">Enter your IESS certificate number to verify authenticity</div>
+    <input type="text" class="verify-input" id="certInput" placeholder="IESS/2026/001" oninput="this.value=this.value.toUpperCase()">
+    <button class="verify-btn" onclick="verifyCert()">VERIFY CERTIFICATE</button>
+    <div class="verify-result" id="verifyResult"></div>
+    <div style="margin-top:24px;">
+      <a href="#" onclick="backToLogin()" style="font-size:12px;color:rgba(255,255,255,0.3);text-decoration:none;">← Back to Login</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- MAIN PLATFORM                             -->
+<!-- ══════════════════════════════════════════ -->
+<div id="platform-screen" class="screen">
+  <!-- Mobile Header -->
+  <div class="mobile-header">
+    <span class="brand">IESS Platform</span>
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">IESS Platform</div>
+      <div class="sub">Management System</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <button class="nav-item active" onclick="showPage('dashboard',this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </button>
+      <button class="nav-item" onclick="showPage('participants',this)">
+        <span class="nav-icon">👥</span> Participants
+      </button>
+      <button class="nav-item" onclick="showPage('attendance',this)">
+        <span class="nav-icon">📋</span> Attendance
+      </button>
+      <div class="nav-section">Training</div>
+      <button class="nav-item" onclick="showPage('certificates',this)">
+        <span class="nav-icon">🏆</span> Certificates
+      </button>
+      <button class="nav-item" onclick="showPage('sessions',this)">
+        <span class="nav-icon">🎓</span> Sessions
+      </button>
+      <div class="nav-section">Tools</div>
+      <button class="nav-item" onclick="showPage('calculator',this)">
+        <span class="nav-icon">☀️</span> Solar Calculator
+      </button>
+      <button class="nav-item" onclick="showPage('analytics',this)">
+        <span class="nav-icon">📈</span> Analytics
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">M</div>
+        <div>
+          <div class="user-name">Engr. Muazu</div>
+          <div class="user-role">Admin · IESS Ltd</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="Logout">⏻</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- ── DASHBOARD ── -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <span class="page-tag">Overview</span>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub">IESS Solar Training Cohort 1 — May 2026</p>
+      </div>
+
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <h2>Welcome back, Engr. Muazu 🌟</h2>
+          <p>Session 1 starts Saturday 17th May 2026 · 2:00 PM WAT · You are ready.</p>
+        </div>
+        <div class="welcome-stats">
+          <div class="ws"><div class="wn">327</div><div class="wl">Registered</div></div>
+          <div class="ws"><div class="wn">10</div><div class="wl">Countries</div></div>
+          <div class="ws"><div class="wn">4</div><div class="wl">Sessions</div></div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(26,92,42,0.1);">👥</div>
+          <div class="stat-num" id="dash-total">327</div>
+          <div class="stat-label">Total Registered</div>
+          <div class="stat-change">↑ 10 countries worldwide</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(200,125,42,0.1);">✅</div>
+          <div class="stat-num" id="dash-confirmed">0</div>
+          <div class="stat-label">Seats Confirmed</div>
+          <div class="stat-change">Via WhatsApp group</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(26,92,42,0.1);">📧</div>
+          <div class="stat-num" id="dash-emailed">291</div>
+          <div class="stat-label">Emails Sent</div>
+          <div class="stat-change">36 remaining to send</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(200,125,42,0.1);">🏆</div>
+          <div class="stat-num">0</div>
+          <div class="stat-label">Certificates Issued</div>
+          <div class="stat-change">After 14th June 2026</div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Session Schedule</div>
+            <span class="badge badge-green">4 Sessions</span>
+          </div>
+          <div class="card-body">
+            <table>
+              <thead><tr><th>Week</th><th>Date</th><th>Topic</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Week 1</td><td>17 May</td><td>Solar Fundamentals</td><td><span class="badge badge-gold">Upcoming</span></td></tr>
+                <tr><td>Week 2</td><td>24 May</td><td>System Sizing</td><td><span class="badge badge-grey">Scheduled</span></td></tr>
+                <tr><td>Week 3</td><td>31 May</td><td>System Design</td><td><span class="badge badge-grey">Scheduled</span></td></tr>
+                <tr><td>Week 4</td><td>7 Jun</td><td>Installation & Business</td><td><span class="badge badge-grey">Scheduled</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent Activity</div></div>
+          <div class="card-body">
+            <div class="activity-item">
+              <div class="activity-dot green"></div>
+              <div class="activity-text">201 shortlisting emails sent successfully</div>
+              <div class="activity-time">Today</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot gold"></div>
+              <div class="activity-text">327 registrations from 9 countries</div>
+              <div class="activity-time">10 May</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot green"></div>
+              <div class="activity-text">WhatsApp coordinating team set up</div>
+              <div class="activity-time">9 May</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot gold"></div>
+              <div class="activity-text">Training slides & certificates prepared</div>
+              <div class="activity-time">8 May</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot grey"></div>
+              <div class="activity-text">Registration opened — target was 50 slots</div>
+              <div class="activity-time">1 May</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Country breakdown -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Registrations by Country</div><span class="badge badge-green">10 Countries</span></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+            <div id="country-bars"></div>
+            <div id="country-bars2"></div>
+            <div id="country-bars3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PARTICIPANTS ── -->
+    <div id="page-participants" class="page">
+      <div class="page-header">
+        <span class="page-tag">Management</span>
+        <h1 class="page-title">Participants</h1>
+        <p class="page-sub">All 327 registered participants — Cohort 1</p>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" class="search-input" placeholder="🔍 Search by name, email or country..." oninput="filterParticipants(this.value)">
+        <select class="filter-select" onchange="filterByCountry(this.value)">
+          <option value="">All Countries</option>
+          <option>Nigeria</option><option>Ghana</option><option>Kenya</option>
+          <option>Iraq</option><option>Somalia</option><option>Bangladesh</option>
+          <option>Zambia</option><option>Ethiopia</option><option>Uganda</option>
+        </select>
+        <select class="filter-select" onchange="filterByStatus(this.value)">
+          <option value="">All Status</option>
+          <option>Confirmed</option><option>Pending</option>
+        </select>
+        <button class="btn btn-primary" onclick="showAddParticipant()">+ Add</button>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrap">
+            <table id="participantTable">
+              <thead>
+                <tr>
+                  <th>#</th><th>Name</th><th>Email</th><th>Country</th>
+                  <th>Status</th><th>Email Sent</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="participantBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Participant Modal -->
+      <div id="addParticipantModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:20px;padding:36px;width:500px;max-width:94vw;">
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;margin-bottom:24px;">Add Participant</h3>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="addName" placeholder="Full name"></div>
+            <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="addEmail" placeholder="email@example.com"></div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Country</label>
+              <select class="form-select" id="addCountry">
+                <option>Nigeria</option><option>Ghana</option><option>Kenya</option>
+                <option>Iraq</option><option>Somalia</option><option>Bangladesh</option>
+                <option>Zambia</option><option>Ethiopia</option><option>Uganda</option><option>Other</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-input" id="addPhone" placeholder="+234..."></div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <button class="btn btn-primary" onclick="addParticipant()" style="flex:1;">Save Participant</button>
+            <button class="btn btn-outline" onclick="closeModal('addParticipantModal')" style="flex:1;">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ATTENDANCE ── -->
+    <div id="page-attendance" class="page">
+      <div class="page-header">
+        <span class="page-tag">Tracking</span>
+        <h1 class="page-title">Attendance</h1>
+        <p class="page-sub">Track participant attendance across all 4 sessions</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Session Attendance Record</div>
+          <button class="btn btn-primary btn-sm" onclick="exportAttendance()">📥 Export</button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Name</th><th>Country</th>
+                  <th>Week 1<br><small>17 May</small></th>
+                  <th>Week 2<br><small>24 May</small></th>
+                  <th>Week 3<br><small>31 May</small></th>
+                  <th>Week 4<br><small>7 Jun</small></th>
+                  <th>Total</th><th>Grade</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CERTIFICATES ── -->
+    <div id="page-certificates" class="page">
+      <div class="page-header">
+        <span class="page-tag">Certification</span>
+        <h1 class="page-title">Certificates</h1>
+        <p class="page-sub">Generate and manage IESS certificates for Cohort 1</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:28px;">
+        <div>
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><div class="card-title">Generate Certificate</div></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Participant Name</label>
+                <input type="text" class="form-input" id="certName" placeholder="Full name as on certificate" oninput="updateCertPreview()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Certificate Number</label>
+                <input type="text" class="form-input" id="certNum" placeholder="IESS/2026/001" oninput="updateCertPreview()">
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Grade</label>
+                  <select class="form-select" id="certGrade" onchange="updateCertPreview()">
+                    <option>Distinction</option>
+                    <option>Merit</option>
+                    <option>Pass</option>
+                    <option>Participation</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Date</label>
+                  <input type="date" class="form-input" id="certDate" oninput="updateCertPreview()">
+                </div>
+              </div>
+              <button class="btn btn-primary" style="width:100%;margin-top:4px;" onclick="issueCertificate()">Issue Certificate</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Issued Certificates</div></div>
+            <div class="card-body" style="padding:0;">
+              <table>
+                <thead><tr><th>Cert No.</th><th>Name</th><th>Grade</th><th>Action</th></tr></thead>
+                <tbody id="certList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="cert-preview" id="certPreview">
+            <div class="cert-badge">🏆</div>
+            <div class="cert-title" style="font-family:'DM Mono',monospace;">Certificate of Completion</div>
+            <div class="cert-org">INTEGRATED ENERGY & SMART SYSTEMS LTD</div>
+            <div class="cert-presents">This is to certify that</div>
+            <div class="cert-name" id="prevName">Participant Full Name</div>
+            <div class="cert-desc">has successfully completed the <strong>IESS Free Solar PV Training Programme — Cohort 1</strong>. Beginner to Intermediate level. A 4-week intensive online programme covering solar system design, sizing, installation and business skills.</div>
+            <div style="margin-bottom:12px;"><span class="cert-grade grade-distinction" id="prevGrade">Distinction</span></div>
+            <div class="cert-meta">
+              <div class="cert-sig">
+                <div class="cert-sig-line"></div>
+                <div class="cert-sig-name">Engr. Muazu M. Ogirima</div>
+                <div class="cert-sig-name">COREN Reg. 80576</div>
+              </div>
+              <div style="text-align:center;">
+                <div class="cert-number" id="prevNum">IESS/2026/001</div>
+                <div class="cert-number" id="prevDate" style="margin-top:4px;">14th June 2026</div>
+              </div>
+              <div class="cert-sig">
+                <div class="cert-sig-line"></div>
+                <div class="cert-sig-name">NSE Member</div>
+                <div class="cert-sig-name">Est. 2021</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SESSIONS ── -->
+    <div id="page-sessions" class="page">
+      <div class="page-header">
+        <span class="page-tag">Training</span>
+        <h1 class="page-title">Sessions</h1>
+        <p class="page-sub">Manage and track all 4 training sessions</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;" id="sessionsGrid"></div>
+    </div>
+
+    <!-- ── SOLAR CALCULATOR ── -->
+    <div id="page-calculator" class="page">
+      <div class="page-header">
+        <span class="page-tag">Tools</span>
+        <h1 class="page-title">Solar Calculator</h1>
+        <p class="page-sub">Calculate the right solar system size for any client</p>
+      </div>
+      <div class="calc-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Appliances</div>
+            <button class="btn btn-outline btn-sm" onclick="resetCalc()">Reset</button>
+          </div>
+          <div class="card-body">
+            <table style="width:100%;">
+              <thead><tr><th>Appliance</th><th style="text-align:center;">Qty</th><th style="text-align:center;">Hrs/day</th><th style="text-align:right;">Watts</th></tr></thead>
+              <tbody id="applianceTable">
+                <tr><td class="appliance-name">Fan</td><td><input type="number" class="appliance-input" value="2" min="0" oninput="calcSolar()"></td><td><input type="number" class="appliance-input" value="8" min="0" max="24" oninput="calcSolar()"></td><td class="appliance-watts">75W</td></tr>
+                <tr><td class="appliance-name">LED Bulbs</td><td><input type="number" class="appliance-input" value="6" min="0" oninput="calcSolar()"></td><td><input type="number" class="appliance-input" value="6" min="0" max="24" oninput="calcSolar()"></td><td class="appliance-watts">10W</td></tr>
+                <tr><td class="appliance-name">TV (32 inch)</td><td><input type="number" class="appliance-input" value="1" min="0" oninput="calcSolar()"></td><td><input type="number" class="appliance-input" value="5" min="0" max="24" oninput="calcSolar()"></td><td class="appliance-watts">60W</td></tr>
+                <tr><td class="appliance-name">Refrigerator</td><td><input type="number" class="appliance-input" value="1" min="0" oninput="calcSolar()"></td><td><input type="number" class="appliance-input" value="24" min="0" max="24" oninput="calcSolar()"></td><td class="appliance-watts">150W</td></tr>
+                <tr><td class="appliance-name">Phone Charger</td><td><input type="number" class="appliance-input" value="3" min="0" oninput="calcSolar()"></td><td><input type="number" class="appliance-input" value="3" min="0" max="24" oninput="calcSolar()"></td><td class="appliance-watts">10W</td></tr>
+                <tr><td class="appliance-name">Laptop</td><td><input type="number" class="appliance-input" value="1" min="0" oninput="calcSolar()"></td><td><input type="number" class="appliance-input" value="6" min="0" max="24" oninput="calcSolar()"></td><td class="appliance-watts">65W</td></tr>
+                <tr><td class="appliance-name">Air Conditioner</td><td><input type="number" class="appliance-input" value="0" min="0" oninput="calcSolar()"></td><td><input type="number" class="appliance-input" value="8" min="0" max="24" oninput="calcSolar()"></td><td class="appliance-watts">1500W</td></tr>
+                <tr><td class="appliance-name">Water Pump</td><td><input type="number" class="appliance-input" value="0" min="0" oninput="calcSolar()"></td><td><input type="number" class="appliance-input" value="2" min="0" max="24" oninput="calcSolar()"></td><td class="appliance-watts">750W</td></tr>
+                <tr><td class="appliance-name">Washing Machine</td><td><input type="number" class="appliance-input" value="0" min="0" oninput="calcSolar()"></td><td><input type="number" class="appliance-input" value="1" min="0" max="24" oninput="calcSolar()"></td><td class="appliance-watts">500W</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="result-card" style="margin-bottom:20px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;margin-bottom:16px;">System Recommendation</div>
+            <div class="result-item"><span class="result-label">Daily Energy Needed</span><span class="result-value" id="res-kwh">--</span></div>
+            <div class="result-item"><span class="result-label">Inverter Size</span><span class="result-value" id="res-inv">--</span></div>
+            <div class="result-item"><span class="result-label">Solar Panels Needed</span><span class="result-value" id="res-pan">--</span></div>
+            <div class="result-item"><span class="result-label">Battery Capacity</span><span class="result-value" id="res-bat">--</span></div>
+            <div class="result-item"><span class="result-label">Est. System Cost</span><span class="result-value" id="res-cost">--</span></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Cost Breakdown (₦)</div></div>
+            <div class="card-body">
+              <div id="cost-breakdown"></div>
+              <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="generateQuote()">📄 Generate Client Quote</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS ── -->
+    <div id="page-analytics" class="page">
+      <div class="page-header">
+        <span class="page-tag">Insights</span>
+        <h1 class="page-title">Analytics</h1>
+        <p class="page-sub">Registration and engagement insights for Cohort 1</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(26,92,42,0.1);">🌍</div><div class="stat-num">10</div><div class="stat-label">Countries</div><div class="stat-change">International reach</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(200,125,42,0.1);">📈</div><div class="stat-num">554%</div><div class="stat-label">Growth vs Target</div><div class="stat-change">Target was 50 · Got 327</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(26,92,42,0.1);">⚡</div><div class="stat-num">327</div><div class="stat-label">Total Registered</div><div class="stat-change">In 10 days</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(200,125,42,0.1);">📧</div><div class="stat-num">69%</div><div class="stat-label">Emails Delivered</div><div class="stat-change">201 of 327 sent</div></div>
+      </div>
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Country Distribution</div></div>
+          <div class="card-body" id="analytics-countries"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Registration Timeline</div></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>Day 1 (1 May)</span><span style="font-family:'DM Mono',monospace;color:var(--green);">63</span></div><div class="progress-bar"><div class="progress-fill" style="width:22%"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>Day 3 (3 May)</span><span style="font-family:'DM Mono',monospace;color:var(--green);">100</span></div><div class="progress-bar"><div class="progress-fill" style="width:34%"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>Day 5 (5 May)</span><span style="font-family:'DM Mono',monospace;color:var(--green);">211</span></div><div class="progress-bar"><div class="progress-fill" style="width:73%"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>Day 7 (7 May)</span><span style="font-family:'DM Mono',monospace;color:var(--green);">254</span></div><div class="progress-bar"><div class="progress-fill" style="width:87%"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>Day 10+ (10 May)</span><span style="font-family:'DM Mono',monospace;color:var(--green);">327</span></div><div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main-content -->
+</div><!-- end platform-screen -->
+
+<script>
+// ══════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════
+const PASS = "iess2026";
+
+const COUNTRIES = [
+  {name:"Nigeria", flag:"🇳🇬", count:180},
+  {name:"Ghana", flag:"🇬🇭", count:28},
+  {name:"Kenya", flag:"🇰🇪", count:22},
+  {name:"Iraq", flag:"🇮🇶", count:18},
+  {name:"Somalia", flag:"🇸🇴", count:12},
+  {name:"Bangladesh", flag:"🇧🇩", count:10},
+  {name:"Zambia", flag:"🇿🇲", count:8},
+  {name:"Ethiopia", flag:"🇪🇹", count:7},
+  {name:"Uganda", flag:"🇺🇬", count:6},
+  {name:"Rwanda", flag:"🇷🇼", count:4},
+];
+
+let participants = JSON.parse(localStorage.getItem('iess_participants') || '[]');
+let certificates = JSON.parse(localStorage.getItem('iess_certs') || '[]');
+
+// Seed with sample data if empty
+if(participants.length === 0) {
+  const names = [
+    ["Aliyu Usman","Nigeria"],["Jamilu Ahmad","Nigeria"],["Abdulhameed Musa","Nigeria"],
+    ["Abubakar Wakili","Nigeria"],["Fatima Bello","Ghana"],["Ahmed Ibrahim","Kenya"],
+    ["Mohammed Ali","Iraq"],["Amina Yusuf","Nigeria"],["Khadijah Saleh","Nigeria"],
+    ["Ibrahim Musa","Nigeria"],["Zainab Ahmad","Somalia"],["Rahman Khan","Bangladesh"],
+    ["Grace Osei","Ghana"],["Samuel Mensah","Ghana"],["Esther Wanjiru","Kenya"],
+    ["David Mutua","Kenya"],["Hassan Ahmed","Somalia"],["Mariam Diallo","Nigeria"],
+  ];
+  names.forEach((n, i) => {
+    participants.push({
+      id: i+1, name:n[0], email:`${n[0].toLowerCase().replace(' ','.')}@email.com`,
+      country:n[1], phone:'', status: i < 8 ? 'Confirmed' : 'Pending',
+      emailSent: i < 14 ? 'Yes' : 'No',
+      attendance:[false,false,false,false]
+    });
+  });
+  saveParticipants();
+}
+
+function saveParticipants() { localStorage.setItem('iess_participants', JSON.stringify(participants)); }
+function saveCerts() { localStorage.setItem('iess_certs', JSON.stringify(certificates)); }
+
+// ══════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════
+function doLogin() {
+  const pw = document.getElementById('passwordInput').value;
+  if(pw === PASS) {
+    document.getElementById('login-screen').classList.remove('active');
+    document.getElementById('platform-screen').classList.add('active');
+    initPlatform();
+  } else {
+    document.getElementById('loginError').style.display='block';
+    document.getElementById('passwordInput').value='';
+  }
+}
+
+function doLogout() {
+  document.getElementById('platform-screen').classList.remove('active');
+  document.getElementById('login-screen').classList.add('active');
+  document.getElementById('passwordInput').value='';
+}
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  if(id==='participants') renderParticipants(participants);
+  if(id==='attendance') renderAttendance();
+  if(id==='certificates') renderCertList();
+  if(id==='sessions') renderSessions();
+  if(id==='analytics') renderAnalytics();
+  if(id==='calculator') calcSolar();
+  closeSidebar();
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+function initPlatform() {
+  renderCountryBars();
+  renderParticipants(participants);
+  renderAttendance();
+  renderCertList();
+  renderSessions();
+  renderAnalytics();
+  calcSolar();
+  document.getElementById('certDate').value = '2026-06-14';
+}
+
+// ══════════════════════════════════════════════════
+// COUNTRY BARS (DASHBOARD)
+// ══════════════════════════════════════════════════
+function renderCountryBars() {
+  const max = Math.max(...COUNTRIES.map(c=>c.count));
+  const cols = [[], [], []];
+  COUNTRIES.forEach((c, i) => cols[i%3].push(c));
+  [1,2,3].forEach((n,i) => {
+    const el = document.getElementById('country-bars'+(n===1?'':n));
+    if(!el) return;
+    el.innerHTML = cols[i].map(c => `
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+          <span>${c.flag} ${c.name}</span>
+          <span style="font-family:'DM Mono',monospace;color:var(--green);font-size:12px;">${c.count}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(c.count/max*100)}%"></div></div>
+      </div>`).join('');
+  });
+}
+
+// ══════════════════════════════════════════════════
+// PARTICIPANTS
+// ══════════════════════════════════════════════════
+let filteredParticipants = [...participants];
+
+function renderParticipants(list) {
+  const tbody = document.getElementById('participantBody');
+  if(!tbody) return;
+  tbody.innerHTML = list.map((p,i) => `
+    <tr>
+      <td style="color:var(--grey);font-family:'DM Mono',monospace;">${String(p.id).padStart(3,'0')}</td>
+      <td style="font-weight:500;">${p.name}</td>
+      <td style="color:var(--grey);font-size:12px;">${p.email}</td>
+      <td>${getFlagForCountry(p.country)} ${p.country}</td>
+      <td><span class="badge ${p.status==='Confirmed'?'badge-green':'badge-gold'}">${p.status}</span></td>
+      <td><span class="badge ${p.emailSent==='Yes'?'badge-green':'badge-grey'}">${p.emailSent}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="toggleStatus(${i})">${p.status==='Confirmed'?'Unconfirm':'Confirm'}</button>
+      </td>
+    </tr>`).join('');
+}
+
+function getFlagForCountry(c) {
+  const flags = {Nigeria:'🇳🇬',Ghana:'🇬🇭',Kenya:'🇰🇪',Iraq:'🇮🇶',Somalia:'🇸🇴',Bangladesh:'🇧🇩',Zambia:'🇿🇲',Ethiopia:'🇪🇹',Uganda:'🇺🇬'};
+  return flags[c] || '🌍';
+}
+
+function filterParticipants(q) {
+  q = q.toLowerCase();
+  filteredParticipants = participants.filter(p =>
+    p.name.toLowerCase().includes(q) || p.email.toLowerCase().includes(q) || p.country.toLowerCase().includes(q)
+  );
+  renderParticipants(filteredParticipants);
+}
+
+function filterByCountry(c) {
+  filteredParticipants = c ? participants.filter(p=>p.country===c) : [...participants];
+  renderParticipants(filteredParticipants);
+}
+
+function filterByStatus(s) {
+  filteredParticipants = s ? participants.filter(p=>p.status===s) : [...participants];
+  renderParticipants(filteredParticipants);
+}
+
+function toggleStatus(i) {
+  const p = filteredParticipants[i];
+  const idx = participants.findIndex(x=>x.id===p.id);
+  participants[idx].status = participants[idx].status==='Confirmed'?'Pending':'Confirmed';
+  saveParticipants();
+  renderParticipants(filteredParticipants);
+  // update dashboard confirmed count
+  document.getElementById('dash-confirmed').textContent = participants.filter(p=>p.status==='Confirmed').length;
+}
+
+function showAddParticipant() {
+  const m = document.getElementById('addParticipantModal');
+  m.style.display='flex';
+}
+
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+
+function addParticipant() {
+  const name = document.getElementById('addName').value.trim();
+  const email = document.getElementById('addEmail').value.trim();
+  const country = document.getElementById('addCountry').value;
+  const phone = document.getElementById('addPhone').value.trim();
+  if(!name||!email) { alert('Name and email are required'); return; }
+  const newP = {
+    id: participants.length+1, name, email, country, phone,
+    status:'Pending', emailSent:'No', attendance:[false,false,false,false]
+  };
+  participants.push(newP);
+  saveParticipants();
+  filteredParticipants = [...participants];
+  renderParticipants(filteredParticipants);
+  closeModal('addParticipantModal');
+  document.getElementById('addName').value='';
+  document.getElementById('addEmail').value='';
+  document.getElementById('dash-total').textContent = participants.length;
+}
+
+// ══════════════════════════════════════════════════
+// ATTENDANCE
+// ══════════════════════════════════════════════════
+function renderAttendance() {
+  const tbody = document.getElementById('attendanceBody');
+  if(!tbody) return;
+  tbody.innerHTML = participants.map((p,i) => {
+    const att = p.attendance || [false,false,false,false];
+    const total = att.filter(Boolean).length;
+    const grade = total===4?'Distinction':total===3?'Merit':total===2?'Pass':'Participation';
+    const gradeColor = {Distinction:'badge-gold',Merit:'badge-green',Pass:'badge-grey',Participation:'badge-grey'}[grade];
+    return `<tr>
+      <td style="color:var(--grey);font-family:'DM Mono',monospace;">${String(i+1).padStart(3,'0')}</td>
+      <td style="font-weight:500;">${p.name}</td>
+      <td style="font-size:12px;">${getFlagForCountry(p.country)} ${p.country}</td>
+      ${att.map((a,w) => `<td style="text-align:center;"><input type="checkbox" ${a?'checked':''} onchange="markAttendance(${i},${w},this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green);"></td>`).join('')}
+      <td style="text-align:center;font-weight:600;font-family:'DM Mono',monospace;">${total}/4</td>
+      <td><span class="badge ${gradeColor}">${grade}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function markAttendance(pIdx, week, val) {
+  if(!participants[pIdx].attendance) participants[pIdx].attendance=[false,false,false,false];
+  participants[pIdx].attendance[week] = val;
+  saveParticipants();
+}
+
+function exportAttendance() {
+  const rows = [['ID','Name','Country','Week1','Week2','Week3','Week4','Total','Grade']];
+  participants.forEach((p,i) => {
+    const att = p.attendance||[false,false,false,false];
+    const total = att.filter(Boolean).length;
+    const grade = total===4?'Distinction':total===3?'Merit':total===2?'Pass':'Participation';
+    rows.push([i+1,p.name,p.country,...att.map(a=>a?'Present':'Absent'),`${total}/4`,grade]);
+  });
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='IESS_Cohort1_Attendance.csv'; a.click();
+}
+
+// ══════════════════════════════════════════════════
+// CERTIFICATES
+// ══════════════════════════════════════════════════
+function updateCertPreview() {
+  const name = document.getElementById('certName').value || 'Participant Full Name';
+  const num = document.getElementById('certNum').value || 'IESS/2026/001';
+  const grade = document.getElementById('certGrade').value;
+  const date = document.getElementById('certDate').value;
+  document.getElementById('prevName').textContent = name;
+  document.getElementById('prevNum').textContent = num;
+  document.getElementById('prevGrade').textContent = grade;
+  document.getElementById('prevGrade').className = 'cert-grade ' + (grade==='Distinction'?'grade-distinction':'grade-merit');
+  if(date) {
+    const d = new Date(date);
+    document.getElementById('prevDate').textContent = d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  }
+}
+
+function issueCertificate() {
+  const name = document.getElementById('certName').value.trim();
+  const num = document.getElementById('certNum').value.trim();
+  const grade = document.getElementById('certGrade').value;
+  const date = document.getElementById('certDate').value;
+  if(!name||!num) { alert('Please fill in name and certificate number'); return; }
+  if(certificates.find(c=>c.num===num)) { alert('Certificate number already exists'); return; }
+  certificates.push({name, num, grade, date, issued: new Date().toLocaleDateString()});
+  saveCerts();
+  renderCertList();
+  alert(`✅ Certificate issued for ${name}`);
+}
+
+function renderCertList() {
+  const tbody = document.getElementById('certList');
+  if(!tbody) return;
+  if(certificates.length===0) {
+    tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--grey);padding:20px;">No certificates issued yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = certificates.map((c,i)=>`
+    <tr>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${c.num}</td>
+      <td style="font-size:13px;">${c.name}</td>
+      <td><span class="badge ${c.grade==='Distinction'?'badge-gold':'badge-green'}">${c.grade}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="viewCert(${i})">View</button></td>
+    </tr>`).join('');
+}
+
+function viewCert(i) {
+  const c = certificates[i];
+  document.getElementById('certName').value=c.name;
+  document.getElementById('certNum').value=c.num;
+  document.getElementById('certGrade').value=c.grade;
+  document.getElementById('certDate').value=c.date;
+  updateCertPreview();
+}
+
+// ══════════════════════════════════════════════════
+// SESSIONS
+// ══════════════════════════════════════════════════
+const sessions = [
+  {week:1,date:'17th May 2026',topic:'Solar Fundamentals & System Types',desc:'Introduction to solar energy, PV effect, system components, off-grid vs hybrid vs on-grid, reading panel datasheets.',status:'Upcoming',color:'var(--gold)'},
+  {week:2,date:'24th May 2026',topic:'System Sizing & Calculations',desc:'Load analysis, inverter sizing, battery bank sizing, panel array sizing, charge controller selection.',status:'Scheduled',color:'var(--grey)'},
+  {week:3,date:'31st May 2026',topic:'Professional System Design',desc:'Live PVsyst demo, cable sizing, wiring diagrams, single-line diagrams, protection devices.',status:'Scheduled',color:'var(--grey)'},
+  {week:4,date:'7th June 2026',topic:'Installation & Solar Business',desc:'Installation process, commissioning, troubleshooting, project quoting, starting a solar business.',status:'Scheduled',color:'var(--grey)'},
+];
+
+function renderSessions() {
+  const grid = document.getElementById('sessionsGrid');
+  if(!grid) return;
+  grid.innerHTML = sessions.map(s=>`
+    <div class="card">
+      <div style="height:4px;background:${s.color};"></div>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--grey);">WEEK ${s.week}</span>
+          <span class="badge ${s.status==='Upcoming'?'badge-gold':'badge-grey'}">${s.status}</span>
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--ink);margin-bottom:6px;">${s.topic}</div>
+        <div style="font-size:12px;color:var(--gold);font-family:'DM Mono',monospace;margin-bottom:12px;">📅 ${s.date} · 2:00 PM WAT</div>
+        <div style="font-size:13px;color:var(--grey);line-height:1.6;">${s.desc}</div>
+        <div style="margin-top:16px;display:flex;gap:10px;">
+          <button class="btn btn-primary btn-sm" onclick="markSessionDone(${s.week-1})">✓ Mark Done</button>
+          <button class="btn btn-outline btn-sm">📝 Notes</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function markSessionDone(i) {
+  sessions[i].status = sessions[i].status==='Done'?'Upcoming':'Done';
+  sessions[i].color = sessions[i].status==='Done'?'var(--green)':i===0?'var(--gold)':'var(--grey)';
+  renderSessions();
+}
+
+// ══════════════════════════════════════════════════
+// SOLAR CALCULATOR
+// ══════════════════════════════════════════════════
+const APPLIANCES = [
+  {name:'Fan',watts:75},{name:'LED Bulbs',watts:10},{name:'TV (32 inch)',watts:60},
+  {name:'Refrigerator',watts:150},{name:'Phone Charger',watts:10},{name:'Laptop',watts:65},
+  {name:'Air Conditioner',watts:1500},{name:'Water Pump',watts:750},{name:'Washing Machine',watts:500}
+];
+
+function calcSolar() {
+  const rows = document.querySelectorAll('#applianceTable tr');
+  let totalWh = 0;
+  rows.forEach((row,i) => {
+    const inputs = row.querySelectorAll('input');
+    if(inputs.length<2) return;
+    const qty = parseFloat(inputs[0].value)||0;
+    const hrs = parseFloat(inputs[1].value)||0;
+    totalWh += APPLIANCES[i].watts * qty * hrs;
+  });
+
+  const kWh = (totalWh/1000).toFixed(2);
+  const peakW = (totalWh/1000/5*1.3).toFixed(2);
+  const invKVA = Math.ceil(peakW*1.25/0.8/0.5)*0.5;
+  const panels = Math.ceil(parseFloat(peakW)*1000/400);
+  const batKWh = (parseFloat(kWh)*1.5).toFixed(1);
+  const batAh = Math.ceil(parseFloat(batKWh)*1000/48);
+
+  // Cost estimates (₦)
+  const invCost = invKVA <= 3 ? 220000 : invKVA <= 5 ? 380000 : invKVA <= 10 ? 650000 : 1200000;
+  const panCost = panels * 75000;
+  const batCost = batAh <= 100 ? 280000 : batAh <= 200 ? 520000 : batAh <= 400 ? 950000 : 1600000;
+  const instCost = Math.round((invCost+panCost+batCost)*0.12);
+  const total = invCost+panCost+batCost+instCost;
+
+  function fmt(n) { return '₦'+n.toLocaleString(); }
+
+  document.getElementById('res-kwh').textContent = kWh+' kWh/day';
+  document.getElementById('res-inv').textContent = invKVA+' kVA';
+  document.getElementById('res-pan').textContent = panels+' panels (400W)';
+  document.getElementById('res-bat').textContent = batKWh+' kWh ('+batAh+'Ah/48V)';
+  document.getElementById('res-cost').textContent = fmt(total);
+
+  document.getElementById('cost-breakdown').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);"><span>Inverter (${invKVA}kVA)</span><span style="font-weight:600;font-family:'DM Mono',monospace;">${fmt(invCost)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);"><span>Solar Panels (${panels} x 400W)</span><span style="font-weight:600;font-family:'DM Mono',monospace;">${fmt(panCost)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);"><span>Battery Bank</span><span style="font-weight:600;font-family:'DM Mono',monospace;">${fmt(batCost)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);"><span>Installation</span><span style="font-weight:600;font-family:'DM Mono',monospace;">${fmt(instCost)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;padding:8px 0;font-weight:700;"><span>TOTAL ESTIMATE</span><span style="font-family:'DM Mono',monospace;color:var(--green);">${fmt(total)}</span></div>
+    </div>`;
+}
+
+function resetCalc() {
+  document.querySelectorAll('#applianceTable input').forEach((inp,i) => {
+    const defaults = [2,8, 6,6, 1,5, 1,24, 3,3, 1,6, 0,8, 0,2, 0,1];
+    inp.value = defaults[i] || 0;
+  });
+  calcSolar();
+}
+
+function generateQuote() {
+  const rows = document.querySelectorAll('#applianceTable tr');
+  let totalWh = 0;
+  rows.forEach((row,i) => {
+    const inputs = row.querySelectorAll('input');
+    if(inputs.length<2) return;
+    totalWh += APPLIANCES[i].watts * (parseFloat(inputs[0].value)||0) * (parseFloat(inputs[1].value)||0);
+  });
+  const kWh = (totalWh/1000).toFixed(2);
+  const date = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  alert(`📄 Quote generated!\n\nIESS Ltd — Solar System Quotation\nDate: ${date}\nDaily Energy: ${kWh} kWh\nSystem: ${document.getElementById('res-inv').textContent} Inverter\n${document.getElementById('res-pan').textContent}\n${document.getElementById('res-bat').textContent}\n\nEstimated Total: ${document.getElementById('res-cost').textContent}\n\nContact: +234 806 786 9112\niessltd.netlify.app`);
+}
+
+// ══════════════════════════════════════════════════
+// ANALYTICS
+// ══════════════════════════════════════════════════
+function renderAnalytics() {
+  const el = document.getElementById('analytics-countries');
+  if(!el) return;
+  const max = Math.max(...COUNTRIES.map(c=>c.count));
+  el.innerHTML = COUNTRIES.map(c=>`
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+        <span>${c.flag} ${c.name}</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--green);font-size:12px;">${c.count} (${Math.round(c.count/291*100)}%)</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(c.count/max*100)}%"></div></div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════
+// CERTIFICATE VERIFY (PUBLIC)
+// ══════════════════════════════════════════════════
+function showVerify() {
+  document.getElementById('login-screen').classList.remove('active');
+  document.getElementById('verify-screen').classList.add('active');
+}
+
+function backToLogin() {
+  document.getElementById('verify-screen').classList.remove('active');
+  document.getElementById('login-screen').classList.add('active');
+}
+
+function verifyCert() {
+  const num = document.getElementById('certInput').value.trim().toUpperCase();
+  const res = document.getElementById('verifyResult');
+  const cert = certificates.find(c => c.num.toUpperCase() === num);
+  res.style.display = 'block';
+  if(cert) {
+    res.className = 'verify-result verify-success';
+    res.innerHTML = `
+      <div style="font-size:32px;margin-bottom:12px;">✅</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;margin-bottom:8px;">Certificate Verified</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:4px;"><strong>${cert.name}</strong></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.55);">IESS Free Solar Training — Cohort 1</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:8px;font-family:'DM Mono',monospace;">Grade: ${cert.grade} · Issued: ${cert.issued}</div>
+    `;
+  } else {
+    res.className = 'verify-result verify-fail';
+    res.innerHTML = `
+      <div style="font-size:32px;margin-bottom:12px;">❌</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#ff6b6b;margin-bottom:8px;">Not Found</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.55);">No certificate found with number <strong>${num}</strong>.<br>Please check the number and try again.</div>
+    `;
+  }
+}
+
+// Init
+document.getElementById('passwordInput').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>
