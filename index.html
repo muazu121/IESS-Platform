@@ -52,7 +52,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);o
 .login-footer{text-align:center;margin-top:20px;font-size:10px;color:rgba(255,255,255,0.2);font-family:'DM Mono',monospace;}
 
 /* PLATFORM */
-#platform-screen{display:none;}#platform-screen.active{display:flex;min-height:100vh;}
+#platform-screen{display:none;}#platform-screen.active{display:flex;flex-direction:row;min-height:100vh;width:100%;}
 
 /* SIDEBAR */
 .sidebar{width:265px;min-height:100vh;background:var(--ink);display:flex;
@@ -88,8 +88,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);o
 .logout-btn:hover{color:#ff6b6b;}
 
 /* MAIN */
-.main-content{margin-left:265px;flex:1;min-height:100vh;}
-.page{display:none;padding:32px 36px;}.page.active{display:block;}
+.main-content{margin-left:265px;width:calc(100% - 265px);min-height:100vh;overflow-x:hidden;position:relative;}
+.page{display:none;padding:32px 36px;width:100%;min-height:100vh;box-sizing:border-box;}
+.page.active{display:block !important;}
 .page-tag{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);
   letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;display:block;}
 .page-title{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:800;
@@ -260,7 +261,7 @@ tbody tr:last-child td{border:none;}
 .cert-seal-img{width:110px;height:110px;object-fit:contain;display:block;margin:0 auto;}
 
 /* CALCULATOR */
-.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;width:100%;}
 .result-card{background:linear-gradient(135deg,var(--ink),var(--green3));
   border-radius:14px;padding:26px;color:#fff;}
 .result-item{display:flex;justify-content:space-between;align-items:center;
@@ -669,6 +670,7 @@ tbody tr:last-child td{border:none;}
                 </div>
               </div>
               </div>
+    </div>
 
     <!-- CALCULATOR -->
     <div id="page-calculator" class="page">
@@ -1085,6 +1087,7 @@ function verifyCert(){
 // ═══ SOLAR CALCULATOR ═══
 const WATTS=[75,10,60,150,10,65,1500,750];
 function calcSolar(){
+  try{
   const rows=document.querySelectorAll('#appTable tr');
   let wh=0;
   rows.forEach((r,i)=>{
@@ -1130,10 +1133,11 @@ function renderAnalytics(){
   const occs={};
   const know={};
   ALL_PARTICIPANTS.forEach(p=>{
-    counts[p.country]=(counts[p.country]||0)+1;
-    const o=p.occupation.split('—')[0].trim();
+    const country = p.country||'Unknown';
+    counts[country]=(counts[country]||0)+1;
+    const o=(p.occupation||'Unknown').split('—')[0].trim().split('–')[0].trim()||'Unknown';
     occs[o]=(occs[o]||0)+1;
-    const k=p.knowledge.split('—')[0].trim();
+    const k=(p.knowledge||'Unknown').split('—')[0].trim().split('–')[0].trim()||'Unknown';
     know[k]=(know[k]||0)+1;
   });
   const total=ALL_PARTICIPANTS.length;
