@@ -771,27 +771,41 @@ function flag(c){ return FLAGS[c]||'🌍'; }
 
 // ═══ AUTH ═══
 function doLogin(){
-  if(document.getElementById('pwInput').value===PASS){
-    document.getElementById('login-screen').classList.remove('active');
-    document.getElementById('platform-screen').classList.add('active');
+  const pw = document.getElementById('pwInput').value;
+  if(pw === PASS){
+    // Hide all screens
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('verify-screen').style.display='none';
+    // Show platform
+    const ps = document.getElementById('platform-screen');
+    ps.style.display='flex';
+    ps.style.flexDirection='row';
+    ps.style.minHeight='100vh';
+    ps.style.width='100%';
+    ps.classList.add('active');
     initPlatform();
   } else {
     document.getElementById('loginErr').style.display='block';
     document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
   }
 }
 function doLogout(){
+  document.getElementById('platform-screen').style.display='none';
   document.getElementById('platform-screen').classList.remove('active');
-  document.getElementById('login-screen').classList.add('active');
+  document.getElementById('login-screen').style.display='flex';
   document.getElementById('pwInput').value='';
 }
 function showVerify(){
-  document.getElementById('login-screen').classList.remove('active');
-  document.getElementById('verify-screen').classList.add('active');
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('verify-screen').style.display='flex';
+  document.getElementById('verify-screen').style.alignItems='center';
+  document.getElementById('verify-screen').style.justifyContent='center';
+  document.getElementById('verify-screen').style.minHeight='100vh';
 }
 function backToLogin(){
-  document.getElementById('verify-screen').classList.remove('active');
-  document.getElementById('login-screen').classList.add('active');
+  document.getElementById('verify-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
 }
 document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
