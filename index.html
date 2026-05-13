@@ -1448,4 +1448,46 @@ window.addEventListener('hashchange', handleRouting);
 
 </script>
 </body>
+    (function(){
+
+    const currentPath = window.location.pathname;
+
+    if(currentPath === '/verify'){
+
+        const loginScreen = document.getElementById('login-screen');
+        if(loginScreen){
+            loginScreen.classList.remove('active');
+            loginScreen.style.display = 'none';
+        }
+
+        const platformScreen = document.getElementById('platform-screen');
+        if(platformScreen){
+            platformScreen.classList.remove('active');
+            platformScreen.style.display = 'none';
+        }
+
+        const verifyScreen = document.getElementById('verify-screen');
+        if(verifyScreen){
+            verifyScreen.classList.add('active');
+            verifyScreen.style.display = 'flex';
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const studentId = params.get('id');
+
+        if(studentId){
+            const verifyInput = document.getElementById('verify-input');
+
+            if(verifyInput){
+                verifyInput.value = studentId;
+            }
+
+            if(typeof verifyCertificate === 'function'){
+                verifyCertificate();
+            }
+        }
+
+    }
+
+})();
 </html>
