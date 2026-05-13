@@ -1188,5 +1188,60 @@ function renderAnalytics(){
     </div>`).join('')+'</div>';
 }
 </script>
+
+<script>
+/* =====================================================
+   PUBLIC VERIFY ROUTE + ADMIN PROTECTION
+   ===================================================== */
+
+document.addEventListener('DOMContentLoaded', function(){
+
+    const currentPath = window.location.pathname;
+
+    const loginScreen = document.getElementById('login-screen');
+    const platformScreen = document.getElementById('platform-screen');
+    const verifyScreen = document.getElementById('verify-screen');
+
+    // PUBLIC VERIFY PAGE
+    if(currentPath === '/verify'){
+
+        if(loginScreen){
+            loginScreen.style.display = 'none';
+            loginScreen.classList.remove('active');
+        }
+
+        if(platformScreen){
+            platformScreen.style.display = 'none';
+            platformScreen.classList.remove('active');
+        }
+
+        if(verifyScreen){
+            verifyScreen.style.display = 'flex';
+            verifyScreen.classList.add('active');
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const studentId = params.get('id');
+
+        if(studentId){
+
+            const verifyInput =
+                document.getElementById('verify-input');
+
+            if(verifyInput){
+                verifyInput.value = studentId;
+            }
+
+            if(typeof verifyCertificate === 'function'){
+                verifyCertificate();
+            }
+
+        }
+
+    }
+
+});
+</script>
+
 </body>
 </html>
