@@ -306,6 +306,41 @@ tbody tr:last-child td{border:none;}
 </style>
 </head>
 <body>
+<datalist id="appSuggestions">
+  <option value="LED Bulb">
+  <option value="Incandescent Bulb">
+  <option value="Energy Saver Bulb">
+  <option value="Ceiling Fan">
+  <option value="Standing Fan">
+  <option value="Table Fan">
+  <option value="TV LED 32&quot;">
+  <option value="TV LED 43&quot;">
+  <option value="TV LED 55&quot;">
+  <option value="Decoder / DSTV">
+  <option value="Refrigerator (Small)">
+  <option value="Refrigerator (Medium)">
+  <option value="Refrigerator (Large)">
+  <option value="Deep Freezer">
+  <option value="Air Conditioner 1HP">
+  <option value="Air Conditioner 1.5HP">
+  <option value="Air Conditioner 2HP">
+  <option value="Water Pump 0.5HP">
+  <option value="Water Pump 1HP">
+  <option value="Washing Machine">
+  <option value="Microwave">
+  <option value="Electric Kettle">
+  <option value="Electric Iron">
+  <option value="Blender">
+  <option value="Toaster">
+  <option value="Phone Charger">
+  <option value="Laptop">
+  <option value="Desktop PC">
+  <option value="Printer">
+  <option value="Router / Modem">
+  <option value="Security Camera">
+  <option value="Hair Dryer">
+  <option value="Sound System">
+</datalist>
 
 <!-- LOGIN -->
 <div id="login-screen" class="screen active">
@@ -788,21 +823,31 @@ tbody tr:last-child td{border:none;}
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Client Appliances</div><button class="btn btn-outline btn-sm" onclick="resetCalc()">Reset</button></div>
+          <div class="card-header">
+            <div class="card-title">Client Appliances</div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="addAppliance()" style="background:#1A5C2A;color:#fff;border:none;">+ Add Appliance</button>
+              <button class="btn btn-outline btn-sm" onclick="resetCalc()">Reset</button>
+            </div>
+          </div>
           <div class="card-body">
-            <table style="width:100%;">
-              <thead><tr><th>Appliance</th><th style="text-align:center;">Qty</th><th style="text-align:center;">Hrs/Day</th><th style="text-align:right;">Watts</th></tr></thead>
-              <tbody id="appTable">
-                <tr><td><strong>Fan</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="2" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="8" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">75W</td></tr>
-                <tr><td><strong>LED Bulbs</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="6" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="6" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">10W</td></tr>
-                <tr><td><strong>TV 32"</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="1" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="5" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">60W</td></tr>
-                <tr><td><strong>Refrigerator</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="1" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="24" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">150W</td></tr>
-                <tr><td><strong>Phone Charger</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="3" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="3" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">10W</td></tr>
-                <tr><td><strong>Laptop</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="1" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="6" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">65W</td></tr>
-                <tr><td><strong>Air Conditioner</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="0" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="8" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">1500W</td></tr>
-                <tr><td><strong>Water Pump</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="0" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="2" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">750W</td></tr>
-              </tbody>
+            <table style="width:100%;font-size:13px;">
+              <thead>
+                <tr style="border-bottom:2px solid var(--border);">
+                  <th style="text-align:left;padding:8px 6px;font-family:'DM Mono',monospace;font-size:10px;color:var(--grey);letter-spacing:1px;">APPLIANCE</th>
+                  <th style="text-align:center;padding:8px 4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--grey);">WATTS</th>
+                  <th style="text-align:center;padding:8px 4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--grey);">QTY</th>
+                  <th style="text-align:center;padding:8px 4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--grey);">HRS/DAY</th>
+                  <th style="text-align:center;padding:8px 4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--grey);" title="Tick if motor/compressor appliance with high startup current (fridge, AC, pump, washing machine)">SURGE</th>
+                  <th style="text-align:right;padding:8px 6px;font-family:'DM Mono',monospace;font-size:10px;color:var(--grey);">Wh/DAY</th>
+                  <th style="width:30px;"></th>
+                </tr>
+              </thead>
+              <tbody id="appTable"></tbody>
             </table>
+            <div style="margin-top:10px;padding:10px;background:rgba(200,125,42,0.05);border-radius:6px;font-size:11px;color:var(--text-2);line-height:1.5;">
+              <strong style="color:var(--gold);">💡 Tip:</strong> Tick the <strong>SURGE</strong> box for motor-driven appliances (fridge, freezer, AC, pump, washing machine) — they need 3× their rated power on startup. This sizes the inverter correctly.
+            </div>
           </div>
         </div>
         <div>
@@ -986,6 +1031,7 @@ function sp(id,el){
     setTimeout(renderAnalytics, 100); // Double-tap to ensure rendering
   }
   if(id==='calculator') {
+    renderApplianceTable();
     calcSolar();
     setTimeout(calcSolar, 100);
   }
@@ -1023,7 +1069,7 @@ function initPlatform(){
     if(dEl && !dEl.value) dEl.value = isoToday;
     if(vEl && !vEl.value) vEl.value = valid;
   }catch(e){}
-  setTimeout(calcSolar, 100);
+  setTimeout(() => { renderApplianceTable(); calcSolar(); }, 100);
   updatePreview();
 }
 
@@ -1384,7 +1430,150 @@ function verifyCert(){
 }
 
 // ═══ SOLAR CALCULATOR ═══
-const WATTS=[75,10,60,150,10,65,1500,750];
+
+// Default appliances — fully editable: [name, watts, qty, hrs, surge]
+// surge=true means motor/compressor appliance (3× startup current)
+const DEFAULT_APPLIANCES = [
+  ['LED Bulbs', 10, 6, 6, false],
+  ['Ceiling Fan', 75, 2, 8, false],
+  ['TV (LED 32")', 60, 1, 5, false],
+  ['Refrigerator', 150, 1, 24, true],     // SURGE — compressor
+  ['Phone Charger', 10, 3, 3, false],
+  ['Laptop', 65, 1, 6, false],
+  ['Air Conditioner 1HP', 1100, 0, 8, true],  // SURGE — compressor
+  ['Water Pump 0.5HP', 750, 0, 2, true],      // SURGE — motor
+];
+
+// Quick-add appliance suggestions (Nigerian common loads)
+const APPLIANCE_SUGGESTIONS = [
+  {n:'LED Bulb', w:10, s:false},
+  {n:'Incandescent Bulb', w:60, s:false},
+  {n:'Energy Saver Bulb', w:25, s:false},
+  {n:'Ceiling Fan', w:75, s:false},
+  {n:'Standing Fan', w:90, s:false},
+  {n:'Table Fan', w:55, s:false},
+  {n:'TV LED 32"', w:60, s:false},
+  {n:'TV LED 43"', w:80, s:false},
+  {n:'TV LED 55"', w:120, s:false},
+  {n:'Decoder/DSTV', w:25, s:false},
+  {n:'Refrigerator (Small)', w:120, s:true},
+  {n:'Refrigerator (Medium)', w:150, s:true},
+  {n:'Refrigerator (Large)', w:250, s:true},
+  {n:'Deep Freezer', w:300, s:true},
+  {n:'Air Conditioner 1HP', w:1100, s:true},
+  {n:'Air Conditioner 1.5HP', w:1500, s:true},
+  {n:'Air Conditioner 2HP', w:1800, s:true},
+  {n:'Water Pump 0.5HP', w:750, s:true},
+  {n:'Water Pump 1HP', w:1100, s:true},
+  {n:'Washing Machine', w:500, s:true},
+  {n:'Microwave', w:1200, s:true},
+  {n:'Electric Kettle', w:1500, s:false},
+  {n:'Electric Iron', w:1200, s:false},
+  {n:'Blender', w:400, s:true},
+  {n:'Toaster', w:850, s:false},
+  {n:'Phone Charger', w:10, s:false},
+  {n:'Laptop', w:65, s:false},
+  {n:'Desktop PC', w:200, s:false},
+  {n:'Printer', w:50, s:true},
+  {n:'Router/Modem', w:15, s:false},
+  {n:'Security Camera', w:15, s:false},
+  {n:'Hair Dryer', w:1500, s:true},
+  {n:'Pressing Iron', w:1000, s:false},
+  {n:'Cooker (Single Plate)', w:1500, s:false},
+  {n:'Water Heater', w:2000, s:false},
+  {n:'Sound System', w:200, s:false},
+];
+
+let APPLIANCES = JSON.parse(JSON.stringify(DEFAULT_APPLIANCES));
+
+function renderApplianceTable(){
+  const tbody = document.getElementById('appTable');
+  if(!tbody) return;
+  tbody.innerHTML = APPLIANCES.map((a, i) => {
+    const wh = (a[1] * a[2] * a[3]) || 0;
+    return `<tr style="border-bottom:1px solid rgba(0,0,0,0.04);">
+      <td style="padding:8px 6px;">
+        <input type="text" value="${a[0].replace(/"/g,'&quot;')}" oninput="updateApp(${i},0,this.value)" 
+          list="appSuggestions"
+          style="width:100%;min-width:140px;padding:6px 8px;border:1px solid var(--border);border-radius:5px;font-family:inherit;font-size:13px;font-weight:600;">
+      </td>
+      <td style="padding:8px 4px;">
+        <input type="number" value="${a[1]}" min="0" step="5" oninput="updateApp(${i},1,this.value);calcSolar()" 
+          style="width:75px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;font-family:'DM Mono',monospace;">
+      </td>
+      <td style="padding:8px 4px;">
+        <input type="number" value="${a[2]}" min="0" oninput="updateApp(${i},2,this.value);calcSolar()" 
+          style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;">
+      </td>
+      <td style="padding:8px 4px;">
+        <input type="number" value="${a[3]}" min="0" max="24" step="0.5" oninput="updateApp(${i},3,this.value);calcSolar()" 
+          style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;">
+      </td>
+      <td style="padding:8px 4px;text-align:center;">
+        <input type="checkbox" ${a[4]?'checked':''} onchange="updateApp(${i},4,this.checked);calcSolar()" 
+          style="width:17px;height:17px;cursor:pointer;accent-color:var(--gold);" 
+          title="Tick for motor/compressor appliance">
+      </td>
+      <td style="padding:8px 6px;text-align:right;font-family:'DM Mono',monospace;font-size:11px;color:${wh>0?'var(--green)':'var(--text-2)'};font-weight:600;">
+        ${wh.toLocaleString()}
+      </td>
+      <td style="padding:8px 4px;text-align:center;">
+        <button onclick="removeApp(${i})" style="background:transparent;border:none;color:#dc3545;cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;" title="Remove appliance">×</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function updateApp(i, field, val){
+  if(!APPLIANCES[i]) return;
+  if(field === 0) APPLIANCES[i][0] = val;             // name (string)
+  else if(field === 4) APPLIANCES[i][4] = val;        // surge (boolean)
+  else APPLIANCES[i][field] = parseFloat(val) || 0;   // watts/qty/hrs (number)
+  // Refresh just the Wh column without losing focus
+  const tbody = document.getElementById('appTable');
+  if(tbody){
+    const row = tbody.children[i];
+    if(row){
+      const wh = (APPLIANCES[i][1] * APPLIANCES[i][2] * APPLIANCES[i][3]) || 0;
+      const whCell = row.children[5];
+      if(whCell){
+        whCell.textContent = wh.toLocaleString();
+        whCell.style.color = wh>0 ? 'var(--green)' : 'var(--text-2)';
+      }
+    }
+  }
+}
+
+function addAppliance(){
+  APPLIANCES.push(['New Appliance', 0, 1, 1, false]);
+  renderApplianceTable();
+  calcSolar();
+  // Focus on the new appliance name field
+  setTimeout(() => {
+    const tbody = document.getElementById('appTable');
+    if(tbody && tbody.lastElementChild){
+      const inp = tbody.lastElementChild.querySelector('input[type="text"]');
+      if(inp){ inp.focus(); inp.select(); }
+    }
+  }, 50);
+}
+
+function removeApp(i){
+  if(APPLIANCES.length <= 1){
+    alert('At least one appliance is required.');
+    return;
+  }
+  APPLIANCES.splice(i, 1);
+  renderApplianceTable();
+  calcSolar();
+}
+
+function resetCalc(){
+  if(!confirm('Reset to default appliance list? This will clear your current changes.')) return;
+  APPLIANCES = JSON.parse(JSON.stringify(DEFAULT_APPLIANCES));
+  renderApplianceTable();
+  calcSolar();
+}
 // ═══ PRICING DATABASE (Nigerian market, retail ₦) ═══
 const PRICING = {
   inverters: {
@@ -1488,14 +1677,41 @@ function pickMounting(panelCount){
 
 function calcSolar(){
   try{
-  const rows=document.querySelectorAll('#appTable tr');
-  let wh=0;
-  rows.forEach((r,i)=>{
-    const inp=r.querySelectorAll('input');
-    if(inp.length<2)return;
-    wh+=WATTS[i]*(parseFloat(inp[0].value)||0)*(parseFloat(inp[1].value)||0);
+  // ─── Calculate loads from APPLIANCES array ───
+  let dailyWh = 0;          // total energy consumption
+  let continuousW = 0;      // total running wattage
+  let surgeW = 0;           // total wattage including 3× surge for motor appliances
+  let largestSurge = 0;     // single largest surge load (for inverter sizing)
+  
+  APPLIANCES.forEach(a => {
+    const watts = parseFloat(a[1]) || 0;
+    const qty = parseFloat(a[2]) || 0;
+    const hrs = parseFloat(a[3]) || 0;
+    const isSurge = !!a[4];
+    
+    const itemTotalW = watts * qty;
+    const itemDailyWh = itemTotalW * hrs;
+    
+    dailyWh += itemDailyWh;
+    continuousW += itemTotalW;
+    
+    if(isSurge){
+      // Motor/compressor: 3× startup current
+      surgeW += itemTotalW * 3;
+      // Track largest single surge appliance (only one starts at a time typically)
+      const singleSurge = watts * 3;
+      if(singleSurge > largestSurge) largestSurge = singleSurge;
+    } else {
+      surgeW += itemTotalW;
+    }
   });
-  if(wh===0) wh=1; // avoid blank state
+  
+  // Realistic peak wattage for inverter sizing:
+  // = continuous load + largest single surge appliance (not all motors start at once)
+  const realisticPeakW = continuousW + largestSurge - (largestSurge / 3);
+  
+  let wh = dailyWh;
+  if(wh === 0) wh = 1; // avoid blank state
 
   // Read brand preferences (defaults if elements not yet present)
   const invBrand = (document.getElementById('invBrand')||{}).value || 'Felicity';
@@ -1508,7 +1724,9 @@ function calcSolar(){
   // Core sizing math
   const kWh = wh/1000;
   const peakKw = kWh/5*1.3;                            // 5 peak sun hours, 30% derate
-  const invKvaNeeded = peakKw*1.25/0.8;                // 1.25 surge factor, 0.8 PF
+  
+  // Inverter sizing uses realistic peak (continuous + largest surge contribution)
+  const invKvaNeeded = (realisticPeakW/1000) * 1.25 / 0.8;  // 1.25 safety, 0.8 PF
   const kwhUsableNeeded = kWh * backupDays;            // usable storage required
 
   // Pick equipment
@@ -1556,7 +1774,17 @@ function calcSolar(){
   // Detailed BOM breakdown
   const row = (label, detail, cost) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;"><span style="flex:1;"><strong>${label}</strong>${detail?'<br><span style="color:var(--text-2);font-size:11px;">'+detail+'</span>':''}</span><span style="font-family:'DM Mono',monospace;font-weight:600;white-space:nowrap;margin-left:10px;">${fmt(cost)}</span></div>`;
 
-  document.getElementById('r-breakdown').innerHTML = `
+  // Build surge info banner
+  const surgeAppliances = APPLIANCES.filter(a => a[4] && a[2]>0 && a[1]>0);
+  const surgeInfo = surgeAppliances.length > 0 
+    ? `<div style="padding:10px;background:rgba(200,125,42,0.08);border-left:3px solid var(--gold);border-radius:4px;margin-bottom:12px;font-size:11px;line-height:1.5;">
+        <strong style="color:var(--gold);">⚡ Surge Loads Detected:</strong><br>
+        Continuous load: ${Math.round(continuousW)}W · Peak (incl. largest surge): ${Math.round(realisticPeakW)}W<br>
+        ${surgeAppliances.length} motor-driven appliance${surgeAppliances.length>1?'s':''}: ${surgeAppliances.map(a=>a[0]).join(', ')}
+       </div>`
+    : '';
+
+  document.getElementById('r-breakdown').innerHTML = surgeInfo + `
     <div style="display:flex;flex-direction:column;">
       ${row(invBrand+' '+inv[2], '1× '+inv[0]+'kVA hybrid inverter, '+sysV+'V DC, '+inv[4]+'yr warranty', iC)}
       ${row(panBrand+' '+panel[0]+'W panels', panelCount+'× '+panel[0]+'W mono PERC @ '+fmt(panel[1])+' each', pC)}
@@ -1573,6 +1801,7 @@ function calcSolar(){
   // Cache full BOM globally for PDF generator
   window.LAST_BOM = {
     kWh, peakKw, backupDays,
+    continuousW, surgeW, realisticPeakW, surgeAppliances,
     inv, sysV, invBrand, iC,
     panel, panelCount, panBrand, pC,
     bat, batType, batBrand, bC,
@@ -1949,11 +2178,6 @@ function generateQuotationPDF(){
     console.error('generateQuotationPDF error:', e);
     alert('Error generating PDF: '+e.message);
   }
-}
-function resetCalc(){
-  const defaults=[2,8,6,6,1,5,1,24,3,3,1,6,0,8,0,2];
-  document.querySelectorAll('#appTable input').forEach((inp,i)=>{inp.value=defaults[i]||0;});
-  calcSolar();
 }
 
 // ═══ ANALYTICS ═══
