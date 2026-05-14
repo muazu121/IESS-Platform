@@ -1292,8 +1292,8 @@ function updatePreview(){
     document.getElementById('prev-date').textContent=d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   }
   
-  // Update verify QR with certificate-specific URL
-  const verifyUrl='https://iess-platform-git-main-solarhubng-6563s-projects.vercel.app/#verify?cert='+encodeURIComponent(num);
+  // Update verify QR with certificate-specific URL — uses clean production domain
+  const verifyUrl='https://iess-platform.vercel.app/?cert='+encodeURIComponent(num)+'#verify';
   const qrEl=document.getElementById('cert-verify-qr');
   if(qrEl && window.QRCode){
     const canvas=document.createElement('canvas');
@@ -2014,20 +2014,50 @@ function handleRouting(){
   const params = new URLSearchParams(window.location.search);
   const certNum = params.get('cert');
 
-  if(hash === '#verify' || certNum){
-    // Show verify screen
-    document.getElementById('login-screen').classList.remove('active');
-    document.getElementById('platform-screen').classList.remove('active');
-    document.getElementById('verify-screen').classList.add('active');
+  // If certificate verification is requested → go straight to verify screen
+  // bypassing login and platform screens entirely
+  if(hash === '#verify' || hash.startsWith('#verify') || certNum){
+    // Hide all other screens with inline styles to override any CSS
+    const loginScr = document.getElementById('login-screen');
+    const platformScr = document.getElementById('platform-screen');
+    const verifyScr = document.getElementById('verify-screen');
     
+    if(loginScr){
+      loginScr.classList.remove('active');
+      loginScr.style.display = 'none';
+    }
+    if(platformScr){
+      platformScr.classList.remove('active');
+      platformScr.style.display = 'none';
+    }
+    if(verifyScr){
+      verifyScr.classList.add('active');
+      verifyScr.style.display = 'flex';
+    }
+    
+    // Auto-fill cert number if provided in URL and trigger verification
     if(certNum){
-      document.getElementById('certVerInput').value = certNum;
-      verifyCert();
+      const inp = document.getElementById('certVerInput');
+      if(inp){
+        inp.value = decodeURIComponent(certNum);
+        // Small delay to ensure DOM is ready
+        setTimeout(()=>{ if(typeof verifyCert==='function') verifyCert(); }, 100);
+      }
     }
   }
 }
+
+// Run routing as early as possible and on every navigation
+window.addEventListener('DOMContentLoaded', handleRouting);
 window.addEventListener('load', handleRouting);
 window.addEventListener('hashchange', handleRouting);
+window.addEventListener('popstate', handleRouting);
+
+// Also run immediately if DOM already loaded
+if(document.readyState === 'complete' || document.readyState === 'interactive'){
+  setTimeout(handleRouting, 0);
+}
+
 
 </script>
 </body>
