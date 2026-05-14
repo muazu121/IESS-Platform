@@ -744,6 +744,8 @@ tbody tr:last-child td{border:none;}
                 </div>
               </div>
               </div>
+            </div>
+          </div>
     </div>
 
     <!-- CALCULATOR -->
@@ -754,6 +756,37 @@ tbody tr:last-child td{border:none;}
         <p class="page-sub">Professional solar system sizing for any client</p>
       </div>
       <div class="calc-grid">
+        <div class="card" style="grid-column:1/-1;margin-bottom:18px;">
+          <div class="card-header"><div class="card-title">Client Information (for Quotation)</div></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:12px;">
+              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Client Name
+                <input type="text" id="qClientName" placeholder="Mr. John Doe" value="Mr." style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Site Location
+                <input type="text" id="qSiteLoc" placeholder="Kuru Village, FCT Abuja" value="Abuja" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Phone / Email
+                <input type="text" id="qPhoneEmail" placeholder="0803... / client@email.com" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Invoice No.
+                <input type="text" id="qInvoiceNo" placeholder="IESS-2026-001" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Date
+                <input type="date" id="qDate" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Valid Until
+                <input type="date" id="qValidUntil" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">VAT %
+                <input type="number" id="qVatRate" value="7.5" min="0" max="25" step="0.5" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Deposit %
+                <input type="number" id="qDepositPct" value="70" min="0" max="100" step="5" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+              </label>
+            </div>
+          </div>
+        </div>
         <div class="card">
           <div class="card-header"><div class="card-title">Client Appliances</div><button class="btn btn-outline btn-sm" onclick="resetCalc()">Reset</button></div>
           <div class="card-body">
@@ -838,7 +871,7 @@ tbody tr:last-child td{border:none;}
             <div class="result-item"><span class="result-label">Estimated Cost</span><span class="result-value" id="r-cost">--</span></div>
           </div>
           <div class="card">
-            <div class="card-header"><div class="card-title">Cost Breakdown</div><button class="btn btn-outline btn-sm" onclick="calcSolar()">🔄 Refresh</button></div>
+            <div class="card-header"><div class="card-title">Cost Breakdown</div><div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="calcSolar()">🔄 Refresh</button><button class="btn btn-primary btn-sm" onclick="generateQuotationPDF()" style="background:#1A5C2A;color:#fff;border:none;">📄 Generate Quotation PDF</button></div></div>
             <div class="card-body" id="r-breakdown"></div>
           </div>
         </div>
@@ -874,8 +907,6 @@ tbody tr:last-child td{border:none;}
       </div>
     </div>
 
-  </div>
-</div>
   </div>
 </div>
 
@@ -983,6 +1014,15 @@ function initPlatform(){
   renderCertList();
   renderAnalytics();
   try{ updateBatBrandOptions(); }catch(e){}
+  try{
+    const today = new Date();
+    const isoToday = today.toISOString().slice(0,10);
+    const valid = new Date(today.getTime() + 14*24*60*60*1000).toISOString().slice(0,10);
+    const dEl = document.getElementById('qDate');
+    const vEl = document.getElementById('qValidUntil');
+    if(dEl && !dEl.value) dEl.value = isoToday;
+    if(vEl && !vEl.value) vEl.value = valid;
+  }catch(e){}
   setTimeout(calcSolar, 100);
   updatePreview();
 }
@@ -1529,7 +1569,386 @@ function calcSolar(){
       <div style="display:flex;justify-content:space-between;padding:14px 0 4px;font-size:16px;font-weight:800;border-top:2px solid var(--green);margin-top:6px;"><span>TOTAL ESTIMATE</span><span style="font-family:'DM Mono',monospace;color:var(--green);">${fmt(tot)}</span></div>
       <div style="font-size:11px;color:var(--text-2);margin-top:8px;line-height:1.5;">Prices reflect Nigerian retail market (2026). Excludes transport, scaffolding, and roof penetration sealing. Quotes valid 7 days due to FX volatility.</div>
     </div>`;
+
+  // Cache full BOM globally for PDF generator
+  window.LAST_BOM = {
+    kWh, peakKw, backupDays,
+    inv, sysV, invBrand, iC,
+    panel, panelCount, panBrand, pC,
+    bat, batType, batBrand, bC,
+    dcKey, dcLabel, dcMetres, dcCost,
+    acKey, acLabel, acMetres, acCost,
+    mount, mc4Pairs, mc4Cost,
+    fuseChoice, protPack, batLinks,
+    equipmentSub, inst, tot
+  };
   }catch(e){console.error('calcSolar error:',e);}
+}
+
+// ═══ QUOTATION PDF GENERATOR ═══
+function generateQuotationPDF(){
+  try{
+    if(!window.LAST_BOM){ calcSolar(); }
+    const b = window.LAST_BOM;
+    if(!b){ alert('Calculate the system first.'); return; }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+    const pageW = 210, pageH = 297;
+    const M = 8;  // page margin
+
+    // Colours (matching the screenshot)
+    const G_DARK = [12, 30, 15];      // dark green for header band
+    const G_MED  = [26, 92, 42];      // section green
+    const G_LITE = [232, 244, 234];   // pale green row background
+    const ORANGE = [200, 125, 42];    // orange band for title
+    const PALE_ORANGE = [255, 243, 224];
+
+    // Helpers
+    const fmt = n => '\u20A6'+Math.round(n).toLocaleString();  // ₦
+    const fmtPlain = n => 'N'+Math.round(n).toLocaleString();  // ASCII fallback for jsPDF
+    // jsPDF's default font (Helvetica) doesn't support ₦ Naira sign. Use "N" prefix throughout.
+    const money = n => 'N'+Math.round(n).toLocaleString();
+
+    // Read client inputs
+    const clientName = (document.getElementById('qClientName')||{}).value || 'Client';
+    const siteLoc    = (document.getElementById('qSiteLoc')||{}).value || '—';
+    const phoneEmail = (document.getElementById('qPhoneEmail')||{}).value || '—';
+    const invoiceNo  = (document.getElementById('qInvoiceNo')||{}).value || ('IESS-'+new Date().getFullYear()+'-'+String(Date.now()).slice(-4));
+    const todayISO = new Date().toISOString().slice(0,10);
+    const addDays = (isoStr, n) => { const d = new Date(isoStr); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+    const qDate  = (document.getElementById('qDate')||{}).value || todayISO;
+    const qValid = (document.getElementById('qValidUntil')||{}).value || addDays(qDate, 14);
+    const vatRate    = parseFloat((document.getElementById('qVatRate')||{}).value || '7.5');
+    const depositPct = parseFloat((document.getElementById('qDepositPct')||{}).value || '70');
+
+    const fmtDate = s => { try{ const d=new Date(s); if(isNaN(d.getTime())) return s; return d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){return s;} };
+
+    // ────── HEADER BAND ──────
+    let y = M;
+    doc.setFillColor(...G_DARK);
+    doc.rect(M, y, pageW-2*M, 22, 'F');
+
+    // Logo circle (left side) — small green circle as placeholder
+    doc.setFillColor(255,255,255);
+    doc.circle(M+10, y+11, 7, 'F');
+    doc.setFillColor(...G_MED);
+    doc.circle(M+10, y+11, 5.5, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(7);
+    doc.setFont('helvetica','bold');
+    doc.text('IESS', M+10, y+12.5, {align:'center'});
+
+    // Company name & contact (centred)
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(12);
+    doc.text('INTEGRATED ENERGY AND SMART SYSTEMS LTD', pageW/2, y+7, {align:'center'});
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7);
+    doc.text('No. 2, Kuru Layout, Garki District | C/o Patiya, Kuru Village FCT, Abuja Nigeria', pageW/2, y+12, {align:'center'});
+    doc.text('+234 803 XXX XXXX | +234 805 XXX XXXX | info@iess-ng.com | www.iess-ng.com', pageW/2, y+16, {align:'center'});
+    doc.setFontSize(6.5);
+    doc.text('Engineering | Solar | Training | Research | RC No: 1234567', pageW/2, y+19.5, {align:'center'});
+    y += 22;
+
+    // ────── ORANGE TITLE BAR ──────
+    doc.setFillColor(...ORANGE);
+    doc.rect(M, y, pageW-2*M, 7, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.text('SOLAR SYSTEM QUOTATION / INVOICE', pageW/2, y+5, {align:'center'});
+    y += 7;
+
+    // ────── CLIENT INFO BLOCK (two columns) ──────
+    const colW = (pageW-2*M)/2;
+    const rowH = 5.5;
+    doc.setDrawColor(...G_MED);
+    doc.setLineWidth(0.3);
+    // Left column: Client / Site / Phone
+    const leftRows = [['Client Name', clientName],['Site Location', siteLoc],['Phone / Email', phoneEmail]];
+    const rightRows = [['Invoice No.', invoiceNo],['Date', fmtDate(qDate)],['Valid Until', fmtDate(qValid)]];
+    for(let i=0;i<3;i++){
+      // left
+      doc.setFillColor(...G_LITE);
+      doc.rect(M, y+i*rowH, 28, rowH, 'F');
+      doc.rect(M, y+i*rowH, colW, rowH);
+      doc.setTextColor(...G_DARK);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+      doc.text(leftRows[i][0], M+2, y+i*rowH+3.7);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.setTextColor(20,20,20);
+      doc.text(String(leftRows[i][1]).substring(0,45), M+30, y+i*rowH+3.7);
+      // right
+      doc.setFillColor(...G_LITE);
+      doc.rect(M+colW, y+i*rowH, 28, rowH, 'F');
+      doc.rect(M+colW, y+i*rowH, colW, rowH);
+      doc.setTextColor(...G_DARK);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+      doc.text(rightRows[i][0], M+colW+2, y+i*rowH+3.7);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.setTextColor(20,20,20);
+      doc.text(String(rightRows[i][1]).substring(0,40), M+colW+30, y+i*rowH+3.7);
+    }
+    y += 3*rowH + 2;
+
+    // ────── AUTO-FILLED SYSTEM DESIGN SUMMARY ──────
+    doc.setFillColor(...G_DARK);
+    doc.rect(M, y, pageW-2*M, 6, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text('AUTO-FILLED SYSTEM DESIGN SUMMARY', M+2, y+4.2);
+    y += 6;
+
+    const sumColW = (pageW-2*M)/4;
+    const sumHeaders = ['System Voltage','Total Surge Load','Total Daily Energy','Peak Sun Hours'];
+    const sumValues  = [b.sysV+'V DC', b.inv[0]+' kVA', b.kWh.toFixed(2)+' kWh', '5.0 (Nigeria avg)'];
+    doc.setFillColor(...G_LITE);
+    doc.rect(M, y, pageW-2*M, 6, 'F');
+    doc.setTextColor(...G_DARK);
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    for(let i=0;i<4;i++){
+      doc.rect(M+i*sumColW, y, sumColW, 6);
+      doc.text(sumHeaders[i], M+i*sumColW+2, y+4);
+    }
+    y += 6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.setTextColor(20,20,20);
+    for(let i=0;i<4;i++){
+      doc.rect(M+i*sumColW, y, sumColW, 6);
+      doc.text(sumValues[i], M+i*sumColW+2, y+4);
+    }
+    y += 6;
+
+    // Second row: Inverter / Battery / Panels / Total Wp
+    const sumHeaders2 = ['Inverter Required','Battery Bank','No. of Batteries','Solar Panels'];
+    const totalWp = b.panelCount * b.panel[0];
+    const sumValues2 = [
+      b.inv[0]+' kVA / '+b.sysV+'V',
+      b.bat ? (b.bat.totalKwh.toFixed(1)+' kWh / '+b.bat.unitAh+'Ah') : '—',
+      b.bat ? (b.bat.count+' × '+b.bat.unitV+'V') : '—',
+      b.panelCount+' × '+b.panel[0]+'Wp = '+totalWp+' Wp'
+    ];
+    doc.setFillColor(...G_LITE);
+    doc.rect(M, y, pageW-2*M, 6, 'F');
+    doc.setTextColor(...G_DARK);
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    for(let i=0;i<4;i++){
+      doc.rect(M+i*sumColW, y, sumColW, 6);
+      doc.text(sumHeaders2[i], M+i*sumColW+2, y+4);
+    }
+    y += 6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.setTextColor(20,20,20);
+    for(let i=0;i<4;i++){
+      doc.rect(M+i*sumColW, y, sumColW, 6);
+      doc.text(sumValues2[i], M+i*sumColW+2, y+4);
+    }
+    y += 6 + 2;
+
+    // ────── ITEMIZED BILL OF MATERIALS ──────
+    doc.setFillColor(...G_DARK);
+    doc.rect(M, y, pageW-2*M, 6, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text('ITEMIZED BILL OF MATERIALS  -  All quantities and prices are auto-calculated', M+2, y+4.2);
+    y += 6;
+
+    // BOM table headers: # | Description | Brand/Spec | Qty | Unit | Unit Price | Total
+    const bomCols = [
+      {w:7,  label:'#',           align:'center'},
+      {w:38, label:'Description', align:'left'},
+      {w:60, label:'Brand / Specification', align:'left'},
+      {w:12, label:'Qty',         align:'center'},
+      {w:12, label:'Unit',        align:'center'},
+      {w:28, label:'Unit Price (N)', align:'right'},
+      {w:39, label:'Total (N)',   align:'right'}
+    ];
+    // (Total = 7+38+60+12+12+28+39 = 196mm) — fits within 210-2*8 = 194mm; adjust:
+    bomCols[2].w = 58; bomCols[6].w = 39;
+
+    let x = M;
+    doc.setFillColor(...G_LITE);
+    doc.rect(M, y, pageW-2*M, 6, 'F');
+    doc.setTextColor(...G_DARK);
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    for(const c of bomCols){
+      doc.rect(x, y, c.w, 6);
+      const tx = c.align==='right' ? x+c.w-2 : c.align==='center' ? x+c.w/2 : x+2;
+      doc.text(c.label, tx, y+4, {align: c.align==='right'?'right':c.align==='center'?'center':'left'});
+      x += c.w;
+    }
+    y += 6;
+
+    // Build BOM rows from cached calc
+    const bom = [];
+    bom.push(['Solar Panels',         b.panBrand+' '+b.panel[0]+'W Mono PERC',                b.panelCount, 'Each',  b.panel[1],         b.pC]);
+    bom.push(['Hybrid Inverter',      b.invBrand+' '+b.inv[2]+' ('+b.inv[0]+'kVA/'+b.sysV+'V)', 1,           'Each',  b.iC,               b.iC]);
+    if(b.bat){
+      const batLabel = b.batBrand+' '+(b.batType==='lithium'?'LiFePO4':b.batType==='lead-tubular'?'Tubular':'Gel/AGM')+' '+b.bat.unitV+'V/'+b.bat.unitAh+'Ah';
+      bom.push(['Battery Bank',         batLabel,                                                b.bat.count, 'Each',  b.bat.unitPrice,    b.bC]);
+    }
+    bom.push(['MPPT Charge Controller','Built-in to inverter (no separate unit)',              1,           'Each',  0,                  0]);
+    bom.push(['DC Solar Cables',      b.dcLabel+' TUV-rated',                                  b.dcMetres,  'Metre', PRICING.cables[b.dcKey], b.dcCost]);
+    bom.push(['AC Output Cable',      b.acLabel+' Copper 3-core',                              b.acMetres,  'Metre', PRICING.cables[b.acKey], b.acCost]);
+    bom.push(['Mounting Structure & MC4', b.mount.name+' + '+b.mc4Pairs+' MC4 pairs',          1,           'Set',   b.mount.price+b.mc4Cost, b.mount.price+b.mc4Cost]);
+    bom.push(['Protection Devices',   'SPD + DC/AC breakers + '+b.fuseChoice[1]+' + earth kit + 8-way DB', 1,'Set',  b.protPack+b.batLinks,   b.protPack+b.batLinks]);
+    bom.push(['Installation, Labour & Commissioning', '~10% of equipment cost',               1,           'Lot',   b.inst,            b.inst]);
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+    doc.setTextColor(20,20,20);
+    let bomIdx = 1;
+    for(const it of bom){
+      const [desc, spec, qty, unit, unitP, total] = it;
+      const specLines = doc.splitTextToSize(spec, bomCols[2].w-3);
+      const descLines = doc.splitTextToSize(desc, bomCols[1].w-3);
+      const lineH = 3.4;
+      const maxLines = Math.max(specLines.length, descLines.length);
+      const rowH = Math.max(6, maxLines*lineH + 2);
+      x = M;
+      for(const c of bomCols){
+        doc.rect(x, y, c.w, rowH);
+        x += c.w;
+      }
+      x = M;
+      doc.text(String(bomIdx++), x+bomCols[0].w/2, y+rowH/2+1, {align:'center'}); x += bomCols[0].w;
+      doc.text(descLines, x+1.5, y+3.5); x += bomCols[1].w;
+      doc.text(specLines, x+1.5, y+3.5); x += bomCols[2].w;
+      doc.text(String(qty), x+bomCols[3].w/2, y+rowH/2+1, {align:'center'}); x += bomCols[3].w;
+      doc.text(unit, x+bomCols[4].w/2, y+rowH/2+1, {align:'center'}); x += bomCols[4].w;
+      doc.text(money(unitP), x+bomCols[5].w-2, y+rowH/2+1, {align:'right'}); x += bomCols[5].w;
+      doc.setFont('helvetica','bold');
+      doc.text(money(total), x+bomCols[6].w-2, y+rowH/2+1, {align:'right'});
+      doc.setFont('helvetica','normal');
+      y += rowH;
+
+      if(y > pageH-60){ doc.addPage(); y = M; }
+    }
+
+    // ────── TOTALS ──────
+    // Widen the label column so long labels don't overlap the value
+    const totalsLabelW = bomCols[3].w + bomCols[4].w + bomCols[5].w;  // wider label
+    const totalsValW = bomCols[6].w;
+    const totalsX = M + bomCols[0].w + bomCols[1].w + bomCols[2].w;
+
+    const subTotal = b.tot;
+    const vatAmount = subTotal * vatRate / 100;
+    const grandTotal = subTotal + vatAmount;
+    const depositAmount = grandTotal * depositPct / 100;
+
+    // Sub-total row
+    doc.setFillColor(...G_LITE);
+    doc.rect(totalsX, y, totalsLabelW+totalsValW, 6, 'F');
+    doc.rect(totalsX, y, totalsLabelW, 6);
+    doc.rect(totalsX+totalsLabelW, y, totalsValW, 6);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...G_DARK);
+    doc.text('MATERIALS & SERVICES SUB-TOTAL', totalsX+2, y+4);
+    doc.setTextColor(20,20,20);
+    doc.text(money(subTotal), totalsX+totalsLabelW+totalsValW-2, y+4, {align:'right'});
+    y += 6;
+    // VAT row
+    doc.rect(totalsX, y, totalsLabelW, 6);
+    doc.rect(totalsX+totalsLabelW, y, totalsValW, 6);
+    doc.setTextColor(...G_DARK);
+    doc.text('VAT ('+vatRate+'%)', totalsX+2, y+4);
+    doc.setTextColor(20,20,20);
+    doc.text(money(vatAmount), totalsX+totalsLabelW+totalsValW-2, y+4, {align:'right'});
+    y += 6;
+    // Grand total row
+    doc.setFillColor(...ORANGE);
+    doc.rect(totalsX, y, totalsLabelW+totalsValW, 7, 'F');
+    doc.rect(totalsX, y, totalsLabelW, 7);
+    doc.rect(totalsX+totalsLabelW, y, totalsValW, 7);
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(10);
+    doc.text('GRAND TOTAL', totalsX+2, y+4.8);
+    doc.text(money(grandTotal), totalsX+totalsLabelW+totalsValW-2, y+4.8, {align:'right'});
+    y += 7 + 3;
+
+    // ────── PAYMENT DETAILS ──────
+    if(y > pageH-50){ doc.addPage(); y = M; }
+    doc.setFillColor(...G_DARK);
+    doc.rect(M, y, pageW-2*M, 6, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text('PAYMENT DETAILS', M+2, y+4.2);
+    y += 6;
+    doc.setTextColor(20,20,20);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    const payRows = [
+      ['Bank Name', '[Enter Bank Name]'],
+      ['Account Name', 'INTEGRATED ENERGY AND SMART SYSTEMS LTD'],
+      ['Account No.', '[Enter Account Number]']
+    ];
+    for(const [k,v] of payRows){
+      doc.rect(M, y, 35, 5);
+      doc.rect(M+35, y, pageW-2*M-35, 5);
+      doc.setFont('helvetica','bold');
+      doc.text(k, M+2, y+3.5);
+      doc.setFont('helvetica','normal');
+      doc.text(v, M+37, y+3.5);
+      y += 5;
+    }
+    // Deposit note
+    doc.setFillColor(...PALE_ORANGE);
+    doc.rect(M, y, pageW-2*M, 5, 'F');
+    doc.rect(M, y, pageW-2*M, 5);
+    doc.setFont('helvetica','bold'); doc.setTextColor(...G_DARK);
+    doc.text(depositPct+'% DEPOSIT REQUIRED BEFORE COMMENCEMENT OF INSTALLATION  |  Balance payable on completion  |  Deposit = '+money(depositAmount), M+2, y+3.5);
+    y += 5 + 3;
+
+    // ────── TERMS & CONDITIONS ──────
+    if(y > pageH-50){ doc.addPage(); y = M; }
+    doc.setFillColor(...G_DARK);
+    doc.rect(M, y, pageW-2*M, 6, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text('TERMS & CONDITIONS', M+2, y+4.2);
+    y += 6;
+    doc.setTextColor(20,20,20);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+    const terms = [
+      '1. A '+vatRate+'% advance is required before work commencement. Balance payable on completion.',
+      '2. This quotation is valid for 14 days from date of issue. Prices subject to exchange-rate fluctuations.',
+      '3. Solar panels carry 10-year product warranty + 25-year performance warranty (manufacturer).',
+      '4. Batteries: Li-ion/LiFePO4 minimum 3-year warranty; lead-acid (tubular/gel) 1-2 years subject to manufacturer.',
+      '5. Inverters: Manufacturer warranty as per datasheet (Felicity 1yr, Deye 5yr, Victron 5yr, etc.).',
+      '6. IESS Ltd provides 12-month free post-installation support and routine inspection.',
+      '7. Client must ensure suitable, safe and accessible installation site.',
+      '8. IESS Ltd shall not be liable for damage caused by misuse, tampering, flooding, or force majeure.'
+    ];
+    for(const t of terms){
+      const lines = doc.splitTextToSize(t, pageW-2*M-4);
+      for(const l of lines){
+        doc.text(l, M+2, y+3);
+        y += 3.6;
+      }
+    }
+    y += 2;
+
+    // Signature line
+    if(y > pageH-30){ doc.addPage(); y = M; }
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text('Prepared By: _______________________', M+2, y+5);
+    doc.text('Signature: _______________________', M+70, y+5);
+    doc.text('Date: ____________', M+135, y+5);
+    y += 12;
+
+    // Footer band
+    doc.setFillColor(...G_MED);
+    doc.rect(M, pageH-M-7, pageW-2*M, 7, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.text('INTEGRATED ENERGY AND SMART SYSTEMS LTD  -  Reliable Power. Smart Security. Get Wired.', pageW/2, pageH-M-2.5, {align:'center'});
+
+    // Save
+    const fname = (invoiceNo || 'IESS-Quotation').replace(/[^a-zA-Z0-9\-_]/g,'_')+'.pdf';
+    doc.save(fname);
+  }catch(e){
+    console.error('generateQuotationPDF error:', e);
+    alert('Error generating PDF: '+e.message);
+  }
 }
 function resetCalc(){
   const defaults=[2,8,6,6,1,5,1,24,3,3,1,6,0,8,0,2];
@@ -1612,4 +2031,4 @@ window.addEventListener('hashchange', handleRouting);
 
 </script>
 </body>
-</html
+</html>
