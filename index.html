@@ -448,6 +448,7 @@ tbody tr:last-child td{border:none;}
       <button class="nav-item" onclick="sp('certificates',this)"><span class="nav-icon">🏆</span>Certificates</button>
       <div class="nav-section">Tools</div>
       <button class="nav-item" onclick="sp('calculator',this)"><span class="nav-icon">☀️</span>Solar Calculator</button>
+      <button class="nav-item" onclick="sp('invoices',this)"><span class="nav-icon">📑</span>Invoices <span id="nav-invoice-count" style="margin-left:auto;background:var(--green);color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-family:'DM Mono',monospace;">0</span></button>
       <button class="nav-item" onclick="sp('analytics',this)"><span class="nav-icon">📈</span>Analytics</button>
     </nav>
     <div class="sidebar-footer">
@@ -819,6 +820,12 @@ tbody tr:last-child td{border:none;}
               <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Deposit %
                 <input type="number" id="qDepositPct" value="70" min="0" max="100" step="5" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
               </label>
+              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Prepared By (Your Name) <span style="color:#dc3545;font-size:10px;">*Required</span>
+                <input type="text" id="qPreparer" placeholder="e.g. Engr. Muazu M. Ogirima" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+              </label>
+            </div>
+            <div style="margin-top:14px;padding:10px;background:rgba(26,92,42,0.05);border-left:3px solid var(--green);border-radius:4px;font-size:11px;color:var(--text-2);line-height:1.5;">
+              <strong style="color:var(--green);">ℹ️ Invoice Auto-numbering:</strong> Leave Invoice No. blank to auto-generate <strong>IESS-INV-2026-001</strong> (increments automatically). Every invoice you generate is saved to the platform for future reference — view them under <strong>📑 Invoices</strong> in the sidebar.
             </div>
           </div>
         </div>
@@ -919,6 +926,49 @@ tbody tr:last-child td{border:none;}
             <div class="card-header"><div class="card-title">Cost Breakdown</div><div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="calcSolar()">🔄 Refresh</button><button class="btn btn-primary btn-sm" onclick="generateQuotationPDF()" style="background:#1A5C2A;color:#fff;border:none;">📄 Generate Quotation PDF</button></div></div>
             <div class="card-body" id="r-breakdown"></div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVOICES HISTORY -->
+    <div id="page-invoices" class="page">
+      <div class="page-header">
+        <span class="page-tag">Records</span>
+        <h1 class="page-title">Invoice History</h1>
+        <p class="page-sub">All quotations generated through the Solar Calculator</p>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+            <div style="padding:14px;background:rgba(26,92,42,0.08);border-radius:8px;text-align:center;">
+              <div style="font-size:11px;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:1px;">Total Invoices</div>
+              <div style="font-size:28px;font-weight:800;color:var(--green);margin-top:4px;" id="inv-stat-total">0</div>
+            </div>
+            <div style="padding:14px;background:rgba(200,125,42,0.08);border-radius:8px;text-align:center;">
+              <div style="font-size:11px;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:1px;">Total Value</div>
+              <div style="font-size:22px;font-weight:800;color:var(--gold);margin-top:4px;" id="inv-stat-value">₦0</div>
+            </div>
+            <div style="padding:14px;background:rgba(74,144,226,0.08);border-radius:8px;text-align:center;">
+              <div style="font-size:11px;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:1px;">This Month</div>
+              <div style="font-size:28px;font-weight:800;color:#4a90e2;margin-top:4px;" id="inv-stat-month">0</div>
+            </div>
+            <div style="padding:14px;background:rgba(108,117,125,0.08);border-radius:8px;text-align:center;">
+              <div style="font-size:11px;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:1px;">Last Updated</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-1);margin-top:8px;" id="inv-stat-last">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Invoices</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="invSearch" placeholder="🔍 Search by client, invoice no, preparer..." oninput="renderInvoiceList()" style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;min-width:260px;">
+            <button class="btn btn-outline btn-sm" onclick="exportInvoicesCSV()">📊 Export CSV</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div id="invoiceList" style="overflow-x:auto;"></div>
         </div>
       </div>
     </div>
@@ -1035,6 +1085,9 @@ function sp(id,el){
     calcSolar();
     setTimeout(calcSolar, 100);
   }
+  if(id==='invoices') {
+    renderInvoiceList();
+  }
   closeSB();
 }
 function toggleSB(){document.getElementById('sidebar').classList.toggle('open');}
@@ -1070,6 +1123,7 @@ function initPlatform(){
     if(vEl && !vEl.value) vEl.value = valid;
   }catch(e){}
   setTimeout(() => { renderApplianceTable(); calcSolar(); }, 100);
+  updateNavInvoiceCount();
   updatePreview();
 }
 
@@ -1843,43 +1897,87 @@ function generateQuotationPDF(){
     const clientName = (document.getElementById('qClientName')||{}).value || 'Client';
     const siteLoc    = (document.getElementById('qSiteLoc')||{}).value || '—';
     const phoneEmail = (document.getElementById('qPhoneEmail')||{}).value || '—';
-    const invoiceNo  = (document.getElementById('qInvoiceNo')||{}).value || ('IESS-'+new Date().getFullYear()+'-'+String(Date.now()).slice(-4));
+    const preparerName = (document.getElementById('qPreparer')||{}).value.trim();
+    
+    // Validate preparer
+    if(!preparerName){
+      alert('Please enter the "Prepared By" name before generating the invoice.\n\nThis is required for audit trail.');
+      const el = document.getElementById('qPreparer');
+      if(el){ el.focus(); el.style.borderColor='#dc3545'; el.style.background='rgba(220,53,69,0.05)'; }
+      return;
+    }
+    
+    // Auto-generate invoice number if blank
+    let invoiceNo = (document.getElementById('qInvoiceNo')||{}).value.trim();
+    if(!invoiceNo){
+      invoiceNo = getNextInvoiceNumber();
+      const invEl = document.getElementById('qInvoiceNo');
+      if(invEl) invEl.value = invoiceNo;
+    }
+    
     const todayISO = new Date().toISOString().slice(0,10);
     const addDays = (isoStr, n) => { const d = new Date(isoStr); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
     const qDate  = (document.getElementById('qDate')||{}).value || todayISO;
     const qValid = (document.getElementById('qValidUntil')||{}).value || addDays(qDate, 14);
     const vatRate    = parseFloat((document.getElementById('qVatRate')||{}).value || '7.5');
     const depositPct = parseFloat((document.getElementById('qDepositPct')||{}).value || '70');
+    
+    // Generation timestamp for audit trail
+    const genStamp = new Date();
+    const genStampStr = genStamp.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) 
+                     + ' at ' + genStamp.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
     const fmtDate = s => { try{ const d=new Date(s); if(isNaN(d.getTime())) return s; return d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){return s;} };
 
-    // ────── HEADER BAND ──────
+    // ────── HEADER BAND (with real IESS company info) ──────
     let y = M;
     doc.setFillColor(...G_DARK);
-    doc.rect(M, y, pageW-2*M, 22, 'F');
+    doc.rect(M, y, pageW-2*M, 24, 'F');
 
-    // Logo circle (left side) — small green circle as placeholder
-    doc.setFillColor(255,255,255);
-    doc.circle(M+10, y+11, 7, 'F');
-    doc.setFillColor(...G_MED);
-    doc.circle(M+10, y+11, 5.5, 'F');
-    doc.setTextColor(255,255,255);
-    doc.setFontSize(7);
-    doc.setFont('helvetica','bold');
-    doc.text('IESS', M+10, y+12.5, {align:'center'});
+    // Try to embed the actual IESS logo (left side)
+    try{
+      if(typeof LOGO_B64 === 'string' && LOGO_B64.startsWith('data:image')){
+        // White circle background
+        doc.setFillColor(255,255,255);
+        doc.circle(M+11, y+12, 8, 'F');
+        // Logo placed inside circle
+        doc.addImage(LOGO_B64, 'JPEG', M+4, y+5, 14, 14);
+      } else {
+        doc.setFillColor(255,255,255);
+        doc.circle(M+11, y+12, 7, 'F');
+        doc.setFillColor(...G_MED);
+        doc.circle(M+11, y+12, 5.5, 'F');
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(6);
+        doc.setFont('helvetica','bold');
+        doc.text('IESS', M+11, y+13.5, {align:'center'});
+      }
+    }catch(logoErr){
+      // Fallback circle
+      doc.setFillColor(255,255,255);
+      doc.circle(M+11, y+12, 7, 'F');
+      doc.setFillColor(...G_MED);
+      doc.circle(M+11, y+12, 5.5, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(6);
+      doc.setFont('helvetica','bold');
+      doc.text('IESS', M+11, y+13.5, {align:'center'});
+    }
 
-    // Company name & contact (centred)
+    // Company name & contact (centred) — REAL IESS DETAILS
     doc.setTextColor(255,255,255);
     doc.setFont('helvetica','bold');
-    doc.setFontSize(12);
-    doc.text('INTEGRATED ENERGY AND SMART SYSTEMS LTD', pageW/2, y+7, {align:'center'});
+    doc.setFontSize(11);
+    doc.text('INTEGRATED ENERGY AND SMART SYSTEMS LTD', pageW/2, y+6, {align:'center'});
     doc.setFont('helvetica','normal');
     doc.setFontSize(7);
-    doc.text('No. 2, Kuru Layout, Garki District | C/o Patiya, Kuru Village FCT, Abuja Nigeria', pageW/2, y+12, {align:'center'});
-    doc.text('+234 803 XXX XXXX | +234 805 XXX XXXX | info@iess-ng.com | www.iess-ng.com', pageW/2, y+16, {align:'center'});
-    doc.setFontSize(6.5);
-    doc.text('Engineering | Solar | Training | Research | RC No: 1234567', pageW/2, y+19.5, {align:'center'});
-    y += 22;
+    doc.text('No. 2, Karu, Opp. Central Mosque, Old Chief Palace, Karu Village FCT, Abuja, Nigeria', pageW/2, y+11, {align:'center'});
+    doc.text('Tel: +234 803 859 0108 | +234 816 696 1009  |  WhatsApp: +234 806 786 9112', pageW/2, y+14.5, {align:'center'});
+    doc.text('Email: integratedpower.iess@gmail.com  |  IG/TT: @iessltd  |  FB: @IESmartSystems', pageW/2, y+18, {align:'center'});
+    doc.setFontSize(6.2);
+    doc.setFont('helvetica','bold');
+    doc.text('Engineering  |  Solar  |  Smart Systems  |  Training  |  Research  |  RC: 9475261  |  COREN Reg. 80576  |  NSE Member', pageW/2, y+21.5, {align:'center'});
+    y += 24;
 
     // ────── ORANGE TITLE BAR ──────
     doc.setFillColor(...ORANGE);
@@ -2095,7 +2193,7 @@ function generateQuotationPDF(){
     doc.text(money(grandTotal), totalsX+totalsLabelW+totalsValW-2, y+4.8, {align:'right'});
     y += 7 + 3;
 
-    // ────── PAYMENT DETAILS ──────
+    // ────── PAYMENT DETAILS (generic — bank details on request) ──────
     if(y > pageH-50){ doc.addPage(); y = M; }
     doc.setFillColor(...G_DARK);
     doc.rect(M, y, pageW-2*M, 6, 'F');
@@ -2105,20 +2203,18 @@ function generateQuotationPDF(){
     y += 6;
     doc.setTextColor(20,20,20);
     doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    const payRows = [
-      ['Bank Name', '[Enter Bank Name]'],
-      ['Account Name', 'INTEGRATED ENERGY AND SMART SYSTEMS LTD'],
-      ['Account No.', '[Enter Account Number]']
-    ];
-    for(const [k,v] of payRows){
-      doc.rect(M, y, 35, 5);
-      doc.rect(M+35, y, pageW-2*M-35, 5);
-      doc.setFont('helvetica','bold');
-      doc.text(k, M+2, y+3.5);
-      doc.setFont('helvetica','normal');
-      doc.text(v, M+37, y+3.5);
-      y += 5;
-    }
+    doc.rect(M, y, pageW-2*M, 11);
+    doc.setFont('helvetica','bold');
+    doc.text('Account Name:', M+2, y+4);
+    doc.setFont('helvetica','normal');
+    doc.text('INTEGRATED ENERGY AND SMART SYSTEMS LTD', M+30, y+4);
+    doc.setFont('helvetica','bold');
+    doc.text('Bank Details:', M+2, y+8.5);
+    doc.setFont('helvetica','italic');
+    doc.setTextColor(80,80,80);
+    doc.text('Please contact IESS Ltd directly for bank account details before making payment.', M+30, y+8.5);
+    doc.setTextColor(20,20,20);
+    y += 11;
     // Deposit note
     doc.setFillColor(...PALE_ORANGE);
     doc.rect(M, y, pageW-2*M, 5, 'F');
@@ -2156,28 +2252,361 @@ function generateQuotationPDF(){
     }
     y += 2;
 
-    // Signature line
-    if(y > pageH-30){ doc.addPage(); y = M; }
-    doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    doc.text('Prepared By: _______________________', M+2, y+5);
-    doc.text('Signature: _______________________', M+70, y+5);
-    doc.text('Date: ____________', M+135, y+5);
-    y += 12;
+    // ────── PREPARED BY + AUDIT TRAIL BLOCK ──────
+    if(y > pageH-40){ doc.addPage(); y = M; }
+    
+    // Three-column "Prepared By / Signature / Date" block
+    doc.setDrawColor(...G_DARK);
+    doc.setLineWidth(0.4);
+    doc.setFillColor(248, 250, 248); // very light grey-green
+    const sigBlockH = 16;
+    doc.rect(M, y, pageW-2*M, sigBlockH, 'F');
+    doc.rect(M, y, pageW-2*M, sigBlockH);
 
-    // Footer band
+    // Column widths
+    const col1W = 70, col2W = 60, col3W = pageW-2*M-col1W-col2W;
+    // Column dividers
+    doc.line(M+col1W, y, M+col1W, y+sigBlockH);
+    doc.line(M+col1W+col2W, y, M+col1W+col2W, y+sigBlockH);
+
+    // Labels (top of each column)
+    doc.setFont('helvetica','bold'); doc.setFontSize(7);
+    doc.setTextColor(...G_DARK);
+    doc.text('PREPARED BY', M+3, y+4);
+    doc.text('SIGNATURE', M+col1W+3, y+4);
+    doc.text('DATE', M+col1W+col2W+3, y+4);
+
+    // Values (printed below labels)
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.setTextColor(20,20,20);
+    doc.text(preparerName, M+3, y+10);
+    // Underline preparer name
+    const prepTextW = doc.getTextWidth(preparerName);
+    doc.setDrawColor(20,20,20);
+    doc.line(M+3, y+11, M+3+Math.min(prepTextW, col1W-6), y+11);
+
+    // Signature column — line for manual signing after print
+    doc.setTextColor(150,150,150);
+    doc.setFont('helvetica','italic'); doc.setFontSize(7);
+    doc.text('(sign here after printing)', M+col1W+3, y+10);
+    doc.setDrawColor(20,20,20);
+    doc.line(M+col1W+3, y+13.5, M+col1W+col2W-3, y+13.5);
+
+    // Date column — auto-filled
+    doc.setTextColor(20,20,20);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    const sigDate = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    doc.text(sigDate, M+col1W+col2W+3, y+10);
+    const dateTextW = doc.getTextWidth(sigDate);
+    doc.line(M+col1W+col2W+3, y+11, M+col1W+col2W+3+dateTextW, y+11);
+
+    y += sigBlockH + 2;
+
+    // ────── AUDIT TRAIL FOOTER (very small, light grey) ──────
+    if(y > pageH-20){ doc.addPage(); y = M; }
+    doc.setFontSize(6.5);
+    doc.setFont('helvetica','italic');
+    doc.setTextColor(120,120,120);
+    doc.text('Audit Trail  |  Invoice No: '+invoiceNo+'  |  Generated: '+genStampStr+'  |  Prepared By: '+preparerName+'  |  This document is system-generated and traceable in IESS Platform records.', pageW/2, y+3, {align:'center'});
+
+    // ────── COMPANY FOOTER BAND ──────
     doc.setFillColor(...G_MED);
     doc.rect(M, pageH-M-7, pageW-2*M, 7, 'F');
     doc.setTextColor(255,255,255);
     doc.setFont('helvetica','bold'); doc.setFontSize(8);
     doc.text('INTEGRATED ENERGY AND SMART SYSTEMS LTD  -  Reliable Power. Smart Security. Get Wired.', pageW/2, pageH-M-2.5, {align:'center'});
 
-    // Save
+    // ────── SAVE INVOICE TO PLATFORM RECORDS ──────
+    saveInvoiceRecord({
+      invoiceNo: invoiceNo,
+      clientName: clientName,
+      siteLoc: siteLoc,
+      phoneEmail: phoneEmail,
+      preparerName: preparerName,
+      date: qDate,
+      validUntil: qValid,
+      generatedAt: genStamp.toISOString(),
+      grandTotal: grandTotal,
+      subTotal: subTotal,
+      vatRate: vatRate,
+      vatAmount: vatAmount,
+      depositPct: depositPct,
+      depositAmount: depositAmount,
+      systemKwh: b.kWh,
+      inverterKva: b.inv ? b.inv[0] : null,
+      panelCount: b.panelCount,
+      panelBrand: b.panBrand,
+      batteryDescription: b.bat ? (b.bat.count+'x '+b.bat.unitV+'V/'+b.bat.unitAh+'Ah '+b.batBrand) : null,
+      bom: b
+    });
+
+    // ────── DELIVER PDF (offer both: download + open-in-new-window) ──────
     const fname = (invoiceNo || 'IESS-Quotation').replace(/[^a-zA-Z0-9\-_]/g,'_')+'.pdf';
+    
+    // Option 1: Open PDF in a new window so user can review & print
+    const pdfBlob = doc.output('blob');
+    const blobURL = URL.createObjectURL(pdfBlob);
+    const newWin = window.open(blobURL, '_blank');
+    
+    // Option 2: Force download as well
     doc.save(fname);
+
+    // Show confirmation to user
+    setTimeout(() => {
+      const msg = '✅ Invoice '+invoiceNo+' generated successfully!\n\n'+
+                  '• PDF downloaded to your device\n'+
+                  '• PDF opened in new window for printing\n'+
+                  '• Invoice saved in Platform Records (Invoices page)\n\n'+
+                  'Prepared by: '+preparerName+'\n'+
+                  'Generated: '+genStampStr;
+      alert(msg);
+    }, 300);
   }catch(e){
     console.error('generateQuotationPDF error:', e);
     alert('Error generating PDF: '+e.message);
   }
+}
+
+// ═══ INVOICE PERSISTENCE & HISTORY ═══
+function loadSavedInvoices(){
+  try{
+    return JSON.parse(localStorage.getItem('iess_invoices') || '[]');
+  }catch(e){ return []; }
+}
+
+function saveSavedInvoices(arr){
+  try{
+    localStorage.setItem('iess_invoices', JSON.stringify(arr));
+  }catch(e){
+    console.error('Could not save invoices:', e);
+  }
+}
+
+function getNextInvoiceNumber(){
+  const year = new Date().getFullYear();
+  const all = loadSavedInvoices();
+  // Find highest sequence number for this year
+  let maxSeq = 0;
+  const prefix = 'IESS-INV-'+year+'-';
+  all.forEach(inv => {
+    if(inv.invoiceNo && inv.invoiceNo.startsWith(prefix)){
+      const seq = parseInt(inv.invoiceNo.substring(prefix.length));
+      if(!isNaN(seq) && seq > maxSeq) maxSeq = seq;
+    }
+  });
+  return prefix + String(maxSeq+1).padStart(3,'0');
+}
+
+function saveInvoiceRecord(record){
+  const all = loadSavedInvoices();
+  // Check if invoice with same number exists — update it
+  const existingIdx = all.findIndex(x => x.invoiceNo === record.invoiceNo);
+  if(existingIdx >= 0){
+    all[existingIdx] = record;
+  } else {
+    all.push(record);
+  }
+  saveSavedInvoices(all);
+  updateNavInvoiceCount();
+}
+
+function updateNavInvoiceCount(){
+  const el = document.getElementById('nav-invoice-count');
+  if(el){
+    const count = loadSavedInvoices().length;
+    el.textContent = count;
+    el.style.background = count > 0 ? 'var(--gold)' : 'var(--green)';
+  }
+}
+
+function renderInvoiceList(){
+  const list = loadSavedInvoices();
+  const searchTerm = (document.getElementById('invSearch')||{value:''}).value.toLowerCase().trim();
+  
+  // Update stats cards
+  const totalEl = document.getElementById('inv-stat-total');
+  const valueEl = document.getElementById('inv-stat-value');
+  const monthEl = document.getElementById('inv-stat-month');
+  const lastEl = document.getElementById('inv-stat-last');
+  
+  if(totalEl) totalEl.textContent = list.length;
+  
+  const totalValue = list.reduce((sum, i) => sum + (i.grandTotal||0), 0);
+  if(valueEl) valueEl.textContent = '₦' + Math.round(totalValue).toLocaleString();
+  
+  const nowMonth = new Date().getMonth();
+  const nowYear = new Date().getFullYear();
+  const thisMonth = list.filter(i => {
+    if(!i.generatedAt) return false;
+    const d = new Date(i.generatedAt);
+    return d.getMonth() === nowMonth && d.getFullYear() === nowYear;
+  }).length;
+  if(monthEl) monthEl.textContent = thisMonth;
+  
+  if(lastEl){
+    if(list.length > 0){
+      const last = list[list.length-1];
+      if(last.generatedAt){
+        const d = new Date(last.generatedAt);
+        lastEl.textContent = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + ' ' +
+                             d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      } else {
+        lastEl.textContent = '—';
+      }
+    } else {
+      lastEl.textContent = 'No invoices yet';
+    }
+  }
+  
+  // Filter by search
+  let filtered = list.slice().reverse(); // newest first
+  if(searchTerm){
+    filtered = filtered.filter(inv => {
+      const text = (inv.invoiceNo+' '+inv.clientName+' '+inv.preparerName+' '+(inv.siteLoc||'')).toLowerCase();
+      return text.includes(searchTerm);
+    });
+  }
+  
+  const container = document.getElementById('invoiceList');
+  if(!container) return;
+  
+  if(filtered.length === 0){
+    container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-2);">
+      <div style="font-size:48px;margin-bottom:10px;">📑</div>
+      <div style="font-weight:600;margin-bottom:4px;">${list.length === 0 ? 'No invoices generated yet' : 'No invoices match your search'}</div>
+      <div style="font-size:13px;">${list.length === 0 ? 'Generate your first invoice from the Solar Calculator.' : 'Try a different search term.'}</div>
+    </div>`;
+    return;
+  }
+  
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead>
+      <tr style="background:var(--cream);border-bottom:2px solid var(--border);">
+        <th style="padding:10px 12px;text-align:left;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;">Invoice No</th>
+        <th style="padding:10px 12px;text-align:left;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;">Client</th>
+        <th style="padding:10px 12px;text-align:left;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;">System</th>
+        <th style="padding:10px 12px;text-align:right;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;">Total</th>
+        <th style="padding:10px 12px;text-align:left;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;">Prepared By</th>
+        <th style="padding:10px 12px;text-align:left;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;">Generated</th>
+        <th style="padding:10px 12px;text-align:center;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>`;
+  
+  filtered.forEach(inv => {
+    const genDate = inv.generatedAt ? new Date(inv.generatedAt) : null;
+    const genStr = genDate ? (genDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' • ' + genDate.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})) : '—';
+    const systemSummary = (inv.inverterKva ? inv.inverterKva+'kVA' : '') + 
+                          (inv.panelCount ? ' • '+inv.panelCount+'×panels' : '');
+    html += `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--cream)';" onmouseout="this.style.background='';">
+      <td style="padding:10px 12px;font-family:'DM Mono',monospace;font-weight:700;color:var(--green);">${inv.invoiceNo}</td>
+      <td style="padding:10px 12px;font-weight:600;">${inv.clientName||'—'}<div style="font-size:11px;color:var(--text-2);font-weight:400;">${inv.siteLoc||''}</div></td>
+      <td style="padding:10px 12px;font-size:12px;">${systemSummary || '—'}</td>
+      <td style="padding:10px 12px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:var(--gold);">₦${Math.round(inv.grandTotal||0).toLocaleString()}</td>
+      <td style="padding:10px 12px;font-size:12px;">${inv.preparerName||'—'}</td>
+      <td style="padding:10px 12px;font-size:11px;color:var(--text-2);">${genStr}</td>
+      <td style="padding:10px 12px;text-align:center;white-space:nowrap;">
+        <button onclick="viewInvoiceDetail('${inv.invoiceNo}')" style="background:transparent;border:1px solid var(--border);color:var(--green);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px;" title="View Details">👁️ View</button>
+        <button onclick="reGeneratePDF('${inv.invoiceNo}')" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px;" title="Re-download PDF">📄 PDF</button>
+        <button onclick="deleteInvoice('${inv.invoiceNo}')" style="background:transparent;border:1px solid #dc3545;color:#dc3545;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;" title="Delete">🗑️</button>
+      </td>
+    </tr>`;
+  });
+  
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function viewInvoiceDetail(invoiceNo){
+  const inv = loadSavedInvoices().find(x => x.invoiceNo === invoiceNo);
+  if(!inv){ alert('Invoice not found.'); return; }
+  const msg = `📑 Invoice Details — ${inv.invoiceNo}\n\n`+
+              `Client: ${inv.clientName}\n`+
+              `Location: ${inv.siteLoc||'—'}\n`+
+              `Contact: ${inv.phoneEmail||'—'}\n\n`+
+              `System: ${inv.systemKwh?.toFixed(2)||0} kWh/day\n`+
+              `Inverter: ${inv.inverterKva||'—'} kVA\n`+
+              `Panels: ${inv.panelCount||0} × ${inv.panelBrand||''}\n`+
+              `Battery: ${inv.batteryDescription||'—'}\n\n`+
+              `Sub-total: ₦${Math.round(inv.subTotal||0).toLocaleString()}\n`+
+              `VAT (${inv.vatRate}%): ₦${Math.round(inv.vatAmount||0).toLocaleString()}\n`+
+              `Grand Total: ₦${Math.round(inv.grandTotal||0).toLocaleString()}\n`+
+              `Deposit (${inv.depositPct}%): ₦${Math.round(inv.depositAmount||0).toLocaleString()}\n\n`+
+              `Prepared By: ${inv.preparerName}\n`+
+              `Date: ${inv.date}\n`+
+              `Valid Until: ${inv.validUntil}\n`+
+              `Generated: ${new Date(inv.generatedAt).toLocaleString('en-GB')}`;
+  alert(msg);
+}
+
+function reGeneratePDF(invoiceNo){
+  const inv = loadSavedInvoices().find(x => x.invoiceNo === invoiceNo);
+  if(!inv){ alert('Invoice not found.'); return; }
+  
+  // Restore inputs and regenerate
+  const setIf = (id, val) => { const el = document.getElementById(id); if(el && val != null) el.value = val; };
+  setIf('qClientName', inv.clientName);
+  setIf('qSiteLoc', inv.siteLoc);
+  setIf('qPhoneEmail', inv.phoneEmail);
+  setIf('qPreparer', inv.preparerName);
+  setIf('qInvoiceNo', inv.invoiceNo);
+  setIf('qDate', inv.date);
+  setIf('qValidUntil', inv.validUntil);
+  setIf('qVatRate', inv.vatRate);
+  setIf('qDepositPct', inv.depositPct);
+  
+  // Restore BOM and generate
+  if(inv.bom){
+    window.LAST_BOM = inv.bom;
+    generateQuotationPDF();
+  } else {
+    alert('Cannot regenerate — original system data missing. Recalculate from Solar Calculator first.');
+  }
+}
+
+function deleteInvoice(invoiceNo){
+  if(!confirm(`Delete invoice ${invoiceNo}?\n\nThis cannot be undone.`)) return;
+  const all = loadSavedInvoices();
+  const filtered = all.filter(x => x.invoiceNo !== invoiceNo);
+  saveSavedInvoices(filtered);
+  renderInvoiceList();
+  updateNavInvoiceCount();
+}
+
+function exportInvoicesCSV(){
+  const list = loadSavedInvoices();
+  if(list.length === 0){ alert('No invoices to export.'); return; }
+  
+  const headers = ['Invoice No','Client','Location','Contact','Prepared By','Date','Valid Until','Grand Total','VAT','Deposit %','System kWh','Inverter kVA','Panels','Battery','Generated At'];
+  const rows = list.map(inv => [
+    inv.invoiceNo,
+    inv.clientName,
+    inv.siteLoc,
+    inv.phoneEmail,
+    inv.preparerName,
+    inv.date,
+    inv.validUntil,
+    inv.grandTotal,
+    inv.vatRate,
+    inv.depositPct,
+    inv.systemKwh,
+    inv.inverterKva,
+    inv.panelCount,
+    inv.batteryDescription,
+    inv.generatedAt
+  ]);
+  
+  const csvContent = [headers, ...rows]
+    .map(r => r.map(cell => '"'+(cell==null?'':String(cell).replace(/"/g,'""'))+'"').join(','))
+    .join('\n');
+  
+  const blob = new Blob([csvContent], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'IESS-Invoices-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ═══ ANALYTICS ═══
