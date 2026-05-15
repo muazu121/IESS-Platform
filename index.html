@@ -793,24 +793,87 @@ tbody tr:last-child td{border:none;}
                 <input type="number" id="qDepositPct" value="70" min="0" max="100" step="5" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
               </label>
             </div>
+            <div style="margin-top:14px;padding:12px;background:linear-gradient(135deg,#fff4e6,#fff8f0);border:2px solid #c87d2a;border-radius:8px;">
+              <div style="font-size:12px;font-weight:700;color:#c87d2a;margin-bottom:8px;">📝 PREPARED BY (Required) — This will appear on the invoice & in the audit trail</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;font-size:12px;">
+                <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Full Name <span style="color:#ef4444;">*</span>
+                  <input type="text" id="qPreparer" placeholder="Your full name" required style="padding:8px;border:2px solid #c87d2a;border-radius:6px;font-family:inherit;font-size:13px;background:#fff;">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Date Prepared <span style="color:#ef4444;">*</span>
+                  <input type="date" id="qPreparedDate" required style="padding:8px;border:2px solid #c87d2a;border-radius:6px;font-family:inherit;font-size:13px;background:#fff;">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Upload Your Signature (PNG/JPG, optional)
+                  <input type="file" id="qPreparerSig" accept="image/*" onchange="handleSignatureUpload(event)" style="padding:6px;border:1px dashed #c87d2a;border-radius:6px;font-family:inherit;font-size:11px;background:#fff;">
+                </label>
+              </div>
+              <div id="qSigPreview" style="margin-top:10px;display:none;">
+                <div style="font-size:11px;color:#666;margin-bottom:4px;">Signature preview:</div>
+                <img id="qSigImage" style="max-height:50px;background:#fff;border:1px solid #ddd;border-radius:4px;padding:4px;">
+                <button onclick="removeSignature()" style="margin-left:8px;padding:4px 10px;border:1px solid #ef4444;color:#ef4444;background:#fff;border-radius:4px;font-size:11px;cursor:pointer;">✕ Remove</button>
+              </div>
+            </div>
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Client Appliances</div><button class="btn btn-outline btn-sm" onclick="resetCalc()">Reset</button></div>
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div class="card-title">Client Appliances</div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="addAppliance()" style="color:#1a5c2a;border-color:#1a5c2a;">+ Add Appliance</button>
+              <button class="btn btn-outline btn-sm" onclick="resetCalc()">Reset</button>
+            </div>
+          </div>
           <div class="card-body">
-            <table style="width:100%;">
-              <thead><tr><th>Appliance</th><th style="text-align:center;">Qty</th><th style="text-align:center;">Hrs/Day</th><th style="text-align:right;">Watts</th></tr></thead>
+            <div style="font-size:11px;color:#666;margin-bottom:8px;padding:8px;background:#fff8e1;border-radius:6px;border-left:3px solid #f59e0b;">
+              💡 <strong>Tip:</strong> Tick <strong>"Surge"</strong> for motor-driven appliances (AC, Pump, Fridge, Freezer, Washing Machine) — they need 3× extra startup power.
+            </div>
+            <div style="overflow-x:auto;">
+            <table style="width:100%;font-size:12px;">
+              <thead><tr style="background:#f7f7f7;">
+                <th style="padding:6px;text-align:left;">Appliance</th>
+                <th style="padding:6px;text-align:center;">Watts</th>
+                <th style="padding:6px;text-align:center;">Qty</th>
+                <th style="padding:6px;text-align:center;">Hrs/Day</th>
+                <th style="padding:6px;text-align:center;">Surge</th>
+                <th style="padding:6px;text-align:right;">Wh/Day</th>
+                <th style="padding:6px;"></th>
+              </tr></thead>
               <tbody id="appTable">
-                <tr><td><strong>Fan</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="2" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="8" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">75W</td></tr>
-                <tr><td><strong>LED Bulbs</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="6" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="6" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">10W</td></tr>
-                <tr><td><strong>TV 32"</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="1" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="5" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">60W</td></tr>
-                <tr><td><strong>Refrigerator</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="1" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="24" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">150W</td></tr>
-                <tr><td><strong>Phone Charger</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="3" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="3" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">10W</td></tr>
-                <tr><td><strong>Laptop</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="1" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="6" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">65W</td></tr>
-                <tr><td><strong>Air Conditioner</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="0" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="8" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">1500W</td></tr>
-                <tr><td><strong>Water Pump</strong></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="0" min="0" oninput="calcSolar()"></td><td><input type="number" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;" value="2" min="0" max="24" oninput="calcSolar()"></td><td style="text-align:right;font-family:'DM Mono',monospace;font-size:12px;">750W</td></tr>
+                <!-- Rows added by JS for flexibility -->
               </tbody>
             </table>
+            </div>
+            <datalist id="applianceList">
+              <option value="LED Bulb">
+              <option value="Ceiling Fan">
+              <option value="Standing Fan">
+              <option value="TV 32 inch">
+              <option value="TV 43 inch">
+              <option value="TV 55 inch">
+              <option value="Refrigerator (Small)">
+              <option value="Refrigerator (Large)">
+              <option value="Deep Freezer">
+              <option value="Air Conditioner 1HP">
+              <option value="Air Conditioner 1.5HP">
+              <option value="Air Conditioner 2HP">
+              <option value="Water Pump 0.5HP">
+              <option value="Water Pump 1HP">
+              <option value="Water Pump 1.5HP">
+              <option value="Washing Machine">
+              <option value="Microwave Oven">
+              <option value="Electric Iron">
+              <option value="Phone Charger">
+              <option value="Laptop">
+              <option value="Desktop Computer">
+              <option value="Printer">
+              <option value="Router / WiFi">
+              <option value="CCTV Camera">
+              <option value="Security Lights">
+              <option value="Water Dispenser">
+              <option value="Blender">
+              <option value="Toaster">
+              <option value="Hair Dryer">
+              <option value="Borehole Pump">
+            </datalist>
           </div>
         </div>
         <div>
@@ -1357,6 +1420,10 @@ function initPlatform(){
   renderCertList();
   renderAnalytics();
   try{ updateBatBrandOptions(); }catch(e){}
+  // ═══ RENDER DEFAULT APPLIANCES (CRITICAL — was missing) ═══
+  try{ renderAppliances(DEFAULT_APPLIANCES); }catch(e){console.error('renderAppliances err:',e);}
+  // Update invoice nav badge
+  try{ updateNavInvoiceCount(); }catch(e){}
   try{
     const today = new Date();
     const isoToday = today.toISOString().slice(0,10);
@@ -1365,6 +1432,17 @@ function initPlatform(){
     const vEl = document.getElementById('qValidUntil');
     if(dEl && !dEl.value) dEl.value = isoToday;
     if(vEl && !vEl.value) vEl.value = valid;
+    // Auto-fill preparer name with logged-in user
+    const pEl = document.getElementById('qPreparer');
+    if(pEl && currentUser && !pEl.value) pEl.value = currentUser.name;
+    // Auto-fill prepared date to today
+    const pdEl = document.getElementById('qPreparedDate');
+    if(pdEl && !pdEl.value) pdEl.value = isoToday;
+    // Auto-generate invoice number
+    const iEl = document.getElementById('qInvoiceNo');
+    if(iEl && !iEl.value){
+      try{ iEl.value = getNextInvoiceNumber(); }catch(e){}
+    }
   }catch(e){}
   setTimeout(calcSolar, 100);
   updatePreview();
@@ -1838,12 +1916,30 @@ function pickMounting(panelCount){
 
 function calcSolar(){
   try{
-  const rows=document.querySelectorAll('#appTable tr');
-  let wh=0;
-  rows.forEach((r,i)=>{
-    const inp=r.querySelectorAll('input');
-    if(inp.length<2)return;
-    wh+=WATTS[i]*(parseFloat(inp[0].value)||0)*(parseFloat(inp[1].value)||0);
+  // ═══ READ EDITABLE APPLIANCE ROWS ═══
+  // Each row has: [name input, watts input, qty input, hrs input, surge checkbox]
+  const rows = document.querySelectorAll('#appTable tr.app-row');
+  let wh = 0;
+  let largestSurgeKw = 0; // Track biggest single surge appliance
+  let totalContinuousKw = 0;
+  rows.forEach(r => {
+    const watts = parseFloat(r.querySelector('.app-watts')?.value) || 0;
+    const qty = parseFloat(r.querySelector('.app-qty')?.value) || 0;
+    const hrs = parseFloat(r.querySelector('.app-hrs')?.value) || 0;
+    const surge = r.querySelector('.app-surge')?.checked || false;
+    const rowWh = watts * qty * hrs;
+    wh += rowWh;
+    // Continuous demand (Watts) — used for inverter sizing
+    const continuousW = watts * qty;
+    totalContinuousKw += continuousW / 1000;
+    // Surge demand — 3x for motor appliances, but only LARGEST surge matters
+    if(surge){
+      const surgeKw = (continuousW * 3) / 1000;
+      if(surgeKw > largestSurgeKw) largestSurgeKw = surgeKw;
+    }
+    // Update row Wh/day display
+    const whCell = r.querySelector('.app-wh');
+    if(whCell) whCell.textContent = Math.round(rowWh).toLocaleString()+' Wh';
   });
   if(wh===0) wh=1; // avoid blank state
 
@@ -1858,7 +1954,12 @@ function calcSolar(){
   // Core sizing math
   const kWh = wh/1000;
   const peakKw = kWh/5*1.3;                            // 5 peak sun hours, 30% derate
-  const invKvaNeeded = peakKw*1.25/0.8;                // 1.25 surge factor, 0.8 PF
+  // ═══ INVERTER SIZING with proper SURGE accounting ═══
+  // Realistic peak = total continuous load + largest single surge (not all motors start simultaneously)
+  // This is the IEEE/NEC-approved approach
+  const realisticPeakKw = totalContinuousKw + largestSurgeKw;
+  const peakKwForSizing = Math.max(peakKw, realisticPeakKw);
+  const invKvaNeeded = peakKwForSizing * 1.15 / 0.8;   // 15% safety margin, 0.8 PF
   const kwhUsableNeeded = kWh * backupDays;            // usable storage required
 
   // Pick equipment
@@ -1941,6 +2042,22 @@ function generateQuotationPDF(){
     if(!window.LAST_BOM){ calcSolar(); }
     const b = window.LAST_BOM;
     if(!b){ alert('Calculate the system first.'); return; }
+
+    // ═══ VALIDATE REQUIRED FIELDS ═══
+    const preparerName = (document.getElementById('qPreparer')||{}).value.trim();
+    const preparerDate = (document.getElementById('qPreparedDate')||{}).value;
+    if(!preparerName){
+      alert('🛑 PREPARED BY (Full Name) is REQUIRED\n\nPlease enter your full name in the orange "Prepared By" section before generating the invoice.\n\nThis is for the audit trail — every invoice must be signed.');
+      const el = document.getElementById('qPreparer');
+      if(el){ el.focus(); el.style.borderColor='#ef4444'; el.style.background='#fee'; setTimeout(()=>{el.style.borderColor='#c87d2a';el.style.background='#fff';},3000); }
+      return;
+    }
+    if(!preparerDate){
+      alert('🛑 DATE PREPARED is REQUIRED\n\nPlease select the date you prepared this invoice.');
+      const el = document.getElementById('qPreparedDate');
+      if(el){ el.focus(); el.style.borderColor='#ef4444'; el.style.background='#fee'; setTimeout(()=>{el.style.borderColor='#c87d2a';el.style.background='#fff';},3000); }
+      return;
+    }
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
@@ -2277,13 +2394,72 @@ function generateQuotationPDF(){
     }
     y += 2;
 
-    // Signature line
-    if(y > pageH-30){ doc.addPage(); y = M; }
-    doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    doc.text('Prepared By: _______________________', M+2, y+5);
-    doc.text('Signature: _______________________', M+70, y+5);
-    doc.text('Date: ____________', M+135, y+5);
-    y += 12;
+    // ═══ PREPARED BY SECTION (with actual name, date, and signature) ═══
+    if(y > pageH-40){ doc.addPage(); y = M; }
+    
+    // Section background
+    doc.setFillColor(255, 243, 224); // pale orange
+    doc.setDrawColor(...ORANGE);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(M, y, pageW-2*M, 28, 2, 2, 'FD');
+    
+    // Section label
+    doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.setTextColor(...ORANGE);
+    doc.text('PREPARED BY (Authorized Personnel)', M+3, y+5);
+    
+    // Format date
+    const dispDate = preparerDate ? new Date(preparerDate).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const preparerRole = currentUser ? currentUser.role : '';
+    
+    // Left column — Name and role
+    doc.setFont('helvetica','normal'); doc.setFontSize(7);
+    doc.setTextColor(80,80,80);
+    doc.text('Name:', M+3, y+11);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.setTextColor(20,20,20);
+    doc.text(preparerName, M+3, y+16);
+    doc.setFont('helvetica','italic'); doc.setFontSize(7);
+    doc.setTextColor(120,120,120);
+    if(preparerRole) doc.text(preparerRole+' · IESS Ltd', M+3, y+20);
+    
+    // Middle column — Signature
+    doc.setFont('helvetica','normal'); doc.setFontSize(7);
+    doc.setTextColor(80,80,80);
+    doc.text('Signature:', M+70, y+11);
+    if(UPLOADED_SIGNATURE_B64){
+      try{
+        // Add the uploaded signature image
+        doc.addImage(UPLOADED_SIGNATURE_B64, 'PNG', M+70, y+12, 50, 14);
+      }catch(imgErr){
+        console.error('Signature image error:', imgErr);
+        // Fallback to text
+        doc.setFont('helvetica','italic'); doc.setFontSize(8);
+        doc.setTextColor(...ORANGE);
+        doc.text('(Digital signature on file)', M+70, y+18);
+      }
+    } else {
+      doc.setDrawColor(150,150,150);
+      doc.line(M+70, y+22, M+120, y+22);
+      doc.setFont('helvetica','italic'); doc.setFontSize(7);
+      doc.setTextColor(150,150,150);
+      doc.text('(no signature uploaded)', M+72, y+25);
+    }
+    
+    // Right column — Date
+    doc.setFont('helvetica','normal'); doc.setFontSize(7);
+    doc.setTextColor(80,80,80);
+    doc.text('Date Prepared:', M+135, y+11);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.setTextColor(20,20,20);
+    doc.text(dispDate, M+135, y+16);
+    
+    // Audit stamp
+    doc.setFont('helvetica','italic'); doc.setFontSize(6);
+    doc.setTextColor(150,150,150);
+    doc.text('Invoice No: '+invoiceNo+' · Generated: '+new Date().toLocaleString('en-GB'), M+3, y+25);
+    
+    y += 32;
 
     // Footer band
     doc.setFillColor(...G_MED);
@@ -2333,10 +2509,92 @@ function generateQuotationPDF(){
     alert('Error generating PDF: '+e.message);
   }
 }
-function resetCalc(){
-  const defaults=[2,8,6,6,1,5,1,24,3,3,1,6,0,8,0,2];
-  document.querySelectorAll('#appTable input').forEach((inp,i)=>{inp.value=defaults[i]||0;});
+// ═══ APPLIANCE TABLE MANAGEMENT ═══
+const DEFAULT_APPLIANCES = [
+  {name:'LED Bulbs', watts:10, qty:6, hrs:6, surge:false},
+  {name:'Ceiling Fan', watts:75, qty:2, hrs:8, surge:false},
+  {name:'TV 32 inch', watts:60, qty:1, hrs:5, surge:false},
+  {name:'Refrigerator', watts:150, qty:1, hrs:24, surge:true},
+  {name:'Phone Charger', watts:10, qty:3, hrs:3, surge:false},
+  {name:'Laptop', watts:65, qty:1, hrs:6, surge:false},
+  {name:'Air Conditioner 1.5HP', watts:1500, qty:0, hrs:8, surge:true},
+  {name:'Water Pump 1HP', watts:750, qty:0, hrs:2, surge:true}
+];
+
+function buildApplianceRow(app){
+  app = app || {name:'', watts:0, qty:1, hrs:1, surge:false};
+  const tr = document.createElement('tr');
+  tr.className = 'app-row';
+  tr.style.borderBottom = '1px solid #eee';
+  tr.innerHTML = 
+    '<td style="padding:5px;"><input type="text" list="applianceList" class="app-name" value="'+app.name+'" placeholder="Type appliance" style="width:100%;min-width:130px;padding:6px;border:1px solid var(--border);border-radius:5px;font-size:12px;" oninput="calcSolar()"></td>'+
+    '<td style="padding:5px;text-align:center;"><input type="number" class="app-watts" value="'+app.watts+'" min="0" style="width:70px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;font-size:12px;" oninput="calcSolar()"></td>'+
+    '<td style="padding:5px;text-align:center;"><input type="number" class="app-qty" value="'+app.qty+'" min="0" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;font-size:12px;" oninput="calcSolar()"></td>'+
+    '<td style="padding:5px;text-align:center;"><input type="number" class="app-hrs" value="'+app.hrs+'" min="0" max="24" step="0.5" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;font-size:12px;" oninput="calcSolar()"></td>'+
+    '<td style="padding:5px;text-align:center;"><label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;"><input type="checkbox" class="app-surge" '+(app.surge?'checked':'')+' onchange="calcSolar()" style="cursor:pointer;width:16px;height:16px;accent-color:#c87d2a;"></label></td>'+
+    '<td style="padding:5px;text-align:right;font-family:\'DM Mono\',monospace;font-size:11px;color:#1a5c2a;font-weight:600;" class="app-wh">0 Wh</td>'+
+    '<td style="padding:5px;text-align:center;"><button onclick="removeAppliance(this)" style="padding:4px 8px;border:1px solid #ef4444;background:#fff;color:#ef4444;border-radius:4px;font-size:11px;cursor:pointer;" title="Remove">✕</button></td>';
+  return tr;
+}
+
+function renderAppliances(list){
+  const tbody = document.getElementById('appTable');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  (list || DEFAULT_APPLIANCES).forEach(app => {
+    tbody.appendChild(buildApplianceRow(app));
+  });
+}
+
+function addAppliance(){
+  const tbody = document.getElementById('appTable');
+  if(!tbody) return;
+  const newRow = buildApplianceRow({name:'', watts:0, qty:1, hrs:1, surge:false});
+  tbody.appendChild(newRow);
+  // Focus the name field
+  setTimeout(()=>{
+    const inp = newRow.querySelector('.app-name');
+    if(inp) inp.focus();
+  }, 50);
   calcSolar();
+}
+
+function removeAppliance(btn){
+  const tr = btn.closest('tr');
+  if(tr){
+    tr.remove();
+    calcSolar();
+  }
+}
+
+function resetCalc(){
+  if(!confirm('Reset all appliances to default list? Any custom appliances will be lost.')) return;
+  renderAppliances(DEFAULT_APPLIANCES);
+  calcSolar();
+}
+
+// ═══ SIGNATURE UPLOAD (for Prepared By) ═══
+let UPLOADED_SIGNATURE_B64 = null;
+function handleSignatureUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  if(file.size > 500000){
+    alert('⚠️ Signature image too large. Please use an image under 500KB.');
+    event.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    UPLOADED_SIGNATURE_B64 = e.target.result;
+    document.getElementById('qSigImage').src = UPLOADED_SIGNATURE_B64;
+    document.getElementById('qSigPreview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+function removeSignature(){
+  UPLOADED_SIGNATURE_B64 = null;
+  document.getElementById('qPreparerSig').value = '';
+  document.getElementById('qSigPreview').style.display = 'none';
 }
 
 // ═══ ANALYTICS ═══
@@ -2520,6 +2778,25 @@ function renderTrash(){
 // ═══ INVOICE LIST RENDERING ═══
 function loadInvoices(){
   try{ return JSON.parse(localStorage.getItem('iess_invoices')||'[]'); }catch(e){ return []; }
+}
+function getNextInvoiceNumber(){
+  const invs = loadInvoices();
+  let trash = []; try{ trash = loadTrash(); }catch(e){}
+  const year = new Date().getFullYear();
+  const allNums = [...invs, ...trash]
+    .map(i => i.invoiceNo || '')
+    .filter(n => n.indexOf('IESS-INV-'+year) === 0)
+    .map(n => { const m = n.match(/(\d+)$/); return m ? parseInt(m[1]) : 0; });
+  const next = (allNums.length ? Math.max(...allNums) : 0) + 1;
+  return 'IESS-INV-'+year+'-'+String(next).padStart(3,'0');
+}
+function updateNavInvoiceCount(){
+  const invs = loadInvoices();
+  const el = document.getElementById('nav-invoice-count');
+  if(el) el.textContent = invs.length;
+  let trash = []; try{ trash = loadTrash(); }catch(e){}
+  const trEl = document.getElementById('nav-trash-count');
+  if(trEl) trEl.textContent = trash.length;
 }
 function renderInvoiceList(){
   if(!hasPermission('generateInvoice')) return;
