@@ -413,6 +413,7 @@ tbody tr:last-child td{border:none;}
       <button class="nav-item active" onclick="sp('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</button>
       <button class="nav-item" onclick="sp('participants',this)"><span class="nav-icon">👥</span>Participants <span id="nav-participant-count" style="margin-left:auto;background:var(--gold);color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-family:'DM Mono',monospace;">329</span></button>
       <button class="nav-item" onclick="sp('attendance',this)"><span class="nav-icon">📋</span>Attendance</button>
+      <button class="nav-item" onclick="sp('quizzes',this)"><span class="nav-icon">📝</span>Quizzes <span id="nav-quiz-badge" style="margin-left:auto;background:#8b5cf6;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-family:'DM Mono',monospace;">5</span></button>
       <div class="nav-section">Certification</div>
       <button class="nav-item" onclick="sp('certificates',this)"><span class="nav-icon">🏆</span>Certificates</button>
       <div class="nav-section">Tools</div>
@@ -1064,6 +1065,170 @@ tbody tr:last-child td{border:none;}
       </div>
     </div>
 
+    <!-- ═══ QUIZZES & ASSESSMENTS PAGE ═══ -->
+    <div id="page-quizzes" class="page">
+      <div class="page-header">
+        <span class="page-tag" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);">Assessment Center</span>
+        <h1 class="page-title">📝 Quizzes & Final Exam</h1>
+        <p class="page-sub">Anti-cheat assessment system — randomized questions, timed, browser-locked. Results determine certificate grade.</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(139,92,246,0.1);">📝</div><div class="stat-num" id="quiz-total-att">0</div><div class="stat-label">Total Attempts</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(34,197,94,0.1);">✅</div><div class="stat-num" id="quiz-passed">0</div><div class="stat-label">Passed (50%+)</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(234,179,8,0.1);">🏆</div><div class="stat-num" id="quiz-distinction">0</div><div class="stat-label">Distinction (80%+)</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(239,68,68,0.1);">⚠️</div><div class="stat-num" id="quiz-flagged">0</div><div class="stat-label">Flagged (Suspicious)</div></div>
+      </div>
+
+      <!-- Quiz Selection Cards -->
+      <div class="card" style="margin-top:22px;">
+        <div class="card-header"><div class="card-title">📚 Available Assessments</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;">
+            <div class="quiz-card" data-quiz="week1" style="border:2px solid #8b5cf6;border-radius:10px;padding:16px;background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div style="font-weight:700;color:#7c3aed;font-size:14px;">Week 1 Quiz</div>
+                <div style="background:#8b5cf6;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">15% Weight</div>
+              </div>
+              <div style="font-size:13px;color:#555;margin-bottom:6px;">☀️ Solar Energy Fundamentals</div>
+              <div style="font-size:11px;color:#888;margin-bottom:12px;">10 questions · 8 minutes · After Session 1</div>
+              <button onclick="launchQuiz('week1')" style="width:100%;padding:9px;background:#8b5cf6;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
+            </div>
+
+            <div class="quiz-card" data-quiz="week2" style="border:2px solid #06b6d4;border-radius:10px;padding:16px;background:linear-gradient(135deg,#ecfeff,#cffafe);">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div style="font-weight:700;color:#0891b2;font-size:14px;">Week 2 Quiz</div>
+                <div style="background:#06b6d4;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">15% Weight</div>
+              </div>
+              <div style="font-size:13px;color:#555;margin-bottom:6px;">📐 System Sizing & Calculations</div>
+              <div style="font-size:11px;color:#888;margin-bottom:12px;">10 questions · 8 minutes · After Session 2</div>
+              <button onclick="launchQuiz('week2')" style="width:100%;padding:9px;background:#06b6d4;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
+            </div>
+
+            <div class="quiz-card" data-quiz="week3" style="border:2px solid #10b981;border-radius:10px;padding:16px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div style="font-weight:700;color:#059669;font-size:14px;">Week 3 Quiz</div>
+                <div style="background:#10b981;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">15% Weight</div>
+              </div>
+              <div style="font-size:13px;color:#555;margin-bottom:6px;">🔧 Installation & Safety</div>
+              <div style="font-size:11px;color:#888;margin-bottom:12px;">10 questions · 8 minutes · After Session 3</div>
+              <button onclick="launchQuiz('week3')" style="width:100%;padding:9px;background:#10b981;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
+            </div>
+
+            <div class="quiz-card" data-quiz="week4" style="border:2px solid #f59e0b;border-radius:10px;padding:16px;background:linear-gradient(135deg,#fffbeb,#fef3c7);">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div style="font-weight:700;color:#d97706;font-size:14px;">Week 4 Quiz</div>
+                <div style="background:#f59e0b;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">15% Weight</div>
+              </div>
+              <div style="font-size:13px;color:#555;margin-bottom:6px;">⚙️ Maintenance & Troubleshooting</div>
+              <div style="font-size:11px;color:#888;margin-bottom:12px;">10 questions · 8 minutes · After Session 4</div>
+              <button onclick="launchQuiz('week4')" style="width:100%;padding:9px;background:#f59e0b;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
+            </div>
+
+            <div class="quiz-card" data-quiz="final" style="border:3px solid #dc2626;border-radius:10px;padding:16px;background:linear-gradient(135deg,#fef2f2,#fee2e2);grid-column:span 2;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div style="font-weight:700;color:#991b1b;font-size:16px;">🎯 FINAL CERTIFICATION EXAM</div>
+                <div style="background:#dc2626;color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:700;">40% Weight</div>
+              </div>
+              <div style="font-size:13px;color:#555;margin-bottom:6px;">📜 Comprehensive Solar PV Systems Assessment</div>
+              <div style="font-size:11px;color:#888;margin-bottom:12px;">25 questions · 20 minutes · After all 4 sessions completed · Determines final grade</div>
+              <button onclick="launchQuiz('final')" style="width:100%;padding:11px;background:#dc2626;color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;">▶ START FINAL EXAM</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Table -->
+      <div class="card" style="margin-top:22px;">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+          <div class="card-title">📊 Quiz Results & Attempts</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <select id="quizFilter" onchange="renderQuizResults()" style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;font-size:13px;">
+              <option value="all">All Quizzes</option>
+              <option value="week1">Week 1</option>
+              <option value="week2">Week 2</option>
+              <option value="week3">Week 3</option>
+              <option value="week4">Week 4</option>
+              <option value="final">Final Exam</option>
+            </select>
+            <input type="text" id="quizSearch" placeholder="🔍 Search by name/email..." oninput="renderQuizResults()" style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;font-size:13px;min-width:200px;">
+            <button class="btn btn-outline btn-sm" onclick="exportQuizResults()">📥 Export CSV</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="quiz-results-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ QUIZ TAKING MODAL (Fullscreen, Anti-Cheat) ═══ -->
+    <div id="quiz-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0f172a;z-index:99999;overflow-y:auto;">
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#1e293b,#0f172a);padding:14px 24px;border-bottom:2px solid #8b5cf6;position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="color:#a78bfa;font-size:11px;font-weight:600;letter-spacing:1px;">IESS CERTIFICATION ASSESSMENT</div>
+          <div id="quiz-title-display" style="color:#fff;font-size:18px;font-weight:700;">Quiz Title</div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center;">
+          <div id="quiz-cheat-warnings" style="background:rgba(239,68,68,0.2);color:#fca5a5;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;display:none;">⚠️ <span id="cheat-count">0</span> Warnings</div>
+          <div style="background:rgba(139,92,246,0.2);color:#c4b5fd;padding:6px 12px;border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;font-weight:700;">⏱️ <span id="quiz-timer">08:00</span></div>
+          <div style="background:rgba(255,255,255,0.1);color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;">Q <span id="quiz-q-num">1</span>/<span id="quiz-q-total">10</span></div>
+        </div>
+      </div>
+
+      <!-- Pre-Quiz Confirmation -->
+      <div id="quiz-confirm" style="max-width:680px;margin:40px auto;padding:30px;background:#fff;border-radius:14px;">
+        <h2 style="color:#0f172a;margin-bottom:16px;">📋 Before You Begin</h2>
+        <div id="quiz-confirm-details" style="background:#f1f5f9;padding:14px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
+        <div style="background:#fef2f2;border-left:4px solid #dc2626;padding:14px;border-radius:6px;margin-bottom:16px;">
+          <div style="font-weight:700;color:#991b1b;margin-bottom:8px;">⚠️ ANTI-CHEAT RULES — READ CAREFULLY</div>
+          <ul style="margin:0;padding-left:20px;font-size:12px;color:#7f1d1d;line-height:1.7;">
+            <li><strong>Your camera MUST be ON</strong> during the entire quiz (visible to instructor)</li>
+            <li><strong>Switching browser tabs or windows</strong> will be logged as cheating</li>
+            <li><strong>Copy/paste is disabled</strong> — questions cannot be shared</li>
+            <li><strong>Right-click is disabled</strong></li>
+            <li><strong>3 cheat warnings = automatic disqualification</strong></li>
+            <li><strong>Timer cannot be paused</strong> — auto-submits when time ends</li>
+            <li><strong>Each participant gets a different question order</strong></li>
+            <li><strong>You can only attempt this quiz ONCE</strong></li>
+          </ul>
+        </div>
+        <div style="background:#f0fdf4;border-left:4px solid #10b981;padding:14px;border-radius:6px;margin-bottom:20px;">
+          <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:13px;color:#065f46;">
+            <input type="checkbox" id="quiz-honor-pledge" style="margin-top:3px;width:18px;height:18px;cursor:pointer;">
+            <span><strong>HONOR PLEDGE:</strong> I confirm that I will complete this assessment honestly without consulting any external resources, notes, books, websites, or other people. The work submitted will be entirely my own. I understand that any cheating will result in disqualification from certification.</span>
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onclick="closeQuiz()" style="padding:10px 20px;border:1px solid #ddd;background:#fff;color:#666;border-radius:6px;cursor:pointer;font-weight:600;">Cancel</button>
+          <button id="quiz-begin-btn" onclick="beginQuiz()" style="padding:10px 24px;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">▶ I AGREE — Start Quiz</button>
+        </div>
+      </div>
+
+      <!-- Quiz Question Display -->
+      <div id="quiz-question-area" style="display:none;max-width:780px;margin:30px auto;padding:30px;background:#fff;border-radius:14px;min-height:400px;">
+        <div id="quiz-question-text" style="font-size:17px;font-weight:600;color:#0f172a;margin-bottom:24px;line-height:1.5;user-select:none;">Question text...</div>
+        <div id="quiz-options" style="display:flex;flex-direction:column;gap:10px;"></div>
+        <div style="margin-top:30px;display:flex;justify-content:space-between;align-items:center;">
+          <button id="quiz-prev-btn" onclick="quizPrev()" style="padding:9px 18px;border:1px solid #ddd;background:#fff;border-radius:6px;cursor:pointer;font-weight:600;color:#666;">← Previous</button>
+          <div style="font-size:12px;color:#666;" id="quiz-progress-indicator">Answered: 0 / 10</div>
+          <button id="quiz-next-btn" onclick="quizNext()" style="padding:9px 18px;background:#8b5cf6;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Next →</button>
+        </div>
+      </div>
+
+      <!-- Result Display -->
+      <div id="quiz-result-area" style="display:none;max-width:680px;margin:40px auto;padding:40px;background:#fff;border-radius:14px;text-align:center;">
+        <div id="quiz-result-emoji" style="font-size:72px;margin-bottom:16px;">🎉</div>
+        <h2 id="quiz-result-title" style="color:#0f172a;margin-bottom:10px;">Quiz Complete!</h2>
+        <div id="quiz-result-score" style="font-size:64px;font-weight:900;margin:20px 0;">85%</div>
+        <div id="quiz-result-grade" style="display:inline-block;padding:8px 20px;border-radius:20px;font-weight:700;margin-bottom:20px;">DISTINCTION</div>
+        <div id="quiz-result-details" style="background:#f8fafc;padding:16px;border-radius:8px;margin:20px 0;text-align:left;font-size:13px;"></div>
+        <div id="quiz-result-flags" style="display:none;background:#fef2f2;border-left:4px solid #dc2626;padding:14px;border-radius:6px;margin:14px 0;text-align:left;font-size:12px;color:#7f1d1d;"></div>
+        <button onclick="closeQuiz()" style="padding:12px 30px;background:#1a5c2a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:14px;">Close & Return to Dashboard</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1424,6 +1589,8 @@ function initPlatform(){
   try{ renderAppliances(DEFAULT_APPLIANCES); }catch(e){console.error('renderAppliances err:',e);}
   // Update invoice nav badge
   try{ updateNavInvoiceCount(); }catch(e){}
+  // Render quiz results
+  try{ renderQuizResults(); }catch(e){console.error('renderQuizResults err:',e);}
   try{
     const today = new Date();
     const isoToday = today.toISOString().slice(0,10);
@@ -2113,10 +2280,10 @@ function generateQuotationPDF(){
     doc.text('INTEGRATED ENERGY AND SMART SYSTEMS LTD', pageW/2, y+7, {align:'center'});
     doc.setFont('helvetica','normal');
     doc.setFontSize(7);
-    doc.text('No. 2, Karu, Opp. Central Mosque, Old Chief Palace, Karu Village FCT, Abuja, Nigeria', pageW/2, y+12, {align:'center'});
-    doc.text('+234 814 166 3867 | +234 816 696 1009 | integratedpower.iess@gmail.com | Fb: @IESmartSystems', pageW/2, y+16, {align:'center'});
+    doc.text('No. 2, Kuru Layout, Garki District | C/o Patiya, Kuru Village FCT, Abuja Nigeria', pageW/2, y+12, {align:'center'});
+    doc.text('+234 803 XXX XXXX | +234 805 XXX XXXX | info@iess-ng.com | www.iess-ng.com', pageW/2, y+16, {align:'center'});
     doc.setFontSize(6.5);
-    doc.text('Engineering | Solar | Training | Research | RC No: 9475261  | IG/TK: @iessltd', pageW/2, y+19.5, {align:'center'});
+    doc.text('Engineering | Solar | Training | Research | RC No: 1234567', pageW/2, y+19.5, {align:'center'});
     y += 22;
 
     // ────── ORANGE TITLE BAR ──────
@@ -2878,6 +3045,575 @@ function exportInvoicesCSV(){
   a.download = 'IESS_Invoices_'+new Date().toISOString().split('T')[0]+'.csv';
   a.click();
   logActivity('INVOICES EXPORTED', invoices.length+' invoices exported as CSV', 'info');
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUIZ & ASSESSMENT MODULE — Anti-Cheat Enabled
+// ═══════════════════════════════════════════════════════════
+
+// QUESTION BANKS — Each quiz pulls randomly from these
+const QUIZ_BANKS = {
+  week1: {
+    title: 'Week 1: Solar Energy Fundamentals',
+    color: '#8b5cf6',
+    duration: 480, // 8 minutes in seconds
+    questionsToShow: 10,
+    weight: 15,
+    questions: [
+      {q:'What does PV stand for in solar systems?', opts:['Power Voltage','Photovoltaic','Positive Voltage','Peak Voltage'], correct:1},
+      {q:'Which colour of sunlight produces the most electricity in a solar panel?', opts:['Blue','Red','Green','All wavelengths combined'], correct:3},
+      {q:'What is the typical lifespan of a quality solar panel?', opts:['5-10 years','10-15 years','25-30 years','50+ years'], correct:2},
+      {q:'Which gas is responsible for most greenhouse warming?', opts:['Oxygen','Carbon Dioxide','Nitrogen','Hydrogen'], correct:1},
+      {q:'In Nigeria, what is the average peak sun hours per day?', opts:['2-3 hours','4-6 hours','8-10 hours','12+ hours'], correct:1},
+      {q:'What component converts DC from solar panels to AC for home use?', opts:['Charge Controller','Battery','Inverter','Solar Panel'], correct:2},
+      {q:'Which is the most efficient type of solar panel?', opts:['Polycrystalline','Monocrystalline','Thin-film','Amorphous'], correct:1},
+      {q:'What does kWh measure?', opts:['Power','Voltage','Energy consumed over time','Current'], correct:2},
+      {q:'Which battery type lasts longest in solar systems?', opts:['Lead-Acid','Gel','AGM','LiFePO4 Lithium'], correct:3},
+      {q:'What is the main function of a charge controller?', opts:['Convert DC to AC','Protect battery from overcharging','Increase voltage','Store energy'], correct:1},
+      {q:'A solar panel rated 400W produces how much energy in 5 peak sun hours?', opts:['400 Wh','2000 Wh','5000 Wh','800 Wh'], correct:1},
+      {q:'Which orientation is best for solar panels in Nigeria?', opts:['North','South','East','West'], correct:1},
+      {q:'What angle should solar panels be tilted at near the equator?', opts:['0-15°','30-45°','60-75°','90°'], correct:0},
+      {q:'Which is renewable energy?', opts:['Coal','Petrol','Solar','Diesel'], correct:2},
+      {q:'What does COREN stand for in Nigerian engineering?', opts:['Council for Renewable Energy in Nigeria','Council for the Regulation of Engineering in Nigeria','Committee on Renewable Energy Nigeria','College of Renewable Engineers Nigeria'], correct:1}
+    ]
+  },
+  week2: {
+    title: 'Week 2: System Sizing & Calculations',
+    color: '#06b6d4',
+    duration: 480,
+    questionsToShow: 10,
+    weight: 15,
+    questions: [
+      {q:'A home uses 8000 Wh/day. How many 400W panels are needed (assume 5 peak sun hours)?', opts:['2 panels','3 panels','4 panels','6 panels'], correct:2},
+      {q:'What size inverter is needed for a 3000W continuous load (with 25% safety margin)?', opts:['2.5 kVA','3.0 kVA','3.75 kVA','5.0 kVA'], correct:2},
+      {q:'A 200Ah 12V battery stores how much energy?', opts:['1.2 kWh','2.4 kWh','3.6 kWh','4.8 kWh'], correct:1},
+      {q:'What is the maximum Depth of Discharge (DOD) for Lithium batteries?', opts:['30%','50%','70%','90%'], correct:3},
+      {q:'A 1.5HP AC consumes approximately how many watts?', opts:['750W','1100W','1500W','2000W'], correct:1},
+      {q:'For 1 day backup of 5kWh load using Lead-Acid (50% DOD), what battery bank size is needed?', opts:['5 kWh','7.5 kWh','10 kWh','15 kWh'], correct:2},
+      {q:'A water pump motor draws 3x running current at startup. This is called?', opts:['Voltage spike','Surge current','Power factor','Overload'], correct:1},
+      {q:'What is the typical efficiency of a quality inverter?', opts:['50%','70%','90%+','100%'], correct:2},
+      {q:'A 48V battery bank with 200Ah capacity stores how much energy?', opts:['4.8 kWh','9.6 kWh','12 kWh','24 kWh'], correct:1},
+      {q:'If a load is 2000W and operates 6 hours/day, daily energy is?', opts:['6 kWh','8 kWh','12 kWh','16 kWh'], correct:2},
+      {q:'What is Power Factor (PF) typically for inverters?', opts:['0.5','0.6','0.8','1.0'], correct:2},
+      {q:'How many panels in parallel produce 1600W if each is 400W?', opts:['2','3','4','5'], correct:2},
+      {q:'For a 5kVA inverter at 0.8 PF, the actual usable power is?', opts:['3000W','4000W','5000W','6250W'], correct:1},
+      {q:'A 100Ah battery at 12V depleted by 70% has how much usable energy?', opts:['0.36 kWh','0.84 kWh','1.2 kWh','2.4 kWh'], correct:1},
+      {q:'Voltage drop in DC cables increases with?', opts:['Shorter distance','Larger cable size','Longer distance','Higher voltage'], correct:2}
+    ]
+  },
+  week3: {
+    title: 'Week 3: Installation & Safety',
+    color: '#10b981',
+    duration: 480,
+    questionsToShow: 10,
+    weight: 15,
+    questions: [
+      {q:'What PPE is REQUIRED when installing solar panels on a roof?', opts:['Safety helmet only','Safety harness, helmet, gloves','Just gloves','No PPE needed for daytime work'], correct:1},
+      {q:'What connector is standard for solar panel DC wiring?', opts:['XLR','MC4','RJ45','USB'], correct:1},
+      {q:'Why must DC isolators be installed near solar arrays?', opts:['For decoration','For emergency disconnection','To increase voltage','To reduce cost'], correct:1},
+      {q:'Solar panels should be earthed/grounded to prevent?', opts:['Energy loss','Lightning damage and electric shock','Overheating','Color fading'], correct:1},
+      {q:'What is the minimum gap between solar panels and roof for ventilation?', opts:['0 cm (flush mount)','2-5 cm','10-15 cm','30+ cm'], correct:1},
+      {q:'Which tool is used to measure DC voltage of solar panels?', opts:['Megger','Multimeter','Thermometer','Stopwatch'], correct:1},
+      {q:'What is the danger of working on solar panels during rain?', opts:['Panels get clean','Slippery surface + electric shock risk','Panels work better','No danger'], correct:1},
+      {q:'A battery bank should be installed in a room with?', opts:['No ventilation','Good ventilation and away from sparks','Direct sunlight','Wet floor'], correct:1},
+      {q:'What size cable carries 30A safely over short distance?', opts:['1.5 mm²','4 mm²','6 mm²','10 mm²'], correct:2},
+      {q:'NEVER connect batteries in series-parallel without?', opts:['Equal voltage and capacity','Different brands','Different ages','Old and new mixed'], correct:0},
+      {q:'A circuit breaker trips. The FIRST step is to?', opts:['Force it back on','Find and fix the cause','Replace with bigger breaker','Ignore it'], correct:1},
+      {q:'Panel string voltage at 60V DC is touched by hand. Result?', opts:['Safe (low voltage)','Painful shock, dangerous in wet conditions','Lethal instantly','No effect'], correct:1},
+      {q:'How should used solar batteries be disposed?', opts:['In regular trash','At certified recycling facility','Buried in soil','Burned'], correct:1},
+      {q:'What prevents reverse current flow at night?', opts:['Blocking diodes','Resistors','Capacitors','Transformers'], correct:0},
+      {q:'A surge protector protects against?', opts:['Sun damage','Lightning surges','Bird droppings','Dust'], correct:1}
+    ]
+  },
+  week4: {
+    title: 'Week 4: Maintenance & Troubleshooting',
+    color: '#f59e0b',
+    duration: 480,
+    questionsToShow: 10,
+    weight: 15,
+    questions: [
+      {q:'How often should solar panels be cleaned in Nigeria (dusty climate)?', opts:['Never','Every 6 months','Every 2-3 months','Every day'], correct:2},
+      {q:'A solar system is producing 50% less power than expected. FIRST check?', opts:['Replace inverter','Clean panels & check shading','Buy new batteries','Add more panels'], correct:1},
+      {q:'Battery shows 11V on a 12V system. This means?', opts:['Battery is full','Battery is critically low','Inverter is faulty','Solar working fine'], correct:1},
+      {q:'Inverter beeps and shuts off. Most likely cause?', opts:['Normal operation','Overload or low battery','Panel needs cleaning','Increase voltage'], correct:1},
+      {q:'Solar panel hotspot is caused by?', opts:['Too much sunlight','Partial shading on a cell','Cold weather','Strong wind'], correct:1},
+      {q:'How long do lithium batteries typically last (cycles)?', opts:['100-500 cycles','500-1000 cycles','2000-6000 cycles','Forever'], correct:2},
+      {q:'A panel produces 0V on multimeter (sunny day). Likely cause?', opts:['Normal','Broken bypass diode or connection','Battery is full','Cable is too small'], correct:1},
+      {q:'When should you check torque on solar panel mounting bolts?', opts:['Never','Annually','Daily','Weekly'], correct:1},
+      {q:'Lead-acid battery needs water topping. Use?', opts:['Tap water','Sea water','Distilled water','Rain water'], correct:2},
+      {q:'A 5-year-old system produces 90% of original power. This is?', opts:['Faulty','Normal degradation','Excellent','Means buy new panels'], correct:1},
+      {q:'Charge controller LED is RED. This usually means?', opts:['System healthy','Fault or warning condition','Battery fully charged','Solar working perfectly'], correct:1},
+      {q:'Inverter fan runs constantly. Could indicate?', opts:['Normal cooling','Overheating or dust blockage','Battery is full','Time to replace battery'], correct:1},
+      {q:'Best practice for system documentation includes?', opts:['Memory only','Detailed records of dates, readings, parts','Just keep receipts','No need to document'], correct:1},
+      {q:'A burnt smell from the inverter requires?', opts:['Continue using','Immediate shutdown and inspection','Add more fans','Ignore'], correct:1},
+      {q:'How often should you visually inspect a solar installation?', opts:['Never','Monthly','Annually','Every 5 years'], correct:1}
+    ]
+  },
+  final: {
+    title: 'FINAL CERTIFICATION EXAM',
+    color: '#dc2626',
+    duration: 1200, // 20 minutes
+    questionsToShow: 25,
+    weight: 40,
+    questions: [] // Will be populated from ALL banks
+  }
+};
+
+// Final exam pulls 25 random questions from all weeks combined
+QUIZ_BANKS.final.questions = [
+  ...QUIZ_BANKS.week1.questions,
+  ...QUIZ_BANKS.week2.questions,
+  ...QUIZ_BANKS.week3.questions,
+  ...QUIZ_BANKS.week4.questions
+];
+
+// Quiz state
+let CURRENT_QUIZ = null;
+let QUIZ_ANSWERS = [];
+let QUIZ_TIMER = null;
+let QUIZ_TIME_LEFT = 0;
+let QUIZ_CHEAT_COUNT = 0;
+let QUIZ_CHEAT_FLAGS = [];
+let QUIZ_CURRENT_Q = 0;
+let QUIZ_START_TIME = 0;
+
+// Shuffle helper
+function shuffleArray(arr){
+  const a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function launchQuiz(quizId){
+  const bank = QUIZ_BANKS[quizId];
+  if(!bank){ alert('Quiz not found'); return; }
+  
+  // Check if user has already taken this quiz (Chairman can retake for testing)
+  const isAdmin = currentUser && currentUser.role === 'Chairman/MD';
+  const results = loadQuizResults();
+  const userEmail = (currentUser?.email) || 'guest@iess.com';
+  const existing = results.find(r => r.quizId === quizId && r.userEmail === userEmail);
+  if(existing && !isAdmin){
+    alert('📋 Already Attempted\n\nYou have already taken this quiz.\n\nScore: '+existing.score+'%\nGrade: '+existing.grade+'\nDate: '+new Date(existing.timestamp).toLocaleString()+'\n\nEach quiz can only be attempted once.');
+    return;
+  }
+  if(existing && isAdmin){
+    if(!confirm('⚠️ Admin Override\n\nYou (as Chairman) have already taken this quiz.\n\nPrevious score: '+existing.score+'%\n\nDo you want to retake it? (Old result will be overwritten)')) return;
+  }
+  
+  CURRENT_QUIZ = {
+    id: quizId,
+    bank: bank,
+    selectedQuestions: shuffleArray(bank.questions).slice(0, bank.questionsToShow).map(q => ({
+      ...q,
+      shuffledOpts: shuffleArray(q.opts.map((opt, idx) => ({text: opt, originalIdx: idx})))
+    }))
+  };
+  QUIZ_ANSWERS = new Array(CURRENT_QUIZ.selectedQuestions.length).fill(null);
+  QUIZ_TIME_LEFT = bank.duration;
+  QUIZ_CHEAT_COUNT = 0;
+  QUIZ_CHEAT_FLAGS = [];
+  QUIZ_CURRENT_Q = 0;
+  
+  // Show modal
+  document.getElementById('quiz-modal').style.display = 'block';
+  document.getElementById('quiz-title-display').textContent = bank.title;
+  document.getElementById('quiz-q-total').textContent = bank.questionsToShow;
+  document.getElementById('quiz-timer').textContent = formatTime(bank.duration);
+  document.getElementById('quiz-confirm').style.display = 'block';
+  document.getElementById('quiz-question-area').style.display = 'none';
+  document.getElementById('quiz-result-area').style.display = 'none';
+  document.getElementById('quiz-honor-pledge').checked = false;
+  
+  // Show confirmation details
+  document.getElementById('quiz-confirm-details').innerHTML = 
+    '<strong>📋 '+bank.title+'</strong><br>'+
+    '⏱️ Duration: <strong>'+(bank.duration/60)+' minutes</strong><br>'+
+    '📝 Questions: <strong>'+bank.questionsToShow+'</strong> (randomly selected)<br>'+
+    '📊 Weight: <strong>'+bank.weight+'% of final grade</strong><br>'+
+    '👤 Taken by: <strong>'+(currentUser?.name || 'Unknown')+'</strong>';
+  
+  logActivity('QUIZ OPENED', 'Opened quiz: '+bank.title, 'info');
+}
+
+function beginQuiz(){
+  if(!document.getElementById('quiz-honor-pledge').checked){
+    alert('⚠️ You must tick the Honor Pledge checkbox to proceed.');
+    return;
+  }
+  
+  QUIZ_START_TIME = Date.now();
+  document.getElementById('quiz-confirm').style.display = 'none';
+  document.getElementById('quiz-question-area').style.display = 'block';
+  
+  // Start anti-cheat monitoring
+  startAntiCheatMonitoring();
+  
+  // Start timer
+  startQuizTimer();
+  
+  // Show first question
+  renderQuizQuestion();
+  
+  logActivity('QUIZ STARTED', 'Started: '+CURRENT_QUIZ.bank.title, 'info');
+}
+
+function renderQuizQuestion(){
+  const idx = QUIZ_CURRENT_Q;
+  const q = CURRENT_QUIZ.selectedQuestions[idx];
+  document.getElementById('quiz-q-num').textContent = idx + 1;
+  document.getElementById('quiz-question-text').innerHTML = '<span style="color:'+CURRENT_QUIZ.bank.color+';font-weight:700;">Q'+(idx+1)+'.</span> '+q.q;
+  
+  const optsDiv = document.getElementById('quiz-options');
+  optsDiv.innerHTML = '';
+  q.shuffledOpts.forEach((opt, i) => {
+    const isSelected = QUIZ_ANSWERS[idx] === opt.originalIdx;
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:14px 16px;border:2px solid '+(isSelected?CURRENT_QUIZ.bank.color:'#e2e8f0')+';border-radius:8px;cursor:pointer;font-size:14px;transition:all 0.2s;background:'+(isSelected?CURRENT_QUIZ.bank.color+'15':'#fff')+';user-select:none;';
+    div.innerHTML = '<span style="font-weight:700;color:'+CURRENT_QUIZ.bank.color+';margin-right:10px;">'+String.fromCharCode(65+i)+'.</span>'+opt.text;
+    div.onclick = function(){
+      QUIZ_ANSWERS[idx] = opt.originalIdx;
+      renderQuizQuestion();
+      updateProgress();
+    };
+    div.onmouseenter = function(){ if(!isSelected) this.style.borderColor = CURRENT_QUIZ.bank.color; };
+    div.onmouseleave = function(){ if(!isSelected) this.style.borderColor = '#e2e8f0'; };
+    optsDiv.appendChild(div);
+  });
+  
+  // Update nav buttons
+  document.getElementById('quiz-prev-btn').disabled = idx === 0;
+  document.getElementById('quiz-prev-btn').style.opacity = idx === 0 ? '0.4' : '1';
+  if(idx === CURRENT_QUIZ.selectedQuestions.length - 1){
+    document.getElementById('quiz-next-btn').textContent = '✓ SUBMIT QUIZ';
+    document.getElementById('quiz-next-btn').style.background = '#10b981';
+  } else {
+    document.getElementById('quiz-next-btn').textContent = 'Next →';
+    document.getElementById('quiz-next-btn').style.background = CURRENT_QUIZ.bank.color;
+  }
+  updateProgress();
+}
+
+function updateProgress(){
+  const answered = QUIZ_ANSWERS.filter(a => a !== null).length;
+  document.getElementById('quiz-progress-indicator').textContent = 'Answered: '+answered+' / '+CURRENT_QUIZ.selectedQuestions.length;
+}
+
+function quizPrev(){
+  if(QUIZ_CURRENT_Q > 0){ QUIZ_CURRENT_Q--; renderQuizQuestion(); }
+}
+
+function quizNext(){
+  if(QUIZ_CURRENT_Q < CURRENT_QUIZ.selectedQuestions.length - 1){
+    QUIZ_CURRENT_Q++;
+    renderQuizQuestion();
+  } else {
+    submitQuiz(false);
+  }
+}
+
+function startQuizTimer(){
+  if(QUIZ_TIMER) clearInterval(QUIZ_TIMER);
+  QUIZ_TIMER = setInterval(() => {
+    QUIZ_TIME_LEFT--;
+    const tEl = document.getElementById('quiz-timer');
+    if(tEl) tEl.textContent = formatTime(QUIZ_TIME_LEFT);
+    if(QUIZ_TIME_LEFT <= 30){
+      tEl.style.color = '#ef4444';
+      tEl.style.fontWeight = '900';
+    }
+    if(QUIZ_TIME_LEFT <= 0){
+      clearInterval(QUIZ_TIMER);
+      alert('⏰ Time is up! Submitting your quiz automatically.');
+      submitQuiz(true);
+    }
+  }, 1000);
+}
+
+function formatTime(seconds){
+  const m = Math.floor(seconds/60);
+  const s = seconds % 60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+// ═══ ANTI-CHEAT MONITORING ═══
+let antiCheatListeners = [];
+
+function startAntiCheatMonitoring(){
+  // 1. Tab/window switch detection
+  const visHandler = function(){
+    if(document.hidden && CURRENT_QUIZ){
+      flagCheat('TAB_SWITCH', 'Participant switched browser tab or window');
+    }
+  };
+  document.addEventListener('visibilitychange', visHandler);
+  antiCheatListeners.push({type:'visibilitychange', handler:visHandler});
+  
+  // 2. Right-click block
+  const rcHandler = function(e){
+    if(CURRENT_QUIZ){
+      e.preventDefault();
+      flagCheat('RIGHT_CLICK', 'Attempted to right-click');
+      return false;
+    }
+  };
+  document.addEventListener('contextmenu', rcHandler);
+  antiCheatListeners.push({type:'contextmenu', handler:rcHandler});
+  
+  // 3. Copy/cut block
+  const copyHandler = function(e){
+    if(CURRENT_QUIZ){
+      e.preventDefault();
+      flagCheat('COPY_ATTEMPT', 'Attempted to copy quiz content');
+      return false;
+    }
+  };
+  document.addEventListener('copy', copyHandler);
+  document.addEventListener('cut', copyHandler);
+  antiCheatListeners.push({type:'copy', handler:copyHandler});
+  antiCheatListeners.push({type:'cut', handler:copyHandler});
+  
+  // 4. Keyboard shortcuts block (Ctrl+C, Ctrl+P, Ctrl+S, F12, etc)
+  const kbHandler = function(e){
+    if(!CURRENT_QUIZ) return;
+    const k = e.key.toLowerCase();
+    if((e.ctrlKey || e.metaKey) && (k==='c'||k==='p'||k==='s'||k==='u'||k==='a'||k==='f')){
+      e.preventDefault();
+      flagCheat('KEYBOARD_SHORTCUT', 'Attempted shortcut: Ctrl+'+k.toUpperCase());
+      return false;
+    }
+    if(k==='f12' || (e.ctrlKey && e.shiftKey && (k==='i'||k==='j'||k==='c'))){
+      e.preventDefault();
+      flagCheat('DEV_TOOLS', 'Attempted to open developer tools');
+      return false;
+    }
+    // Block Print Screen
+    if(k==='printscreen'){
+      flagCheat('PRINT_SCREEN', 'Attempted screen capture');
+    }
+  };
+  document.addEventListener('keydown', kbHandler);
+  antiCheatListeners.push({type:'keydown', handler:kbHandler});
+  
+  // 5. Block text selection on quiz area
+  const selHandler = function(e){
+    if(CURRENT_QUIZ){
+      const target = e.target;
+      if(target.closest('#quiz-question-text') || target.closest('#quiz-options')){
+        e.preventDefault();
+      }
+    }
+  };
+  document.addEventListener('selectstart', selHandler);
+  antiCheatListeners.push({type:'selectstart', handler:selHandler});
+}
+
+function stopAntiCheatMonitoring(){
+  antiCheatListeners.forEach(l => document.removeEventListener(l.type, l.handler));
+  antiCheatListeners = [];
+}
+
+function flagCheat(type, description){
+  QUIZ_CHEAT_COUNT++;
+  QUIZ_CHEAT_FLAGS.push({type, description, time: Date.now()});
+  
+  // Show warning
+  const cw = document.getElementById('quiz-cheat-warnings');
+  const cc = document.getElementById('cheat-count');
+  cw.style.display = 'inline-block';
+  cc.textContent = QUIZ_CHEAT_COUNT;
+  
+  if(QUIZ_CHEAT_COUNT === 1){
+    alert('⚠️ CHEATING WARNING #1\n\nDetected: '+description+'\n\nThis incident is logged and visible to the instructor.\n\n🚨 3 warnings = AUTOMATIC DISQUALIFICATION');
+  } else if(QUIZ_CHEAT_COUNT === 2){
+    alert('⚠️⚠️ CHEATING WARNING #2 — FINAL WARNING\n\nDetected: '+description+'\n\n🚨 ONE MORE WARNING = AUTOMATIC DISQUALIFICATION & ZERO SCORE');
+  } else if(QUIZ_CHEAT_COUNT >= 3){
+    alert('🚨 DISQUALIFIED 🚨\n\nYou have triggered 3 anti-cheat warnings.\n\nYour quiz is being submitted with all violations logged.\nFinal decision rests with the Chairman.');
+    submitQuiz(true, true);
+  }
+}
+
+function submitQuiz(timeout, disqualified){
+  if(QUIZ_TIMER) clearInterval(QUIZ_TIMER);
+  stopAntiCheatMonitoring();
+  
+  if(!timeout && !disqualified){
+    const unanswered = QUIZ_ANSWERS.filter(a => a === null).length;
+    if(unanswered > 0){
+      if(!confirm('⚠️ You have '+unanswered+' unanswered questions.\n\nDo you want to submit anyway? Unanswered questions will be marked WRONG.')){
+        startQuizTimer(); // Restart timer
+        startAntiCheatMonitoring();
+        return;
+      }
+    } else {
+      if(!confirm('✓ Submit your quiz?\n\nYou have answered all '+CURRENT_QUIZ.selectedQuestions.length+' questions. This is FINAL.')){
+        startQuizTimer();
+        startAntiCheatMonitoring();
+        return;
+      }
+    }
+  }
+  
+  // Calculate score
+  let correct = 0;
+  CURRENT_QUIZ.selectedQuestions.forEach((q, i) => {
+    if(QUIZ_ANSWERS[i] === q.correct) correct++;
+  });
+  const total = CURRENT_QUIZ.selectedQuestions.length;
+  const score = Math.round((correct/total) * 100);
+  
+  // Determine grade
+  let grade, gradeColor, emoji;
+  if(disqualified){
+    grade = 'DISQUALIFIED'; gradeColor = '#7f1d1d'; emoji = '🚨';
+  } else if(score >= 80){
+    grade = 'DISTINCTION'; gradeColor = '#d97706'; emoji = '🏆';
+  } else if(score >= 65){
+    grade = 'MERIT'; gradeColor = '#059669'; emoji = '🥈';
+  } else if(score >= 50){
+    grade = 'PASS'; gradeColor = '#3b82f6'; emoji = '🥉';
+  } else {
+    grade = 'FAIL'; gradeColor = '#ef4444'; emoji = '❌';
+  }
+  
+  const timeTaken = Math.round((Date.now() - QUIZ_START_TIME)/1000);
+  
+  // Save result
+  const result = {
+    quizId: CURRENT_QUIZ.id,
+    quizTitle: CURRENT_QUIZ.bank.title,
+    userName: currentUser?.name || 'Unknown',
+    userEmail: currentUser?.email || 'guest@iess.com',
+    userRole: currentUser?.role || 'Unknown',
+    score: score,
+    correct: correct,
+    total: total,
+    grade: grade,
+    timeTakenSeconds: timeTaken,
+    timestamp: new Date().toISOString(),
+    cheatFlags: QUIZ_CHEAT_FLAGS,
+    cheatCount: QUIZ_CHEAT_COUNT,
+    disqualified: !!disqualified,
+    timedOut: !!timeout,
+    weight: CURRENT_QUIZ.bank.weight
+  };
+  saveQuizResult(result);
+  
+  // Show result screen
+  document.getElementById('quiz-question-area').style.display = 'none';
+  document.getElementById('quiz-result-area').style.display = 'block';
+  document.getElementById('quiz-result-emoji').textContent = emoji;
+  document.getElementById('quiz-result-title').textContent = disqualified ? 'Quiz Disqualified' : (timeout ? 'Time Up — Quiz Submitted' : 'Quiz Complete!');
+  document.getElementById('quiz-result-score').textContent = score + '%';
+  document.getElementById('quiz-result-score').style.color = gradeColor;
+  const gradeEl = document.getElementById('quiz-result-grade');
+  gradeEl.textContent = grade;
+  gradeEl.style.background = gradeColor;
+  gradeEl.style.color = '#fff';
+  document.getElementById('quiz-result-details').innerHTML = 
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'+
+    '<div><strong>Correct:</strong> '+correct+' / '+total+'</div>'+
+    '<div><strong>Time Taken:</strong> '+formatTime(timeTaken)+'</div>'+
+    '<div><strong>Quiz:</strong> '+CURRENT_QUIZ.bank.title+'</div>'+
+    '<div><strong>Weight:</strong> '+CURRENT_QUIZ.bank.weight+'%</div>'+
+    '</div>';
+  
+  if(QUIZ_CHEAT_COUNT > 0){
+    const flags = document.getElementById('quiz-result-flags');
+    flags.style.display = 'block';
+    flags.innerHTML = '<strong>⚠️ Anti-Cheat Flags Recorded: '+QUIZ_CHEAT_COUNT+'</strong><ul style="margin:8px 0 0 0;padding-left:20px;">'+
+      QUIZ_CHEAT_FLAGS.map(f => '<li>'+f.description+'</li>').join('')+'</ul>';
+  }
+  
+  logActivity(disqualified?'QUIZ DISQUALIFIED':(score>=50?'QUIZ PASSED':'QUIZ FAILED'),
+    CURRENT_QUIZ.bank.title+' · Score: '+score+'% · Grade: '+grade+(QUIZ_CHEAT_COUNT?' · '+QUIZ_CHEAT_COUNT+' cheat flags':''),
+    disqualified?'critical':(QUIZ_CHEAT_COUNT?'warning':'info'));
+}
+
+function closeQuiz(){
+  if(QUIZ_TIMER) clearInterval(QUIZ_TIMER);
+  stopAntiCheatMonitoring();
+  document.getElementById('quiz-modal').style.display = 'none';
+  CURRENT_QUIZ = null;
+  renderQuizResults();
+}
+
+// ═══ QUIZ RESULTS PERSISTENCE ═══
+function loadQuizResults(){
+  try{ return JSON.parse(localStorage.getItem('iess_quiz_results')||'[]'); }catch(e){ return []; }
+}
+function saveQuizResult(result){
+  const results = loadQuizResults();
+  // Remove old attempt by same user for same quiz (overwrite)
+  const filtered = results.filter(r => !(r.quizId === result.quizId && r.userEmail === result.userEmail));
+  filtered.unshift(result);
+  localStorage.setItem('iess_quiz_results', JSON.stringify(filtered));
+}
+
+function renderQuizResults(){
+  const results = loadQuizResults();
+  const filter = (document.getElementById('quizFilter')?.value) || 'all';
+  const search = ((document.getElementById('quizSearch')?.value) || '').toLowerCase();
+  
+  // Update stats
+  document.getElementById('quiz-total-att').textContent = results.length;
+  document.getElementById('quiz-passed').textContent = results.filter(r => r.score >= 50 && !r.disqualified).length;
+  document.getElementById('quiz-distinction').textContent = results.filter(r => r.score >= 80 && !r.disqualified).length;
+  document.getElementById('quiz-flagged').textContent = results.filter(r => r.cheatCount > 0 || r.disqualified).length;
+  
+  let filtered = results;
+  if(filter !== 'all') filtered = filtered.filter(r => r.quizId === filter);
+  if(search) filtered = filtered.filter(r => 
+    (r.userName||'').toLowerCase().includes(search) ||
+    (r.userEmail||'').toLowerCase().includes(search)
+  );
+  
+  const body = document.getElementById('quiz-results-body');
+  if(!filtered.length){
+    body.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><div style="font-size:48px;margin-bottom:12px;">📝</div><div>No quiz attempts yet.</div></div>';
+    return;
+  }
+  
+  let html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="background:#f7f7f7;border-bottom:2px solid #8b5cf6;"><th style="padding:10px;text-align:left;">Participant</th><th style="padding:10px;text-align:left;">Quiz</th><th style="padding:10px;text-align:center;">Score</th><th style="padding:10px;text-align:center;">Grade</th><th style="padding:10px;text-align:center;">Time</th><th style="padding:10px;text-align:center;">Flags</th><th style="padding:10px;text-align:left;">When</th></tr></thead><tbody>';
+  
+  filtered.forEach(r => {
+    const dt = new Date(r.timestamp);
+    let gradeColor = '#3b82f6';
+    if(r.disqualified) gradeColor = '#7f1d1d';
+    else if(r.score >= 80) gradeColor = '#d97706';
+    else if(r.score >= 65) gradeColor = '#059669';
+    else if(r.score < 50) gradeColor = '#ef4444';
+    
+    html += '<tr style="border-bottom:1px solid #eee;'+(r.disqualified?'background:#fef2f2;':'')+'">'+
+      '<td style="padding:10px;"><div style="font-weight:600;">'+r.userName+'</div><div style="font-size:11px;color:#888;">'+r.userEmail+'</div></td>'+
+      '<td style="padding:10px;font-size:12px;">'+r.quizTitle+'</td>'+
+      '<td style="padding:10px;text-align:center;font-weight:700;font-size:15px;color:'+gradeColor+';">'+r.score+'%</td>'+
+      '<td style="padding:10px;text-align:center;"><span style="background:'+gradeColor+';color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;">'+r.grade+'</span></td>'+
+      '<td style="padding:10px;text-align:center;font-family:\'DM Mono\',monospace;font-size:12px;">'+formatTime(r.timeTakenSeconds)+'</td>'+
+      '<td style="padding:10px;text-align:center;">'+(r.cheatCount > 0 ? '<span style="background:#fee;color:#dc2626;padding:3px 8px;border-radius:8px;font-weight:700;font-size:11px;" title="'+r.cheatFlags.map(f=>f.description).join(', ')+'">⚠️ '+r.cheatCount+'</span>' : '<span style="color:#10b981;">✓ Clean</span>')+'</td>'+
+      '<td style="padding:10px;font-size:11px;color:#666;">'+dt.toLocaleString()+'</td>'+
+    '</tr>';
+  });
+  html += '</tbody></table></div>';
+  body.innerHTML = html;
+}
+
+function exportQuizResults(){
+  const results = loadQuizResults();
+  if(!results.length){ alert('No quiz results to export.'); return; }
+  let csv = 'Participant,Email,Role,Quiz,Score%,Correct,Total,Grade,Time(s),CheatFlags,Disqualified,Date\n';
+  results.forEach(r => {
+    csv += '"'+r.userName+'","'+r.userEmail+'","'+r.userRole+'","'+r.quizTitle+'","'+r.score+'","'+r.correct+'","'+r.total+'","'+r.grade+'","'+r.timeTakenSeconds+'","'+r.cheatCount+'","'+(r.disqualified?'YES':'NO')+'","'+r.timestamp+'"\n';
+  });
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'IESS_QuizResults_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  logActivity('QUIZ RESULTS EXPORTED', 'Exported '+results.length+' quiz results', 'info');
 }
 
 // ═══ ROUTING ═══
