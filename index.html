@@ -1287,16 +1287,35 @@ window.IESS_DB = (function(){
   const KEYS = ['iess_certs','iess_att','iess_invoices','iess_invoices_trash',
                 'iess_quiz_results','iess_activity_log','iess_extra_participants'];
   
+  // ═══════════════════════════════════════════════════════════
+  // HARDCODED FIREBASE CONFIG — IESS Platform Production
+  // ─────────────────────────────────────────────────────────
+  // This config connects every browser to the shared Firestore
+  // database. Cloud sync is ON by default for all users.
+  // ═══════════════════════════════════════════════════════════
+  const HARDCODED_CONFIG = {
+    apiKey: "AIzaSyBjAtSFOpuMvbd9CyZQ_5MB8d1GTYqMkn4",
+    authDomain: "iess-platform.firebaseapp.com",
+    projectId: "iess-platform",
+    storageBucket: "iess-platform.firebasestorage.app",
+    messagingSenderId: "278227611224",
+    appId: "1:278227611224:web:f8a5e87f7a80328a82642d"
+  };
+  
   let firebaseApp = null;
   let db = null;
   let connected = false;
   let updateListeners = [];
   let unsubFns = [];
   
-  // ── Load Firebase config from localStorage (set via Settings UI) ──
+  // ── Load Firebase config: HARDCODED first, fallback to localStorage override ──
   function loadConfig(){
-    try{ return JSON.parse(localStorage.getItem('iess_firebase_config')||'null'); }
-    catch(e){ return null; }
+    // If user has manually set a config via Settings UI, use that (lets you override per-environment)
+    try{
+      const override = JSON.parse(localStorage.getItem('iess_firebase_config')||'null');
+      if(override) return override;
+    }catch(e){}
+    return HARDCODED_CONFIG;
   }
   function saveConfig(cfg){
     if(cfg) localStorage.setItem('iess_firebase_config', JSON.stringify(cfg));
@@ -1441,10 +1460,12 @@ window.IESS_DB = (function(){
   
   // ── Status check ──
   function status(){
+    const cfg = loadConfig();
     return {
       connected: connected,
-      configured: !!loadConfig(),
-      projectId: loadConfig()?.projectId || null
+      configured: !!cfg,
+      projectId: cfg?.projectId || null,
+      isHardcoded: cfg === HARDCODED_CONFIG
     };
   }
   
