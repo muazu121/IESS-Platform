@@ -1189,72 +1189,6 @@ tbody tr:last-child td{border:none;}
     </div>
 
     <!-- ═══ QUIZ TAKING MODAL (Fullscreen, Anti-Cheat) ═══ -->
-    <div id="quiz-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0f172a;z-index:99999;overflow-y:auto;">
-      <!-- Header -->
-      <div style="background:linear-gradient(135deg,#1e293b,#0f172a);padding:14px 24px;border-bottom:2px solid #8b5cf6;position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-        <div>
-          <div style="color:#a78bfa;font-size:11px;font-weight:600;letter-spacing:1px;">IESS CERTIFICATION ASSESSMENT</div>
-          <div id="quiz-title-display" style="color:#fff;font-size:18px;font-weight:700;">Quiz Title</div>
-        </div>
-        <div style="display:flex;gap:14px;align-items:center;">
-          <div id="quiz-cheat-warnings" style="background:rgba(239,68,68,0.2);color:#fca5a5;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;display:none;">⚠️ <span id="cheat-count">0</span> Warnings</div>
-          <div style="background:rgba(139,92,246,0.2);color:#c4b5fd;padding:6px 12px;border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;font-weight:700;">⏱️ <span id="quiz-timer">08:00</span></div>
-          <div style="background:rgba(255,255,255,0.1);color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;">Q <span id="quiz-q-num">1</span>/<span id="quiz-q-total">10</span></div>
-        </div>
-      </div>
-
-      <!-- Pre-Quiz Confirmation -->
-      <div id="quiz-confirm" style="max-width:680px;margin:40px auto;padding:30px;background:#fff;border-radius:14px;">
-        <h2 style="color:#0f172a;margin-bottom:16px;">📋 Before You Begin</h2>
-        <div id="quiz-confirm-details" style="background:#f1f5f9;padding:14px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
-        <div style="background:#fef2f2;border-left:4px solid #dc2626;padding:14px;border-radius:6px;margin-bottom:16px;">
-          <div style="font-weight:700;color:#991b1b;margin-bottom:8px;">⚠️ ANTI-CHEAT RULES — READ CAREFULLY</div>
-          <ul style="margin:0;padding-left:20px;font-size:12px;color:#7f1d1d;line-height:1.7;">
-            <li><strong>Your camera MUST be ON</strong> during the entire quiz (visible to instructor)</li>
-            <li><strong>Switching browser tabs or windows</strong> will be logged as cheating</li>
-            <li><strong>Copy/paste is disabled</strong> — questions cannot be shared</li>
-            <li><strong>Right-click is disabled</strong></li>
-            <li><strong>3 cheat warnings = automatic disqualification</strong></li>
-            <li><strong>Timer cannot be paused</strong> — auto-submits when time ends</li>
-            <li><strong>Each participant gets a different question order</strong></li>
-            <li><strong>You can only attempt this quiz ONCE</strong></li>
-          </ul>
-        </div>
-        <div style="background:#f0fdf4;border-left:4px solid #10b981;padding:14px;border-radius:6px;margin-bottom:20px;">
-          <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:13px;color:#065f46;">
-            <input type="checkbox" id="quiz-honor-pledge" style="margin-top:3px;width:18px;height:18px;cursor:pointer;">
-            <span><strong>HONOR PLEDGE:</strong> I confirm that I will complete this assessment honestly without consulting any external resources, notes, books, websites, or other people. The work submitted will be entirely my own. I understand that any cheating will result in disqualification from certification.</span>
-          </label>
-        </div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;">
-          <button onclick="closeQuiz()" style="padding:10px 20px;border:1px solid #ddd;background:#fff;color:#666;border-radius:6px;cursor:pointer;font-weight:600;">Cancel</button>
-          <button id="quiz-begin-btn" onclick="beginQuiz()" style="padding:10px 24px;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">▶ I AGREE — Start Quiz</button>
-        </div>
-      </div>
-
-      <!-- Quiz Question Display -->
-      <div id="quiz-question-area" style="display:none;max-width:780px;margin:30px auto;padding:30px;background:#fff;border-radius:14px;min-height:400px;">
-        <div id="quiz-question-text" style="font-size:17px;font-weight:600;color:#0f172a;margin-bottom:24px;line-height:1.5;user-select:none;">Question text...</div>
-        <div id="quiz-options" style="display:flex;flex-direction:column;gap:10px;"></div>
-        <div style="margin-top:30px;display:flex;justify-content:space-between;align-items:center;">
-          <button id="quiz-prev-btn" onclick="quizPrev()" style="padding:9px 18px;border:1px solid #ddd;background:#fff;border-radius:6px;cursor:pointer;font-weight:600;color:#666;">← Previous</button>
-          <div style="font-size:12px;color:#666;" id="quiz-progress-indicator">Answered: 0 / 10</div>
-          <button id="quiz-next-btn" onclick="quizNext()" style="padding:9px 18px;background:#8b5cf6;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Next →</button>
-        </div>
-      </div>
-
-      <!-- Result Display -->
-      <div id="quiz-result-area" style="display:none;max-width:680px;margin:40px auto;padding:40px;background:#fff;border-radius:14px;text-align:center;">
-        <div id="quiz-result-emoji" style="font-size:72px;margin-bottom:16px;">🎉</div>
-        <h2 id="quiz-result-title" style="color:#0f172a;margin-bottom:10px;">Quiz Complete!</h2>
-        <div id="quiz-result-score" style="font-size:64px;font-weight:900;margin:20px 0;">85%</div>
-        <div id="quiz-result-grade" style="display:inline-block;padding:8px 20px;border-radius:20px;font-weight:700;margin-bottom:20px;">DISTINCTION</div>
-        <div id="quiz-result-details" style="background:#f8fafc;padding:16px;border-radius:8px;margin:20px 0;text-align:left;font-size:13px;"></div>
-        <div id="quiz-result-flags" style="display:none;background:#fef2f2;border-left:4px solid #dc2626;padding:14px;border-radius:6px;margin:14px 0;text-align:left;font-size:12px;color:#7f1d1d;"></div>
-        <button onclick="closeQuiz()" style="padding:12px 30px;background:#1a5c2a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:14px;">Close & Return to Dashboard</button>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -1612,19 +1546,27 @@ function showParticipantPortal(){
   const results = loadQuizResults();
   const myResults = results.filter(r => r.userEmail === PARTICIPANT_SESSION.email);
   
-  // Calculate overall progress
+  // Calculate overall progress (4 weekly quizzes + 1 final exam = 5 assessment groups, but week4 now covers W4+W5 combined)
   const completedQuizzes = myResults.map(r => r.quizId);
-  const totalQuizzes = 5; // 4 weekly + 1 final
+  const totalQuizzes = 5; // week1, week2, week3, week4(combined), final
   const completedCount = new Set(completedQuizzes).size;
   
-  // Calculate weighted score so far
-  let weightedScore = 0;
-  let weightCompleted = 0;
+  // ═══ CUMULATIVE WEIGHTED SCORE ═══
+  // Each quiz contributes (score × weight / 100) percentage points toward the final 100%
+  // Example: 90% on W1 (15% weight) → contributes 90×15/100 = 13.5% toward final
+  // Display two views:
+  //   (a) Cumulative pts earned out of 100 possible (cumulativeEarned)
+  //   (b) Weighted average of attempted quizzes (overallScore) — shows current standing
+  let cumulativeEarned = 0;       // pts earned toward final 100%
+  let weightCompleted = 0;        // total weight attempted so far
+  let weightedSumOfScores = 0;    // sum of (score × weight)
   myResults.forEach(r => {
-    weightedScore += (r.score * r.weight) / 100;
+    cumulativeEarned += (r.score * r.weight) / 100;
+    weightedSumOfScores += r.score * r.weight;
     weightCompleted += r.weight;
   });
-  const overallScore = weightCompleted > 0 ? Math.round((weightedScore / weightCompleted) * 100) : 0;
+  const overallScore = weightCompleted > 0 ? Math.round(weightedSumOfScores / weightCompleted) : 0;
+  const cumulativePct = Math.round(cumulativeEarned); // out of 100
   
   portal.innerHTML = '<div style="position:sticky;top:0;background:linear-gradient(135deg,#1e1b4b,#0f0a1f);padding:16px 24px;border-bottom:2px solid #8b5cf6;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;z-index:10;">'+
       '<div style="display:flex;align-items:center;gap:14px;">'+
@@ -1643,7 +1585,7 @@ function showParticipantPortal(){
       // Welcome banner
       '<div style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(99,102,241,0.15));border:1px solid rgba(139,92,246,0.3);border-radius:16px;padding:24px;margin-bottom:24px;">'+
         '<div style="font-size:22px;font-weight:700;margin-bottom:6px;">Welcome, '+PARTICIPANT_SESSION.name.split(' ')[0]+'! 👋</div>'+
-        '<div style="font-size:13px;color:rgba(255,255,255,0.7);">Complete all 5 assessments to earn your IESS Solar Training Certificate. Your scores determine your final grade.</div>'+
+        '<div style="font-size:13px;color:rgba(255,255,255,0.7);">Complete your 4 weekly quizzes + the Final Exam to earn your IESS Solar Training Certificate. Day 4 covers Week 4 + Week 5 content combined.</div>'+
       '</div>'+
       
       // Progress overview
@@ -3436,27 +3378,43 @@ const QUIZ_BANKS = {
     ]
   },
   week4: {
-    title: 'Week 4: Maintenance & Troubleshooting',
+    title: 'Week 4+5: Installation, Safety & Solar Business',
     color: '#f59e0b',
-    duration: 480,
-    questionsToShow: 10,
+    duration: 720, // 12 minutes for combined quiz
+    questionsToShow: 15, // 8 from Part A, 7 from Part B
     weight: 15,
+    // PART A: Installation, Wiring & Safety (Day 4 content)
+    // PART B: Solar Business & Acquisition (Day 5 content)
+    // Quiz randomly picks ~8 from Part A + ~7 from Part B
+    partAQuestions: 8,
+    partBQuestions: 7,
     questions: [
-      {q:'How often should solar panels be cleaned in Nigeria (dusty climate)?', opts:['Never','Every 6 months','Every 2-3 months','Every day'], correct:2},
-      {q:'A solar system is producing 50% less power than expected. FIRST check?', opts:['Replace inverter','Clean panels & check shading','Buy new batteries','Add more panels'], correct:1},
-      {q:'Battery shows 11V on a 12V system. This means?', opts:['Battery is full','Battery is critically low','Inverter is faulty','Solar working fine'], correct:1},
-      {q:'Inverter beeps and shuts off. Most likely cause?', opts:['Normal operation','Overload or low battery','Panel needs cleaning','Increase voltage'], correct:1},
-      {q:'Solar panel hotspot is caused by?', opts:['Too much sunlight','Partial shading on a cell','Cold weather','Strong wind'], correct:1},
-      {q:'How long do lithium batteries typically last (cycles)?', opts:['100-500 cycles','500-1000 cycles','2000-6000 cycles','Forever'], correct:2},
-      {q:'A panel produces 0V on multimeter (sunny day). Likely cause?', opts:['Normal','Broken bypass diode or connection','Battery is full','Cable is too small'], correct:1},
-      {q:'When should you check torque on solar panel mounting bolts?', opts:['Never','Annually','Daily','Weekly'], correct:1},
-      {q:'Lead-acid battery needs water topping. Use?', opts:['Tap water','Sea water','Distilled water','Rain water'], correct:2},
-      {q:'A 5-year-old system produces 90% of original power. This is?', opts:['Faulty','Normal degradation','Excellent','Means buy new panels'], correct:1},
-      {q:'Charge controller LED is RED. This usually means?', opts:['System healthy','Fault or warning condition','Battery fully charged','Solar working perfectly'], correct:1},
-      {q:'Inverter fan runs constantly. Could indicate?', opts:['Normal cooling','Overheating or dust blockage','Battery is full','Time to replace battery'], correct:1},
-      {q:'Best practice for system documentation includes?', opts:['Memory only','Detailed records of dates, readings, parts','Just keep receipts','No need to document'], correct:1},
-      {q:'A burnt smell from the inverter requires?', opts:['Continue using','Immediate shutdown and inspection','Add more fans','Ignore'], correct:1},
-      {q:'How often should you visually inspect a solar installation?', opts:['Never','Monthly','Annually','Every 5 years'], correct:1}
+      // ─── PART A: Installation, Wiring & Safety ───
+      {q:'[Part A] What is the FIRST step before any solar installation begins?', opts:['Buy panels','Site assessment & shading analysis','Install batteries','Connect to grid'], correct:1, part:'A'},
+      {q:'[Part A] DC fuse for a solar panel string should be sized at how many times the Isc?', opts:['0.5×','1.0×','1.25×','3.0×'], correct:2, part:'A'},
+      {q:'[Part A] What is the maximum acceptable voltage drop in solar DC wiring?', opts:['1%','3%','10%','25%'], correct:1, part:'A'},
+      {q:'[Part A] A surge protection device (SPD) is most critical in regions with?', opts:['Cold weather','Frequent lightning storms','High altitude','Strong wind'], correct:1, part:'A'},
+      {q:'[Part A] All metal frames in a solar installation must be?', opts:['Painted','Insulated','Bonded to earth (grounded)','Coated in plastic'], correct:2, part:'A'},
+      {q:'[Part A] Battery fuse should be installed within how many inches of the battery terminal?', opts:['6 inches','18 inches','3 feet','10 feet'], correct:1, part:'A'},
+      {q:'[Part A] When tightening MC4 connectors, you should?', opts:['Hand-tighten only','Use MC4 spanner to correct torque','Use pliers','Glue them'], correct:1, part:'A'},
+      {q:'[Part A] Cable size formula: A(mm²) = (2 × L × I) / (V_drop × 56). What does 56 represent?', opts:['Voltage','Distance','Copper conductivity constant','Number of panels'], correct:2, part:'A'},
+      {q:'[Part A] Best practice for cable routing in solar installations?', opts:['Run DC and AC cables in same conduit','Separate DC and AC, use UV-rated outdoor cables','Bury all cables','No special rules'], correct:1, part:'A'},
+      {q:'[Part A] What PPE is essential when handling batteries?', opts:['Sunglasses only','Acid-resistant gloves and safety goggles','Just gloves','No PPE needed'], correct:1, part:'A'},
+      {q:'[Part A] Commissioning a system means?', opts:['Just turning it on','Systematic testing of all components before handover','Selling the system','Painting the panels'], correct:1, part:'A'},
+      {q:'[Part A] What instrument measures open-circuit voltage (Voc) of a panel?', opts:['Ammeter','Multimeter','Thermometer','Scale'], correct:1, part:'A'},
+      
+      // ─── PART B: Solar Business & Acquisition ───
+      {q:'[Part B] When quoting a client, what markup is typically added to material costs?', opts:['1-5%','15-25%','50-75%','100%+'], correct:1, part:'B'},
+      {q:'[Part B] Most effective question to start client acquisition?', opts:['Want to buy solar?','How much do you spend on generator fuel monthly?','What\'s your favorite colour?','Are you rich?'], correct:1, part:'B'},
+      {q:'[Part B] Simple Payback Period formula?', opts:['Installation Cost ÷ Annual Savings','Annual Savings × Years','Power × Voltage','Cost − Profit'], correct:0, part:'B'},
+      {q:'[Part B] Best target customer segments for solar?', opts:['Anyone','High generator-fuel users: petrol stations, hotels, clinics, SMEs','Only government','Children'], correct:1, part:'B'},
+      {q:'[Part B] After a successful install, what generates the BEST new business?', opts:['Cold calling','Radio adverts','Referrals from happy clients','Newspaper ads'], correct:2, part:'B'},
+      {q:'[Part B] A client spends $400/month on energy. Solar system costs $2,700. Payback ≈?', opts:['7 months','3 years','10 years','Never'], correct:0, part:'B'},
+      {q:'[Part B] Recommended deposit structure for solar projects?', opts:['100% upfront','50% deposit / 50% on completion','No deposit','Pay after 1 year'], correct:1, part:'B'},
+      {q:'[Part B] A professional quote should include?', opts:['Just total price','Specs, warranty, timeline, payment plan','Only labour cost','Just brand names'], correct:1, part:'B'},
+      {q:'[Part B] Annual service contracts for solar systems generate?', opts:['Nothing','Recurring revenue + client retention','Losses','Only headaches'], correct:1, part:'B'},
+      {q:'[Part B] Sub-Saharan Africa has how many people without electricity?', opts:['1 million','50 million','600+ million','None'], correct:2, part:'B'},
+      {q:'[Part B] Best way to demonstrate ROI to a client?', opts:['Talk fast','Show 5-year cost comparison: solar vs generator','Show panels','Promise miracles'], correct:1, part:'B'}
     ]
   },
   final: {
@@ -3501,11 +3459,18 @@ function launchQuiz(quizId){
   const bank = QUIZ_BANKS[quizId];
   if(!bank){ alert('Quiz not found'); return; }
   
-  // Check if user has already taken this quiz (Chairman can retake for testing)
-  const isAdmin = currentUser && currentUser.role === 'Chairman/MD';
+  // ═══ IDENTITY RESOLUTION ═══
+  // Participants log in via doParticipantLogin → PARTICIPANT_SESSION set
+  // Staff log in via doLogin → currentUser set
+  // Use whichever is active.
+  const isParticipant = !!PARTICIPANT_SESSION;
+  const identityEmail = isParticipant ? PARTICIPANT_SESSION.email : (currentUser?.email || 'guest@iess.com');
+  const identityName  = isParticipant ? PARTICIPANT_SESSION.name  : (currentUser?.name  || 'Guest');
+  const identityRole  = isParticipant ? 'Participant'             : (currentUser?.role  || 'Unknown');
+  const isAdmin = !isParticipant && currentUser && currentUser.role === 'Chairman/MD';
+  
   const results = loadQuizResults();
-  const userEmail = (currentUser?.email) || 'guest@iess.com';
-  const existing = results.find(r => r.quizId === quizId && r.userEmail === userEmail);
+  const existing = results.find(r => r.quizId === quizId && r.userEmail === identityEmail);
   if(existing && !isAdmin){
     alert('📋 Already Attempted\n\nYou have already taken this quiz.\n\nScore: '+existing.score+'%\nGrade: '+existing.grade+'\nDate: '+new Date(existing.timestamp).toLocaleString()+'\n\nEach quiz can only be attempted once.');
     return;
@@ -3514,10 +3479,25 @@ function launchQuiz(quizId){
     if(!confirm('⚠️ Admin Override\n\nYou (as Chairman) have already taken this quiz.\n\nPrevious score: '+existing.score+'%\n\nDo you want to retake it? (Old result will be overwritten)')) return;
   }
   
+  // ═══ QUESTION SELECTION ═══
+  // For combined quizzes with partA/partB structure (e.g. week4+5),
+  // pick partAQuestions from Part A and partBQuestions from Part B, in that order.
+  // Otherwise random sample from the flat questions array.
+  let selected;
+  if(bank.partAQuestions && bank.partBQuestions){
+    const partA = bank.questions.filter(q => q.part === 'A');
+    const partB = bank.questions.filter(q => q.part === 'B');
+    selected = [
+      ...shuffleArray(partA).slice(0, bank.partAQuestions),
+      ...shuffleArray(partB).slice(0, bank.partBQuestions)
+    ];
+  } else {
+    selected = shuffleArray(bank.questions).slice(0, bank.questionsToShow);
+  }
   CURRENT_QUIZ = {
     id: quizId,
     bank: bank,
-    selectedQuestions: shuffleArray(bank.questions).slice(0, bank.questionsToShow).map(q => ({
+    selectedQuestions: selected.map(q => ({
       ...q,
       shuffledOpts: shuffleArray(q.opts.map((opt, idx) => ({text: opt, originalIdx: idx})))
     }))
@@ -3544,9 +3524,12 @@ function launchQuiz(quizId){
     '⏱️ Duration: <strong>'+(bank.duration/60)+' minutes</strong><br>'+
     '📝 Questions: <strong>'+bank.questionsToShow+'</strong> (randomly selected)<br>'+
     '📊 Weight: <strong>'+bank.weight+'% of final grade</strong><br>'+
-    '👤 Taken by: <strong>'+(currentUser?.name || 'Unknown')+'</strong>';
+    '👤 Taken by: <strong>'+identityName+'</strong>';
   
-  logActivity('QUIZ OPENED', 'Opened quiz: '+bank.title, 'info');
+  // Cache identity for submitQuiz to read
+  CURRENT_QUIZ._identity = {email: identityEmail, name: identityName, role: identityRole};
+  
+  logActivity('QUIZ OPENED', 'Opened quiz: '+bank.title+' by '+identityName, 'info');
 }
 
 function beginQuiz(){
@@ -3795,9 +3778,9 @@ function submitQuiz(timeout, disqualified){
   const result = {
     quizId: CURRENT_QUIZ.id,
     quizTitle: CURRENT_QUIZ.bank.title,
-    userName: currentUser?.name || 'Unknown',
-    userEmail: currentUser?.email || 'guest@iess.com',
-    userRole: currentUser?.role || 'Unknown',
+    userName: CURRENT_QUIZ._identity?.name || currentUser?.name || PARTICIPANT_SESSION?.name || 'Unknown',
+    userEmail: CURRENT_QUIZ._identity?.email || currentUser?.email || PARTICIPANT_SESSION?.email || 'guest@iess.com',
+    userRole: CURRENT_QUIZ._identity?.role || currentUser?.role || 'Participant',
     score: score,
     correct: correct,
     total: total,
@@ -3948,5 +3931,71 @@ window.addEventListener('load', handleRouting);
 window.addEventListener('hashchange', handleRouting);
 
 </script>
+
+    <div id="quiz-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0f172a;z-index:99999;overflow-y:auto;">
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#1e293b,#0f172a);padding:14px 24px;border-bottom:2px solid #8b5cf6;position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="color:#a78bfa;font-size:11px;font-weight:600;letter-spacing:1px;">IESS CERTIFICATION ASSESSMENT</div>
+          <div id="quiz-title-display" style="color:#fff;font-size:18px;font-weight:700;">Quiz Title</div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center;">
+          <div id="quiz-cheat-warnings" style="background:rgba(239,68,68,0.2);color:#fca5a5;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;display:none;">⚠️ <span id="cheat-count">0</span> Warnings</div>
+          <div style="background:rgba(139,92,246,0.2);color:#c4b5fd;padding:6px 12px;border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;font-weight:700;">⏱️ <span id="quiz-timer">08:00</span></div>
+          <div style="background:rgba(255,255,255,0.1);color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;">Q <span id="quiz-q-num">1</span>/<span id="quiz-q-total">10</span></div>
+        </div>
+      </div>
+
+      <!-- Pre-Quiz Confirmation -->
+      <div id="quiz-confirm" style="max-width:680px;margin:40px auto;padding:30px;background:#fff;border-radius:14px;">
+        <h2 style="color:#0f172a;margin-bottom:16px;">📋 Before You Begin</h2>
+        <div id="quiz-confirm-details" style="background:#f1f5f9;padding:14px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
+        <div style="background:#fef2f2;border-left:4px solid #dc2626;padding:14px;border-radius:6px;margin-bottom:16px;">
+          <div style="font-weight:700;color:#991b1b;margin-bottom:8px;">⚠️ ANTI-CHEAT RULES — READ CAREFULLY</div>
+          <ul style="margin:0;padding-left:20px;font-size:12px;color:#7f1d1d;line-height:1.7;">
+            <li><strong>Your camera MUST be ON</strong> during the entire quiz (visible to instructor)</li>
+            <li><strong>Switching browser tabs or windows</strong> will be logged as cheating</li>
+            <li><strong>Copy/paste is disabled</strong> — questions cannot be shared</li>
+            <li><strong>Right-click is disabled</strong></li>
+            <li><strong>3 cheat warnings = automatic disqualification</strong></li>
+            <li><strong>Timer cannot be paused</strong> — auto-submits when time ends</li>
+            <li><strong>Each participant gets a different question order</strong></li>
+            <li><strong>You can only attempt this quiz ONCE</strong></li>
+          </ul>
+        </div>
+        <div style="background:#f0fdf4;border-left:4px solid #10b981;padding:14px;border-radius:6px;margin-bottom:20px;">
+          <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:13px;color:#065f46;">
+            <input type="checkbox" id="quiz-honor-pledge" style="margin-top:3px;width:18px;height:18px;cursor:pointer;">
+            <span><strong>HONOR PLEDGE:</strong> I confirm that I will complete this assessment honestly without consulting any external resources, notes, books, websites, or other people. The work submitted will be entirely my own. I understand that any cheating will result in disqualification from certification.</span>
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onclick="closeQuiz()" style="padding:10px 20px;border:1px solid #ddd;background:#fff;color:#666;border-radius:6px;cursor:pointer;font-weight:600;">Cancel</button>
+          <button id="quiz-begin-btn" onclick="beginQuiz()" style="padding:10px 24px;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">▶ I AGREE — Start Quiz</button>
+        </div>
+      </div>
+
+      <!-- Quiz Question Display -->
+      <div id="quiz-question-area" style="display:none;max-width:780px;margin:30px auto;padding:30px;background:#fff;border-radius:14px;min-height:400px;">
+        <div id="quiz-question-text" style="font-size:17px;font-weight:600;color:#0f172a;margin-bottom:24px;line-height:1.5;user-select:none;">Question text...</div>
+        <div id="quiz-options" style="display:flex;flex-direction:column;gap:10px;"></div>
+        <div style="margin-top:30px;display:flex;justify-content:space-between;align-items:center;">
+          <button id="quiz-prev-btn" onclick="quizPrev()" style="padding:9px 18px;border:1px solid #ddd;background:#fff;border-radius:6px;cursor:pointer;font-weight:600;color:#666;">← Previous</button>
+          <div style="font-size:12px;color:#666;" id="quiz-progress-indicator">Answered: 0 / 10</div>
+          <button id="quiz-next-btn" onclick="quizNext()" style="padding:9px 18px;background:#8b5cf6;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Next →</button>
+        </div>
+      </div>
+
+      <!-- Result Display -->
+      <div id="quiz-result-area" style="display:none;max-width:680px;margin:40px auto;padding:40px;background:#fff;border-radius:14px;text-align:center;">
+        <div id="quiz-result-emoji" style="font-size:72px;margin-bottom:16px;">🎉</div>
+        <h2 id="quiz-result-title" style="color:#0f172a;margin-bottom:10px;">Quiz Complete!</h2>
+        <div id="quiz-result-score" style="font-size:64px;font-weight:900;margin:20px 0;">85%</div>
+        <div id="quiz-result-grade" style="display:inline-block;padding:8px 20px;border-radius:20px;font-weight:700;margin-bottom:20px;">DISTINCTION</div>
+        <div id="quiz-result-details" style="background:#f8fafc;padding:16px;border-radius:8px;margin:20px 0;text-align:left;font-size:13px;"></div>
+        <div id="quiz-result-flags" style="display:none;background:#fef2f2;border-left:4px solid #dc2626;padding:14px;border-radius:6px;margin:14px 0;text-align:left;font-size:12px;color:#7f1d1d;"></div>
+        <button onclick="closeQuiz()" style="padding:12px 30px;background:#1a5c2a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:14px;">Close & Return to Dashboard</button>
+      </div>
+    </div>
 </body>
 </html>
