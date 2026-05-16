@@ -2139,7 +2139,7 @@ function initPlatform(){
     }
   }catch(e){}
   setTimeout(calcSolar, 100);
-  updatePreview();
+  try{ updatePreview(); }catch(e){ console.warn('updatePreview failed (non-fatal):', e.message); }
 }
 
 // ═══ DASHBOARD ═══
@@ -2416,10 +2416,24 @@ function updatePreview(){
   const verifyUrl='https://iess-platform-git-main-solarhubng-6563s-projects.vercel.app/#verify?cert='+encodeURIComponent(num);
   const qrEl=document.getElementById('cert-verify-qr');
   if(qrEl && window.QRCode){
-    const canvas=document.createElement('canvas');
-    QRCode.toCanvas(canvas,verifyUrl,{width:52,margin:1},function(err){
-      if(!err) qrEl.src=canvas.toDataURL();
-    });
+    try{
+      // qrcodejs library uses: new QRCode(element, {text, width, height})
+      // Create a temporary holder div, generate QR into it, copy result to qrEl
+      const holder = document.createElement('div');
+      holder.style.display = 'none';
+      document.body.appendChild(holder);
+      new QRCode(holder, { text: verifyUrl, width: 52, height: 52, correctLevel: QRCode.CorrectLevel.M });
+      // qrcodejs renders into an <img> or <canvas> inside the holder. Find whichever exists.
+      setTimeout(() => {
+        const img = holder.querySelector('img');
+        const canvas = holder.querySelector('canvas');
+        if(img && img.src) qrEl.src = img.src;
+        else if(canvas) qrEl.src = canvas.toDataURL();
+        document.body.removeChild(holder);
+      }, 60);
+    }catch(e){
+      console.warn('QR generation failed:', e.message);
+    }
   }
 }
 
