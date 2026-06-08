@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
@@ -2461,7 +2462,37 @@ function updatePreview(){
 function downloadCert(){
   const name=document.getElementById('cName').value.trim();
   if(!name){alert('Please enter participant name first');return;}
-  window.print();
+
+  const certEl=document.getElementById('certPreview');
+  if(!certEl){alert('Certificate preview not found');return;}
+
+  const btn=document.querySelector('[onclick="downloadCert()"]');
+  const origText=btn?btn.innerHTML:'';
+  if(btn){btn.innerHTML='&#8987; Generating PDF...';btn.disabled=true;}
+
+  html2canvas(certEl,{
+    scale:2,
+    useCORS:true,
+    allowTaint:true,
+    backgroundColor:'#FFFDF8',
+    logging:false,
+    width:certEl.offsetWidth,
+    height:certEl.offsetHeight
+  }).then(canvas=>{
+    const {jsPDF}=window.jspdf;
+    // A4 landscape: 297mm x 210mm
+    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const imgData=canvas.toDataURL('image/jpeg',1.0);
+    // Fill the entire A4 landscape page
+    pdf.addImage(imgData,'JPEG',0,0,297,210);
+    const safeName=name.replace(/[^a-z0-9]/gi,'_');
+    pdf.save('IESS_Certificate_'+safeName+'.pdf');
+  }).catch(err=>{
+    console.error('Certificate PDF error:',err);
+    alert('Failed to generate PDF. Please try again.');
+  }).finally(()=>{
+    if(btn){btn.innerHTML=origText;btn.disabled=false;}
+  });
 }
 
 function printCert(){
