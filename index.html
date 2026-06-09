@@ -723,8 +723,8 @@ tbody tr:last-child td{border:none;}
           </div>
           <div class="card">
             <div class="card-header"><div class="card-title">Issued Certificates</div><span class="badge badge-green" id="certCount">0 issued</span></div>
-            <div class="card-body" style="padding:0;max-height:280px;overflow-y:auto;">
-              <table><thead><tr><th>Cert No.</th><th>Name</th><th>Grade</th><th>Action</th></tr></thead>
+            <div class="card-body" style="padding:0;max-height:400px;overflow-y:auto;">
+              <table><thead><tr><th>Cert No.</th><th>Name</th><th>Grade</th><th>Send</th><th>Del</th></tr></thead>
               <tbody id="certList"></tbody></table>
             </div>
           </div>
@@ -2427,7 +2427,9 @@ function updatePreview(){
   
   const gradeEl=document.getElementById('prev-grade');
   gradeEl.textContent=grade;
-  gradeEl.className='cert-grade-badge grade-'+grade.toLowerCase();
+  const gradeColors={Distinction:'background:#C87D2A;color:#fff;',Merit:'background:#1A5C2A;color:#fff;',Pass:'background:#3b82f6;color:#fff;',Participation:'background:#6B7280;color:#fff;'};
+  gradeEl.className='cert-grade-a4';
+  gradeEl.style.cssText=gradeColors[grade]||gradeColors['Distinction'];
   
   if(dateVal){
     const d=new Date(dateVal);
@@ -2496,11 +2498,9 @@ function downloadCert(){
 }
 
 function printCert(){
-  const style=document.createElement('style');
-  style.innerHTML=`@media print{body *{visibility:hidden;} .cert-preview,.cert-preview *{visibility:visible;} .cert-preview{position:fixed;top:0;left:0;width:100%;}}`;
-  document.head.appendChild(style);
+  const name=document.getElementById('cName').value.trim();
+  if(!name){alert('Please enter participant name first');return;}
   window.print();
-  document.head.removeChild(style);
 }
 
 function issueCert(){
@@ -2522,16 +2522,28 @@ function renderCertList(){
   const tbody=document.getElementById('certList');
   document.getElementById('certCount').textContent=certificates.length+' issued';
   if(!certificates.length){
-    tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--grey);">No certificates yet</td></tr>';
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--grey);">No certificates yet</td></tr>';
     return;
   }
-  tbody.innerHTML=certificates.map((c,i)=>`
-    <tr>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;">${c.num}</td>
-      <td style="font-size:13px;font-weight:600;">${c.name}</td>
-      <td><span class="badge ${c.grade==='Distinction'?'badge-gold':'badge-green'}">${c.grade}</span></td>
-      <td><button class="btn btn-outline btn-sm" onclick="loadCert(${i})">Load</button></td>
-    </tr>`).join('');
+  const gradeBadge={Distinction:'badge-gold',Merit:'badge-green',Pass:'badge-blue',Participation:'badge-grey'};
+  const currentNum=document.getElementById('cNum').value.trim();
+  tbody.innerHTML=certificates.map((c,i)=>{
+    const isSelected=c.num===currentNum;
+    const rowStyle=isSelected
+      ?'cursor:pointer;background:rgba(26,92,42,0.08);border-left:3px solid #1A5C2A;'
+      :'cursor:pointer;';
+    return `<tr style="${rowStyle}" title="Click to preview certificate" data-cert-idx="${i}">
+      <td style="font-family:'DM Mono',monospace;font-size:11px;" onclick="loadCert(${i})">${c.num}</td>
+      <td style="font-size:13px;font-weight:600;" onclick="loadCert(${i})">${c.name}</td>
+      <td onclick="loadCert(${i})"><span class="badge ${gradeBadge[c.grade]||'badge-green'}">${c.grade}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="sendCert(${i})" title="Send certificate by email" style="white-space:nowrap;">📧 Send</button>
+      </td>
+      <td>
+        <button class="btn btn-sm" style="background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.3);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;" onclick="deleteCert(${i})" title="Delete certificate (frees up ID for reuse)">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
 function loadCert(i){
@@ -2541,6 +2553,89 @@ function loadCert(i){
   document.getElementById('cGrade').value=c.grade;
   document.getElementById('cDate').value=c.date;
   updatePreview();
+  // Re-render list to update row highlight
+  renderCertList();
+  // Scroll preview into view smoothly
+  document.getElementById('certPreview').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function deleteCert(i){
+  const c=certificates[i];
+  if(!confirm(`Delete certificate ${c.num} issued to ${c.name}?\n\nThe certificate ID will be freed for reuse.`)) return;
+  // Check if deleted cert was the one currently in preview — if so, clear form
+  const currentNum=document.getElementById('cNum').value.trim();
+  const wasSelected=(currentNum===c.num);
+  certificates.splice(i,1);
+  saveCerts();
+  if(wasSelected){
+    document.getElementById('cName').value='';
+    document.getElementById('cNum').value='';
+    document.getElementById('cGrade').value='Distinction';
+    document.getElementById('cDate').value='2026-06-07';
+    updatePreview();
+  }
+  renderCertList();
+  logActivity('CERTIFICATE DELETED','Certificate '+c.num+' ('+c.name+') deleted — ID freed for reuse','warning');
+  alert(`🗑️ Certificate ${c.num} deleted. The ID is now available for reuse.`);
+}
+
+function sendCert(i){
+  const c=certificates[i];
+  // Load the cert into preview first so it reflects the correct data
+  loadCert(i);
+  // Ask for recipient email
+  const email=prompt(`Send certificate to ${c.name}.\n\nEnter recipient email address:`, '');
+  if(!email||!email.trim()){return;}
+  if(!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){alert('Please enter a valid email address.');return;}
+  
+  // Target the send button for this specific row
+  const btn=document.querySelector(`button[onclick="sendCert(${i})"]`);
+  const origHTML=btn?btn.innerHTML:'';
+  if(btn){btn.innerHTML='⏳';btn.disabled=true;}
+  
+  // Generate certificate image via html2canvas, then send via Gmail MCP
+  const certEl=document.getElementById('certPreview');
+  html2canvas(certEl,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#FFFDF8',logging:false}).then(canvas=>{
+    const imgDataUrl=canvas.toDataURL('image/jpeg',0.92);
+    const base64Img=imgDataUrl.split(',')[1];
+    
+    const gradeEmoji={Distinction:'🏆',Merit:'🥈',Pass:'🥉',Participation:'🎖️'}[c.grade]||'🏅';
+    const subject=`Your IESS Solar Training Certificate — ${c.grade}`;
+    const bodyText=`Dear ${c.name},\n\nCongratulations! Your official IESS Solar Training Programme Certificate (Cohort 1, 2026) is attached.\n\n📋 Certificate No: ${c.num}\n${gradeEmoji} Grade: ${c.grade}\n📅 Date: ${c.date}\n\nThis certificate was issued by IESS Ltd (COREN Licensed · Reg. No. 80576).\n\nBest regards,\nIESS Training Team`;
+    
+    fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:'You are a helpful assistant that sends emails. When asked to send an email, use the Gmail MCP tool to send it. Respond with a brief confirmation.',
+        messages:[{
+          role:'user',
+          content:`Please send an email using Gmail with the following details:\nTo: ${email.trim()}\nSubject: ${subject}\nBody: ${bodyText}\n\nAlso attach the certificate image (base64 JPEG). The attachment filename should be "IESS_Certificate_${c.num.replace(/\//g,'_')}.jpg".\nAttachment base64: ${base64Img}`
+        }],
+        mcp_servers:[{type:'url',url:'https://gmailmcp.googleapis.com/mcp/v1',name:'gmail-mcp'}]
+      })
+    }).then(r=>r.json()).then(data=>{
+      if(btn){btn.innerHTML=origHTML;btn.disabled=false;}
+      const responseText=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ');
+      if(data.error||responseText.toLowerCase().includes('error')){
+        console.error('Send cert response:', data);
+        alert(`⚠️ Could not send automatically.\n\nDownload the certificate and email it manually to:\n${email.trim()}`);
+      } else {
+        logActivity('CERTIFICATE SENT','Certificate '+c.num+' emailed to '+email.trim(),'info');
+        alert(`✅ Certificate sent to ${email.trim()}!`);
+      }
+    }).catch(err=>{
+      if(btn){btn.innerHTML=origHTML;btn.disabled=false;}
+      console.error('Send cert error:',err);
+      alert(`⚠️ Could not send automatically.\n\nDownload the certificate and email it manually to:\n${email.trim()}`);
+    });
+  }).catch(err=>{
+    if(btn){btn.innerHTML=origHTML;btn.disabled=false;}
+    console.error('Canvas error:',err);
+    alert('Failed to generate certificate image for sending.');
+  });
 }
 
 // ═══ VERIFY ═══
