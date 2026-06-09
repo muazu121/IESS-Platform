@@ -2581,61 +2581,109 @@ function deleteCert(i){
 
 function sendCert(i){
   const c=certificates[i];
-  // Load the cert into preview first so it reflects the correct data
+  // Step 1 — load cert into preview so it shows the right data
   loadCert(i);
-  // Ask for recipient email
-  const email=prompt(`Send certificate to ${c.name}.\n\nEnter recipient email address:`, '');
-  if(!email||!email.trim()){return;}
-  if(!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){alert('Please enter a valid email address.');return;}
-  
-  // Target the send button for this specific row
+
   const btn=document.querySelector(`button[onclick="sendCert(${i})"]`);
   const origHTML=btn?btn.innerHTML:'';
   if(btn){btn.innerHTML='⏳';btn.disabled=true;}
-  
-  // Generate certificate image via html2canvas, then send via Gmail MCP
+
   const certEl=document.getElementById('certPreview');
-  html2canvas(certEl,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#FFFDF8',logging:false}).then(canvas=>{
-    const imgDataUrl=canvas.toDataURL('image/jpeg',0.92);
-    const base64Img=imgDataUrl.split(',')[1];
-    
-    const gradeEmoji={Distinction:'🏆',Merit:'🥈',Pass:'🥉',Participation:'🎖️'}[c.grade]||'🏅';
-    const subject=`Your IESS Solar Training Certificate — ${c.grade}`;
-    const bodyText=`Dear ${c.name},\n\nCongratulations! Your official IESS Solar Training Programme Certificate (Cohort 1, 2026) is attached.\n\n📋 Certificate No: ${c.num}\n${gradeEmoji} Grade: ${c.grade}\n📅 Date: ${c.date}\n\nThis certificate was issued by IESS Ltd (COREN Licensed · Reg. No. 80576).\n\nBest regards,\nIESS Training Team`;
-    
-    fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system:'You are a helpful assistant that sends emails. When asked to send an email, use the Gmail MCP tool to send it. Respond with a brief confirmation.',
-        messages:[{
-          role:'user',
-          content:`Please send an email using Gmail with the following details:\nTo: ${email.trim()}\nSubject: ${subject}\nBody: ${bodyText}\n\nAlso attach the certificate image (base64 JPEG). The attachment filename should be "IESS_Certificate_${c.num.replace(/\//g,'_')}.jpg".\nAttachment base64: ${base64Img}`
-        }],
-        mcp_servers:[{type:'url',url:'https://gmailmcp.googleapis.com/mcp/v1',name:'gmail-mcp'}]
-      })
-    }).then(r=>r.json()).then(data=>{
+
+  // Step 2 — render certificate to PDF and trigger download
+  html2canvas(certEl,{
+    scale:2,useCORS:true,allowTaint:true,
+    backgroundColor:'#FFFDF8',logging:false,
+    width:certEl.offsetWidth,height:certEl.offsetHeight
+  }).then(canvas=>{
+    // Generate and auto-download the PDF
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    pdf.addImage(canvas.toDataURL('image/jpeg',1.0),'JPEG',0,0,297,210);
+    const safeNum=c.num.replace(/[^a-z0-9]/gi,'_');
+    const filename=`IESS_Certificate_${safeNum}.pdf`;
+    pdf.save(filename);
+
+    // Step 3 — after a short delay (let download start), open email client
+    // pre-filled with recipient, subject and a ready-to-send body
+    setTimeout(()=>{
       if(btn){btn.innerHTML=origHTML;btn.disabled=false;}
-      const responseText=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ');
-      if(data.error||responseText.toLowerCase().includes('error')){
-        console.error('Send cert response:', data);
-        alert(`⚠️ Could not send automatically.\n\nDownload the certificate and email it manually to:\n${email.trim()}`);
-      } else {
-        logActivity('CERTIFICATE SENT','Certificate '+c.num+' emailed to '+email.trim(),'info');
-        alert(`✅ Certificate sent to ${email.trim()}!`);
-      }
-    }).catch(err=>{
-      if(btn){btn.innerHTML=origHTML;btn.disabled=false;}
-      console.error('Send cert error:',err);
-      alert(`⚠️ Could not send automatically.\n\nDownload the certificate and email it manually to:\n${email.trim()}`);
-    });
+
+      const gradeEmoji={Distinction:'🏆',Merit:'🥈',Pass:'🥉',Participation:'🎖️'}[c.grade]||'🏅';
+      const subject=`Your IESS Solar Training Certificate — ${c.grade}`;
+      const body=
+`Dear ${c.name},
+
+Congratulations! Please find your official IESS Solar Training Programme Certificate attached to this email.
+
+Certificate No: ${c.num}
+${gradeEmoji} Grade: ${c.grade}
+Date: ${new Date(c.date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}
+
+This certificate was issued by Integrated Energy & Smart Systems Ltd (COREN Licensed · Reg. No. 80576 · NSE Member).
+
+Best regards,
+IESS Training Team`;
+
+      // Show a clear modal-style overlay instead of a plain alert
+      _showSendModal(c.name, filename, subject, body);
+
+      logActivity('CERTIFICATE SEND PREPARED','PDF generated for '+c.num+' — email draft opened for '+c.name,'info');
+    }, 800);
+
   }).catch(err=>{
     if(btn){btn.innerHTML=origHTML;btn.disabled=false;}
-    console.error('Canvas error:',err);
-    alert('Failed to generate certificate image for sending.');
+    console.error('sendCert error:',err);
+    alert('Failed to generate certificate PDF. Please try again.');
   });
+}
+
+// ── helper: overlay that shows send instructions and opens the email client ──
+function _showSendModal(name, filename, subject, body){
+  // Remove any existing modal
+  const existing=document.getElementById('_sendCertModal');
+  if(existing) existing.remove();
+
+  const overlay=document.createElement('div');
+  overlay.id='_sendCertModal';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+
+  overlay.innerHTML=`
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:480px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.3);font-family:inherit;">
+      <div style="font-size:40px;text-align:center;margin-bottom:8px;">📧</div>
+      <h3 style="margin:0 0 6px;text-align:center;font-size:18px;color:#0C1E0F;">Send Certificate to ${name}</h3>
+      <p style="margin:0 0 20px;text-align:center;font-size:13px;color:#666;">The PDF has been downloaded. Follow the 2 steps below:</p>
+
+      <div style="background:#f0faf3;border:1px solid #c6e8d0;border-radius:10px;padding:16px;margin-bottom:14px;">
+        <div style="font-weight:700;color:#1A5C2A;margin-bottom:6px;">Step 1 — already done ✅</div>
+        <div style="font-size:13px;color:#333;">Certificate PDF saved as:<br>
+          <code style="background:#e6f4eb;padding:2px 6px;border-radius:4px;font-size:12px;">${filename}</code>
+        </div>
+      </div>
+
+      <div style="background:#fff8e1;border:1px solid #ffd54f;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <div style="font-weight:700;color:#b45309;margin-bottom:6px;">Step 2 — click the button below</div>
+        <div style="font-size:13px;color:#333;">Your email app will open with the message pre-written.<br>
+        <strong>Attach the downloaded PDF</strong> and click Send.</div>
+      </div>
+
+      <button id="_sendCertMailtoBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,#1A5C2A,#2D8A45);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;">
+        📬 Open Email App (pre-filled)
+      </button>
+      <button id="_sendCertCloseBtn" style="width:100%;padding:10px;background:#f3f4f6;color:#555;border:none;border-radius:10px;font-size:13px;cursor:pointer;">
+        Close
+      </button>
+    </div>`;
+
+  document.body.appendChild(overlay);
+
+  // Wire up the mailto button
+  document.getElementById('_sendCertMailtoBtn').onclick=()=>{
+    const mailto='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+    window.location.href=mailto;
+  };
+  document.getElementById('_sendCertCloseBtn').onclick=()=>overlay.remove();
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
 }
 
 // ═══ VERIFY ═══
