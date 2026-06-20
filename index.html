@@ -257,8 +257,8 @@ tbody tr:last-child td{border:none;}
 .cert-presents{font-size:13px;color:#666;font-style:italic;margin:3px 0;letter-spacing:1px;}
 .cert-recipient{font-size:50px;font-weight:700;color:#0C1E0F;line-height:1.1;
   margin:3px 0 6px;text-align:center;letter-spacing:1px;}
-.cert-desc{font-size:12.5px;color:#555;line-height:1.7;text-align:center;
-  max-width:580px;margin:0 auto 6px;}
+.cert-desc{font-size:18px;color:#555;line-height:1.65;text-align:center;
+  max-width:660px;margin:0 auto 8px;}
 .cert-grade-a4{display:inline-block;padding:5px 28px;border-radius:30px;
   font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
   font-family:'DM Mono',monospace;margin-bottom:10px;}
@@ -2437,7 +2437,7 @@ function updatePreview(){
   }
   
   // Update verify QR with certificate-specific URL
-  const verifyUrl='https://iess-platform-git-main-solarhubng-6563s-projects.vercel.app/#verify?cert='+encodeURIComponent(num);
+  const verifyUrl='https://iess-platform.vercel.app/#verify?cert='+encodeURIComponent(num);
   const qrEl=document.getElementById('cert-verify-qr');
   if(qrEl && window.QRCode){
     try{
@@ -4559,20 +4559,52 @@ function exportQuizResults(){
 function handleRouting(){
   const hash = window.location.hash;
   const params = new URLSearchParams(window.location.search);
-  const certNum = params.get('cert');
+  // The QR code encodes cert as part of the HASH (e.g. #verify?cert=IESS%2F2026%2F001),
+  // not the query string, so we must also parse params out of the hash itself.
+  const hashQueryIndex = hash.indexOf('?');
+  const hashParams = hashQueryIndex >= 0 ? new URLSearchParams(hash.slice(hashQueryIndex)) : new URLSearchParams();
+  const certNum = params.get('cert') || hashParams.get('cert');
 
-  if(hash === '#verify' || certNum){
+  if(hash.startsWith('#verify') || certNum){
     // Show verify screen
     document.getElementById('login-screen').classList.remove('active');
     document.getElementById('platform-screen').classList.remove('active');
     document.getElementById('verify-screen').classList.add('active');
-    
+
     if(certNum){
       document.getElementById('certVerInput').value = certNum;
-      verifyCert();
+      // Wait for Firebase to finish its initial sync before checking — on a fresh
+      // device the certificates array starts empty until cloud data arrives.
+      awaitCertSyncThenVerify();
     }
   }
 }
+
+// Ensures we don't show "Not Found" just because Firebase hasn't synced yet.
+// Polls briefly for a Firebase connection + first sync, with a sane timeout
+// so the page never hangs forever if the user is genuinely offline.
+function awaitCertSyncThenVerify(){
+  const maxWaitMs = 4000;
+  const pollMs = 150;
+  const startedAt = Date.now();
+
+  const tryNow = () => {
+    // Re-read from localStorage each attempt — IESS_DB syncs into localStorage
+    // asynchronously, so this in-memory array may have been stale at page load.
+    try{ certificates = JSON.parse(IESS_DB.get('iess_certs') || '[]'); }catch(e){}
+
+    const num = document.getElementById('certVerInput').value.trim().toUpperCase();
+    const found = certificates.some(c => c.num.toUpperCase() === num);
+
+    if(found || Date.now() - startedAt >= maxWaitMs){
+      verifyCert();
+    } else {
+      setTimeout(tryNow, pollMs);
+    }
+  };
+  tryNow();
+}
+
 window.addEventListener('load', handleRouting);
 window.addEventListener('hashchange', handleRouting);
 
