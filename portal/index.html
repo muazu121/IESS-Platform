@@ -463,6 +463,7 @@ tbody tr:last-child td{border:none;}
       <button class="nav-item" onclick="sp('certificates',this)"><span class="nav-icon">🏆</span>Certificates</button>
       <div class="nav-section">Tools</div>
       <button class="nav-item" onclick="sp('calculator',this)"><span class="nav-icon">☀️</span>Solar Calculator</button>
+      <button class="nav-item" id="nav-letterhead" onclick="sp('letterhead',this)" style="display:none;"><span class="nav-icon">📄</span>Official Letterhead</button>
       <button class="nav-item" id="nav-invoices" onclick="sp('invoices',this)" style="display:none;"><span class="nav-icon">💰</span>Invoices <span id="nav-invoice-count" style="margin-left:auto;background:#10b981;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-family:'DM Mono',monospace;">0</span></button>
       <button class="nav-item" onclick="sp('analytics',this)"><span class="nav-icon">📈</span>Analytics</button>
       <div class="nav-section" id="admin-section" style="display:none;">Admin</div>
@@ -977,6 +978,44 @@ tbody tr:last-child td{border:none;}
                     <option value="2">2 days (high reliability)</option>
                   </select>
                 </label>
+                <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Peak Sun Hours
+                  <select id="peakSunHours" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+                    <option value="4">4.0 h (conservative)</option>
+                    <option value="4.5" selected>4.5 h (Nigeria baseline)</option>
+                    <option value="5">5.0 h</option>
+                    <option value="5.5">5.5 h (favourable site)</option>
+                  </select>
+                </label>
+                <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">System Loss %
+                  <input type="number" id="systemLossPct" value="25" min="10" max="40" step="1" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Inverter Efficiency %
+                  <input type="number" id="inverterEfficiencyPct" value="90" min="80" max="98" step="1" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">DC Cable Run (m)
+                  <input type="number" id="dcCableRunM" value="30" min="1" max="500" step="1" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">AC Cable Run (m)
+                  <input type="number" id="acCableRunM" value="15" min="1" max="500" step="1" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:18px;">
+            <div class="card-header">
+              <div class="card-title">Market Price Feed</div>
+              <span class="badge badge-gold" id="market-price-badge">Checking…</span>
+            </div>
+            <div class="card-body">
+              <div id="market-price-status" style="font-size:12px;color:var(--grey);line-height:1.6;">
+                Loading current and saved Nigerian market prices…
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+                <button class="btn btn-primary btn-sm" type="button" onclick="refreshMarketPrices(true)">🔄 Refresh market prices</button>
+                <a class="btn btn-outline btn-sm" href="https://bluecarbon.ng/" target="_blank" rel="noopener">Check retailer reference ↗</a>
+              </div>
+              <div style="font-size:10px;color:var(--grey);margin-top:10px;line-height:1.55;">
+                Prices are estimates for Nigerian retail procurement. Vendor stock, delivery, warranty and FX can change daily. Confirm every quotation with the selected supplier before issuing it.
               </div>
             </div>
           </div>
@@ -991,6 +1030,50 @@ tbody tr:last-child td{border:none;}
           <div class="card">
             <div class="card-header"><div class="card-title">Cost Breakdown</div><div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="calcSolar()">🔄 Refresh</button><button class="btn btn-primary btn-sm" onclick="generateQuotationPDF()" style="background:#1A5C2A;color:#fff;border:none;">📄 Generate Quotation PDF</button></div></div>
             <div class="card-body" id="r-breakdown"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAFF-ONLY OFFICIAL LETTERHEAD -->
+    <div id="page-letterhead" class="page">
+      <div class="page-header">
+        <span class="page-tag">Staff Resources</span>
+        <h1 class="page-title">Official Letterhead</h1>
+        <p class="page-sub">Authorised IESS correspondence only</p>
+      </div>
+      <div class="content-grid" style="grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Approved A4 Letterhead</div><span class="badge badge-green">Staff only</span></div>
+          <div class="card-body">
+            <div style="padding:22px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(160deg,#fff,#faf7f2);">
+              <div style="display:flex;gap:14px;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--gold);">
+                <img src="/assets/iess-logo.jpg?v=20261026b" alt="IESS logo" style="width:52px;height:52px;object-fit:contain;border-radius:50%;">
+                <div>
+                  <div style="font-family:'Cormorant Garamond',serif;color:var(--green);font-size:17px;font-weight:800;">INTEGRATED ENERGY &amp; SMART SYSTEMS LTD</div>
+                  <div style="font-size:10px;color:var(--grey);">Renewable energy · Smart systems · Practical training</div>
+                  <div style="font-size:9px;color:var(--gold);margin-top:3px;">COREN REG. 80576 · CAC REGISTERED · ABUJA, NIGERIA</div>
+                </div>
+              </div>
+              <div style="height:250px;display:grid;place-items:center;color:var(--grey);font-size:12px;text-align:center;">Blank A4 writing area<br><span style="font-size:10px;">The header and footer remain fixed in the approved file.</span></div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+              <a class="btn btn-primary" href="private/f3c8a1d6b9e2/IESS_Official_Letterhead_A4.docx" download>📥 Download editable Word</a>
+              <a class="btn btn-gold" href="private/f3c8a1d6b9e2/IESS_Official_Letterhead_A4.pdf" download>📥 Download print PDF</a>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Controlled document</div></div>
+          <div class="card-body" style="font-size:13px;color:var(--grey);line-height:1.7;">
+            <p style="margin-top:0;">This letterhead is reserved for authorised IESS staff and approved representatives.</p>
+            <p><strong style="color:var(--ink);">Do not:</strong></p>
+            <ul style="padding-left:18px;">
+              <li>Share the download link with clients or external parties.</li>
+              <li>Alter the logo, registration details or contact footer.</li>
+              <li>Use the letterhead for personal or unauthorised business.</li>
+            </ul>
+            <p style="margin-bottom:0;">Use the editable Word version when the document needs changes. Use the PDF for fixed-layout printing.</p>
           </div>
         </div>
       </div>
@@ -1286,7 +1369,8 @@ const firebaseConfig = {
 // ═══════════════════════════════════════════════════════════════════════
 window.IESS_DB = (function(){
   const KEYS = ['iess_certs','iess_att','iess_invoices','iess_invoices_trash',
-                'iess_quiz_results','iess_activity_log','iess_extra_participants'];
+                'iess_quiz_results','iess_activity_log','iess_extra_participants',
+                'iess_market_prices'];
   
   // ═══════════════════════════════════════════════════════════
   // HARDCODED FIREBASE CONFIG — IESS Platform Production
@@ -2019,6 +2103,7 @@ function applyPermissions(){
   const navParticipants = document.querySelector('[onclick*="\'participants\'"]');
   const navCertificates = document.querySelector('[onclick*="\'certificates\'"]');
   const navCalculator = document.querySelector('[onclick*="\'calculator\'"]');
+  const navLetterhead = document.getElementById('nav-letterhead');
   const navInvoices = document.getElementById('nav-invoices');
   const navAnalytics = document.querySelector('[onclick*="\'analytics\'"]');
   const navActivity = document.getElementById('nav-activity');
@@ -2028,6 +2113,7 @@ function applyPermissions(){
   if(navInvoices) navInvoices.style.display = hasPermission('generateInvoice') ? '' : 'none';
   // Calculator visible only to those who use it
   if(navCalculator) navCalculator.style.display = hasPermission('useCalculator') ? '' : 'none';
+  if(navLetterhead) navLetterhead.style.display = currentUser.roleCode !== 'participant' ? '' : 'none';
   // Activity Log only for Chairman
   if(navActivity) navActivity.style.display = hasPermission('viewActivityLog') ? '' : 'none';
   // Trash only for Chairman
@@ -2087,6 +2173,10 @@ function sp(id,el){
     alert('🚫 Access Denied\n\nYour role cannot access invoices.');
     return;
   }
+  if(id==='letterhead' && (!currentUser || currentUser.roleCode==='participant')){
+    alert('🚫 Access Denied\n\nOfficial stationery is restricted to authorised IESS staff.');
+    return;
+  }
   
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -2102,6 +2192,10 @@ function sp(id,el){
     setTimeout(renderAnalytics, 100); // Double-tap to ensure rendering
   }
   if(id==='calculator') {
+    if(!marketPriceRefreshStarted){
+      loadCachedMarketPrices();
+      refreshMarketPrices(false);
+    }
     calcSolar();
     setTimeout(calcSolar, 100);
   }
@@ -2771,11 +2865,119 @@ const PRICING = {
     Felicity:[[200,75000],[300,95000],[400,118000]]
   },
   // Cable prices ₦/metre (copper, sell price)
-  cables: {dc6cu:2200, dc10cu:3500, dc16cu:5800, ac4cu:1800, ac6cu:2600, ac10cu:4000, ac16cu:6200},
+  cables: {dc6cu:2200, dc10cu:3500, dc16cu:5800, dc25cu:9000, dc35cu:12500, dc50cu:17000, dc70cu:23000, dc95cu:32000, ac4cu:1800, ac6cu:2600, ac10cu:4000, ac16cu:6200},
   // Mounting & protection (per unit, sell price)
   mounting: {roof2:35000, roof4:55000, roof8:95000, ground4:75000, mc4:1500},
-  protection: {spd:22000, dcCB32:5500, dcCB63:9000, acMCB32:3000, fuse100:4500, fuse200:6500, earth:10000, db8:22000, batLink:4500}
+  protection: {spd:22000, dcCB32:5500, dcCB63:9000, acMCB32:3000, fuse100:4500, fuse200:6500, fuse300:9000, fuse400:12000, earth:10000, db8:22000, batLink:4500}
 };
+
+const BASE_PRICING = JSON.parse(JSON.stringify(PRICING));
+const MARKET_PRICE_KEY = 'iess_market_prices';
+let marketPriceRefreshStarted = false;
+const MARKET_BRAND_ALIASES = {
+  'canadian solar':'Canadian',
+  'ja solar':'JA',
+  'trina solar':'Trina',
+  'longi solar':'LONGi',
+  'victron energy':'Victron',
+  'sukam':'SuKam',
+  'su-kam':'SuKam'
+};
+
+function marketBrandKey(value){
+  const raw=String(value||'').trim();
+  return MARKET_BRAND_ALIASES[raw.toLowerCase()] || raw;
+}
+
+function resetPricingToBase(){
+  Object.keys(PRICING).forEach(key=>delete PRICING[key]);
+  Object.assign(PRICING,JSON.parse(JSON.stringify(BASE_PRICING)));
+}
+
+function applyMarketPriceFeed(feed){
+  resetPricingToBase();
+  if(!feed || !Array.isArray(feed.items)) return 0;
+  let applied=0;
+  feed.items.forEach(item=>{
+    const price=Number(item.price);
+    if(!Number.isFinite(price) || price<=0) return;
+    const brand=marketBrandKey(item.brand);
+    if(item.category==='inverter' && PRICING.inverters[brand]){
+      const list=PRICING.inverters[brand];
+      const target=list.find(row=>
+        (item.model && String(row[2]).toLowerCase()===String(item.model).toLowerCase()) ||
+        (!item.model && Number(item.kva)>0 && Math.abs(Number(row[0])-Number(item.kva))<0.01)
+      );
+      if(target){ target[3]=Math.round(price); applied++; }
+    }
+    if(item.category==='battery' && item.type && PRICING.batteries[item.type]?.[brand]){
+      const target=PRICING.batteries[item.type][brand].find(row=>
+        Math.abs(Number(row[0])-Number(item.voltage))<0.01 &&
+        Math.abs(Number(row[1])-Number(item.capacityAh))<0.01
+      );
+      if(target){ target[2]=Math.round(price); applied++; }
+    }
+    if(item.category==='panel' && PRICING.panels[brand]){
+      const target=PRICING.panels[brand].find(row=>Math.abs(Number(row[0])-Number(item.watts))<0.01);
+      if(target){ target[1]=Math.round(price); applied++; }
+    }
+  });
+  return applied;
+}
+
+function updateMarketPriceStatus(feed,error){
+  const badge=document.getElementById('market-price-badge');
+  const status=document.getElementById('market-price-status');
+  if(!badge || !status) return;
+  if(error){
+    badge.className='badge badge-red';
+    badge.textContent='Feed unavailable';
+    status.innerHTML='<strong>Saved benchmark prices are in use.</strong><br>'+String(error.message||error);
+    return;
+  }
+  const updated=feed?.updatedAt ? new Date(feed.updatedAt) : null;
+  const dateLabel=updated && !Number.isNaN(updated.getTime()) ? updated.toLocaleString() : 'Unknown date';
+  if(feed?.live){
+    badge.className='badge badge-green';
+    badge.textContent='Market feed active';
+  } else {
+    badge.className='badge badge-gold';
+    badge.textContent='Benchmark mode';
+  }
+  status.innerHTML='<strong>'+String(feed?.source||'IESS benchmark')+'</strong><br>'+
+    'Last updated: '+dateLabel+'<br>'+
+    String(feed?.message||'')+
+    (feed?.live?'<br><span style="color:var(--green);font-weight:700;">Current feed data applied to the calculator.</span>':'');
+}
+
+function loadCachedMarketPrices(){
+  try{
+    const cached=JSON.parse(IESS_DB.get(MARKET_PRICE_KEY)||'null');
+    if(cached){
+      const applied=applyMarketPriceFeed(cached);
+      updateMarketPriceStatus({...cached,message:(cached.message||'Saved price feed.')+' Applied items: '+applied});
+    }
+  }catch(e){console.warn('Market price cache unavailable:',e);}
+}
+
+async function refreshMarketPrices(manual){
+  marketPriceRefreshStarted = true;
+  const badge=document.getElementById('market-price-badge');
+  const status=document.getElementById('market-price-status');
+  if(badge) badge.textContent='Refreshing…';
+  if(status) status.textContent='Checking the configured Nigerian market feed…';
+  try{
+    const response=await fetch('/api/market-prices',{cache:'no-store'});
+    if(!response.ok) throw new Error('Price service returned HTTP '+response.status+'.');
+    const feed=await response.json();
+    const applied=applyMarketPriceFeed(feed);
+    updateMarketPriceStatus({...feed,message:(feed.message||'')+(applied?' Applied price items: '+applied+'.':'')});
+    IESS_DB.set(MARKET_PRICE_KEY,JSON.stringify(feed));
+    if(manual) calcSolar();
+  }catch(error){
+    updateMarketPriceStatus(null,error);
+  }
+}
 
 // Update battery brand options when type changes
 function updateBatBrandOptions(){
@@ -2788,7 +2990,7 @@ function updateBatBrandOptions(){
 // Pick smallest inverter meeting kVA requirement
 function pickInverter(kvaNeeded, brand){
   const list = PRICING.inverters[brand] || PRICING.inverters.Felicity;
-  return list.find(i=>i[0]>=kvaNeeded) || list[list.length-1];
+  return list.find(i=>i[0]>=kvaNeeded) || null;
 }
 
 // Pick batteries — returns {unitV, unitAh, unitPrice, count, strings, totalKwh, usableKwh}
@@ -2797,9 +2999,9 @@ function pickBatteries(kwhUsableNeeded, type, brand, sysV){
   if(!list || !list.length) return null;
   const dod = type==='lithium' ? 0.9 : 0.5;
   if(type==='lithium'){
-    // Match system voltage; fall back to largest available
-    let candidates = list.filter(b=>b[0]===sysV);
-    if(!candidates.length) candidates = list;
+    // Never mix battery module voltages inside one bank.
+    const candidates = list.filter(b=>b[0]===sysV);
+    if(!candidates.length) return null;
     // Pick the largest Ah unit
     const unit = candidates.reduce((a,b)=>b[1]>a[1]?b:a);
     const usablePerUnit = (unit[0]*unit[1]/1000)*dod;
@@ -2820,7 +3022,9 @@ function pickBatteries(kwhUsableNeeded, type, brand, sysV){
 function pickPanel(brand, sizeW){
   const list = PRICING.panels[brand] || PRICING.panels.Jinko;
   const match = list.find(p=>p[0]==sizeW);
-  return match || list[list.length-1];
+  if(match) return match;
+  const larger=list.filter(p=>p[0]>=sizeW).sort((a,b)=>a[0]-b[0]);
+  return larger[0] || null;
 }
 
 function pickMounting(panelCount){
@@ -2833,14 +3037,35 @@ function pickMounting(panelCount){
   return {name:`${sets}× 8-panel roof rail sets`, qty:sets, price:m.roof8*sets};
 }
 
+const CABLE_CATALOG = [
+  {key:'dc6cu', label:'6mm² DC', ampacity:50, system:'dc'},
+  {key:'dc10cu', label:'10mm² DC', ampacity:70, system:'dc'},
+  {key:'dc16cu', label:'16mm² DC', ampacity:85, system:'dc'},
+  {key:'dc25cu', label:'25mm² DC', ampacity:110, system:'dc'},
+  {key:'dc35cu', label:'35mm² DC', ampacity:140, system:'dc'},
+  {key:'dc50cu', label:'50mm² DC', ampacity:175, system:'dc'},
+  {key:'dc70cu', label:'70mm² DC', ampacity:220, system:'dc'},
+  {key:'dc95cu', label:'95mm² DC', ampacity:260, system:'dc'},
+  {key:'ac4cu', label:'4mm² AC', ampacity:32, system:'ac'},
+  {key:'ac6cu', label:'6mm² AC', ampacity:41, system:'ac'},
+  {key:'ac10cu', label:'10mm² AC', ampacity:57, system:'ac'},
+  {key:'ac16cu', label:'16mm² AC', ampacity:76, system:'ac'}
+];
+
+function chooseCable(system,currentA){
+  const required=Math.max(0,Number(currentA)||0)*1.25;
+  return CABLE_CATALOG.filter(c=>c.system===system).find(c=>c.ampacity>=required) || null;
+}
+
 function calcSolar(){
   try{
   // ═══ READ EDITABLE APPLIANCE ROWS ═══
   // Each row has: [name input, watts input, qty input, hrs input, surge checkbox]
   const rows = document.querySelectorAll('#appTable tr.app-row');
   let wh = 0;
-  let largestSurgeKw = 0; // Track biggest single surge appliance
-  let totalContinuousKw = 0;
+  let totalContinuousW = 0;
+  let largestSurgeRunningW = 0;
+  let largestSurgeStartupW = 0;
   rows.forEach(r => {
     const watts = parseFloat(r.querySelector('.app-watts')?.value) || 0;
     const qty = parseFloat(r.querySelector('.app-qty')?.value) || 0;
@@ -2850,11 +3075,13 @@ function calcSolar(){
     wh += rowWh;
     // Continuous demand (Watts) — used for inverter sizing
     const continuousW = watts * qty;
-    totalContinuousKw += continuousW / 1000;
-    // Surge demand — 3x for motor appliances, but only LARGEST surge matters
+    totalContinuousW += continuousW;
+    // Only the largest motor contributes startup surge. The rest run continuously.
     if(surge){
-      const surgeKw = (continuousW * 3) / 1000;
-      if(surgeKw > largestSurgeKw) largestSurgeKw = surgeKw;
+      if(continuousW > largestSurgeRunningW){
+        largestSurgeRunningW=continuousW;
+        largestSurgeStartupW=continuousW*3;
+      }
     }
     // Update row Wh/day display
     const whCell = r.querySelector('.app-wh');
@@ -2869,38 +3096,51 @@ function calcSolar(){
   const panBrand = (document.getElementById('panBrand')||{}).value || 'Jinko';
   const panSize = parseInt((document.getElementById('panSize')||{}).value || '400');
   const backupDays = parseFloat((document.getElementById('backupDays')||{}).value || '1.5');
+  const peakSunHours = Math.max(2,parseFloat((document.getElementById('peakSunHours')||{}).value || '4.5'));
+  const systemLossPct = Math.min(40,Math.max(10,parseFloat((document.getElementById('systemLossPct')||{}).value || '25')));
+  const inverterEfficiencyPct = Math.min(98,Math.max(80,parseFloat((document.getElementById('inverterEfficiencyPct')||{}).value || '90')));
+  const dcMetres = Math.max(1,parseFloat((document.getElementById('dcCableRunM')||{}).value || '30'));
+  const acMetres = Math.max(1,parseFloat((document.getElementById('acCableRunM')||{}).value || '15'));
 
   // Core sizing math
   const kWh = wh/1000;
-  const peakKw = kWh/5*1.3;                            // 5 peak sun hours, 30% derate
-  // ═══ INVERTER SIZING with proper SURGE accounting ═══
-  // Realistic peak = total continuous load + largest single surge (not all motors start simultaneously)
-  // This is the IEEE/NEC-approved approach
-  const realisticPeakKw = totalContinuousKw + largestSurgeKw;
-  const peakKwForSizing = Math.max(peakKw, realisticPeakKw);
-  const invKvaNeeded = peakKwForSizing * 1.15 / 0.8;   // 15% safety margin, 0.8 PF
-  const kwhUsableNeeded = kWh * backupDays;            // usable storage required
+  // PV array energy requirement includes site losses and temperature/soiling derating.
+  const arrayDcKwp = kWh/(peakSunHours*(1-systemLossPct/100));
+  // Correct surge formula: all running loads, replacing the largest motor's
+  // running load with its 3x startup load instead of adding both.
+  const correctedPeakLoadW = Math.max(0,totalContinuousW-largestSurgeRunningW+largestSurgeStartupW);
+  const invKvaNeeded = (correctedPeakLoadW/1000/0.8)*1.15; // 15% design margin
+  const kwhUsableNeeded = kWh*backupDays/(inverterEfficiencyPct/100);
 
   // Pick equipment
   const inv = pickInverter(invKvaNeeded, invBrand);    // [kva,v,model,price,warranty]
+  if(!inv) throw new Error('No '+invBrand+' inverter in the catalogue can carry this load. Select a larger brand range or split the load.');
   const sysV = inv[1];                                  // system DC voltage from inverter
   const panel = pickPanel(panBrand, panSize);          // [watts, price]
-  const panelCount = Math.ceil(peakKw*1000/panel[0]);
+  if(!panel) throw new Error('No '+panBrand+' panel at or above '+panSize+'W is available in the price catalogue.');
+  const panelCount = Math.ceil(arrayDcKwp*1000/panel[0]);
   const bat = pickBatteries(kwhUsableNeeded, batType, batBrand, sysV);
+  if(!bat) throw new Error('No compatible '+batBrand+' '+batType+' battery is available for the '+sysV+'V inverter bus.');
 
   // Cables & BoS
-  const dcKey = inv[0]<=5 ? 'dc6cu' : 'dc10cu';
-  const dcLabel = inv[0]<=5 ? '6mm² copper' : '10mm² copper';
-  const dcMetres = 30;
+  const dcCurrent = (inv[0]*1000)/sysV;
+  const acCurrent = (inv[0]*1000)/230;
+  const dcCable = chooseCable('dc',dcCurrent);
+  const acCable = chooseCable('ac',acCurrent);
+  if(!dcCable || !acCable) throw new Error('The selected inverter requires a cable size above the current catalogue. Split the load or select a lower-power design.');
+  const dcKey = dcCable.key;
+  const dcLabel = dcCable.label;
   const dcCost = PRICING.cables[dcKey] * dcMetres;
-  const acKey = inv[0]<=3 ? 'ac4cu' : inv[0]<=5 ? 'ac6cu' : inv[0]<=10 ? 'ac10cu' : 'ac16cu';
-  const acLabel = inv[0]<=3 ? '4mm²' : inv[0]<=5 ? '6mm²' : inv[0]<=10 ? '10mm²' : '16mm²';
-  const acMetres = 15;
+  const acKey = acCable.key;
+  const acLabel = acCable.label;
   const acCost = PRICING.cables[acKey] * acMetres;
   const mount = pickMounting(panelCount);
   const mc4Pairs = Math.max(2, Math.ceil(panelCount/2));
   const mc4Cost = mc4Pairs * PRICING.mounting.mc4;
-  const fuseChoice = bat && bat.count>2 ? ['fuse200', 'Battery fuse 200A', PRICING.protection.fuse200] : ['fuse100','Battery fuse 100A',PRICING.protection.fuse100];
+  const fuseChoice = dcCurrent>300 ? ['fuse400','Battery fuse 400A',PRICING.protection.fuse400] :
+    dcCurrent>200 ? ['fuse300','Battery fuse 300A',PRICING.protection.fuse300] :
+    dcCurrent>125 ? ['fuse200','Battery fuse 200A',PRICING.protection.fuse200] :
+    ['fuse100','Battery fuse 100A',PRICING.protection.fuse100];
   const protPack = PRICING.protection.spd + PRICING.protection.dcCB63 + PRICING.protection.acMCB32 + fuseChoice[2] + PRICING.protection.earth + PRICING.protection.db8;
   const batLinks = bat ? Math.max(0, bat.count-1) * PRICING.protection.batLink : 0;
 
@@ -2937,12 +3177,12 @@ function calcSolar(){
       ${row('Protection & DB', 'SPD + DC/AC breakers + '+fuseChoice[1]+' + earth kit + 8-way DB' + (batLinks?' + '+(bat.count-1)+' battery links':''), protPack+batLinks)}
       ${row('Installation labour', '~10% of equipment cost', inst)}
       <div style="display:flex;justify-content:space-between;padding:14px 0 4px;font-size:16px;font-weight:800;border-top:2px solid var(--green);margin-top:6px;"><span>TOTAL ESTIMATE</span><span style="font-family:'DM Mono',monospace;color:var(--green);">${fmt(tot)}</span></div>
-      <div style="font-size:11px;color:var(--text-2);margin-top:8px;line-height:1.5;">Prices reflect Nigerian retail market (2026). Excludes transport, scaffolding, and roof penetration sealing. Quotes valid 7 days due to FX volatility.</div>
+      <div style="font-size:11px;color:var(--text-2);margin-top:8px;line-height:1.5;">Engineering estimate only: verify roof structure, string design, voltage drop, earthing and protection on site. Prices exclude transport, scaffolding, roof sealing and supplier stock changes. Confirm the market-price timestamp before issuing a quote.</div>
     </div>`;
 
   // Cache full BOM globally for PDF generator
   window.LAST_BOM = {
-    kWh, peakKw, backupDays,
+    kWh, arrayDcKwp, correctedPeakLoadW, backupDays, peakSunHours, systemLossPct, inverterEfficiencyPct,
     inv, sysV, invBrand, iC,
     panel, panelCount, panBrand, pC,
     bat, batType, batBrand, bC,
@@ -2952,7 +3192,14 @@ function calcSolar(){
     fuseChoice, protPack, batLinks,
     equipmentSub, inst, tot
   };
-  }catch(e){console.error('calcSolar error:',e);}
+  }catch(e){
+    console.error('calcSolar error:',e);
+    window.LAST_BOM=null;
+    const breakdown=document.getElementById('r-breakdown');
+    if(breakdown){
+      breakdown.innerHTML='<div style="padding:14px;border:1px solid rgba(220,38,38,.35);border-radius:8px;background:#fef2f2;color:#991b1b;font-size:12px;line-height:1.6;"><strong>Design check required</strong><br>'+String(e.message||e)+'</div>';
+    }
+  }
 }
 
 // ═══ QUOTATION PDF GENERATOR ═══
@@ -3793,6 +4040,12 @@ IESS_DB.onUpdate(function(key){
     if(key === 'iess_quiz_results' && document.getElementById('page-quizzes')?.classList.contains('active')) renderQuizResults();
     if(key === 'iess_activity_log' && document.getElementById('page-activity')?.classList.contains('active')) renderActivityLog();
     if(key === 'iess_invoices_trash' && document.getElementById('page-trash')?.classList.contains('active')) renderTrash();
+    if(key === 'iess_market_prices'){
+      try{
+        const feed=JSON.parse(IESS_DB.get(key)||'null');
+        if(feed){ applyMarketPriceFeed(feed); updateMarketPriceStatus(feed); }
+      }catch(e){}
+    }
   }catch(e){ console.warn('Re-render on sync failed:', e.message); }
   // Always refresh dashboard stats
   try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}

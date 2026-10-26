@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /portal-help.html
+Disallow: /portal/private/
 
 Sitemap: https://iess-platform.vercel.app/sitemap.xml
