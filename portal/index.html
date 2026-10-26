@@ -316,17 +316,31 @@ tbody tr:last-child td{border:none;}
 /* MOBILE */
 .mob-header{display:none;}
 @media(max-width:768px){
+  #platform-screen.active{flex-direction:column !important;width:100% !important;}
   .sidebar{transform:translateX(-100%);transition:transform 0.3s;}
   .sidebar.open{transform:translateX(0);}
-  .main-content{margin-left:0;}
+  .main-content{margin-left:0;width:100%;flex:1 1 auto;}
   .page{padding:18px 14px;}
   .stats-grid{grid-template-columns:1fr 1fr;}
   .content-grid,.calc-grid,.form-grid{grid-template-columns:1fr;}
+  .dashboard-insights-grid,.participant-form-grid,.brand-grid,.letterhead-layout{grid-template-columns:1fr !important;}
+  .applications-stats-grid{grid-template-columns:1fr 1fr !important;}
+  .certificate-layout{grid-template-columns:minmax(0,1fr) !important;}
+  .certificate-layout>div{min-width:0;}
+  #cert-print-area{max-width:100%;overflow-x:auto;}
+  .welcome-banner{align-items:flex-start;flex-direction:column;gap:20px;}
+  .page-title{font-size:32px;}
+  .application-detail-grid{grid-template-columns:1fr !important;}
   .welcome-stats{display:none;}
-  .mob-header{display:flex;align-items:center;justify-content:space-between;
+  .mob-header{display:flex;width:100%;align-items:center;justify-content:space-between;
     padding:14px 18px;background:var(--ink);position:sticky;top:0;z-index:99;}
   .mob-brand{font-family:'Cormorant Garamond',serif;font-size:18px;color:#fff;font-weight:700;}
   .hamburger{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;}
+}
+@media(max-width:480px){
+  .stats-grid,.applications-stats-grid{grid-template-columns:1fr !important;}
+  .page{padding:14px 12px;}
+  .page-title{font-size:28px;}
 }
 </style>
 </head>
@@ -543,7 +557,7 @@ tbody tr:last-child td{border:none;}
       <div class="card">
         <div class="card-header"><div class="card-title">Participant Insights</div></div>
         <div class="card-body">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;" id="dash-insights"></div>
+          <div class="dashboard-insights-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;" id="dash-insights"></div>
         </div>
       </div>
     </div>
@@ -564,7 +578,7 @@ tbody tr:last-child td{border:none;}
         </div>
         <div id="addParticipantForm" style="display:none;">
           <div class="card-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+            <div class="participant-form-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
               <div class="form-group">
                 <label class="form-label">Full Name *</label>
                 <input type="text" class="form-input" id="np-name" placeholder="Full name">
@@ -669,7 +683,7 @@ tbody tr:last-child td{border:none;}
         <h1 class="page-title">Training Applications</h1>
         <p class="page-sub">Review new student applications and convert approved applicants into participants</p>
       </div>
-      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+      <div class="stats-grid applications-stats-grid" style="grid-template-columns:repeat(4,1fr);">
         <div class="stat-card"><div class="stat-icon" style="background:rgba(59,130,246,.1);">📥</div><div class="stat-num" id="app-total">0</div><div class="stat-label">Total Applications</div></div>
         <div class="stat-card"><div class="stat-icon" style="background:rgba(245,158,11,.1);">⏳</div><div class="stat-num" id="app-pending">0</div><div class="stat-label">Pending Review</div></div>
         <div class="stat-card"><div class="stat-icon" style="background:rgba(16,185,129,.1);">✅</div><div class="stat-num" id="app-approved">0</div><div class="stat-label">Approved</div></div>
@@ -741,7 +755,7 @@ tbody tr:last-child td{border:none;}
         <h1 class="page-title">Certificates</h1>
         <p class="page-sub">Generate & download official IESS certificates</p>
       </div>
-      <div style="display:grid;grid-template-columns:360px 1fr;gap:26px;align-items:start;">
+      <div class="certificate-layout" style="display:grid;grid-template-columns:360px 1fr;gap:26px;align-items:start;">
         <div>
           <div class="card" style="margin-bottom:18px;">
             <div class="card-header"><div class="card-title">Generate Certificate</div></div>
@@ -977,7 +991,7 @@ tbody tr:last-child td{border:none;}
           <div class="card" style="margin-bottom:18px;">
             <div class="card-header"><div class="card-title">Brand Preferences</div></div>
             <div class="card-body">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
+              <div class="brand-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
                 <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Inverter Brand
                   <select id="invBrand" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
                     <option value="Felicity">Felicity (budget, 1yr)</option>
@@ -1100,7 +1114,7 @@ tbody tr:last-child td{border:none;}
         <h1 class="page-title">Official Letterhead</h1>
         <p class="page-sub">Authorised IESS correspondence only</p>
       </div>
-      <div class="content-grid" style="grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);">
+      <div class="content-grid letterhead-layout" style="grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);">
         <div class="card">
           <div class="card-header"><div class="card-title">Approved A4 Letterhead</div><span class="badge badge-green">Staff only</span></div>
           <div class="card-body">
@@ -2656,7 +2670,7 @@ function viewApplication(id){
   ];
   const content=document.getElementById('applicationModalContent');
   if(content){
-    content.innerHTML='<div style="display:grid;grid-template-columns:150px 1fr;gap:10px 16px;font-size:12px;">'+
+    content.innerHTML='<div class="application-detail-grid" style="display:grid;grid-template-columns:150px 1fr;gap:10px 16px;font-size:12px;">'+
       rows.map(([label,value])=>'<strong>'+enrollmentEscape(label)+'</strong><div style="white-space:pre-wrap;">'+enrollmentEscape(value||'—')+'</div>').join('')+'</div>';
   }
   const modal=document.getElementById('applicationModal');
