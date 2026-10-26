@@ -1709,8 +1709,8 @@ const STAFF_AUTH_PROFILES = {
       useCalculator: true, exportData: true, manageStaff: true
     }
   },
-  "muazuogirimamuhammed@gmail.com": {
-    email: "muazuogirimamuhammed@gmail.com",
+  "harunjamiu@gmail.com": {
+    email: "harunjamiu@gmail.com",
     name: "Operations Manager",
     role: "Operations Manager",
     roleCode: "operations",
@@ -2404,6 +2404,15 @@ function sp(id,el){
   const targetPage = document.getElementById('page-'+id);
   if(targetPage) targetPage.classList.add('active');
   if(el) el.classList.add('active');
+  if(currentUser && currentUser.roleCode!=='participant' && id!=='activity'){
+    const pageLabels={
+      dashboard:'Dashboard',participants:'Participants',applications:'Training Applications',
+      attendance:'Attendance',quizzes:'Quizzes & Final Exam',certificates:'Certificates',
+      calculator:'Solar Calculator',invoices:'Invoices & Quotations',analytics:'Analytics',
+      letterhead:'Official Letterhead',settings:'Settings'
+    };
+    logActivity('PAGE OPENED','Opened '+(pageLabels[id]||id),'info');
+  }
   
   if(id==='participants') renderParticipants();
   if(id==='applications') {
@@ -2654,6 +2663,7 @@ function findApplication(id){
 function viewApplication(id){
   const app=findApplication(id);
   if(!app) return;
+  logActivity('APPLICATION VIEWED','Viewed training application '+id+' for '+app.email,'info');
   const rows=[
     ['Application ID',app.applicationId],
     ['Name',[app.firstName,app.middleName,app.lastName].filter(Boolean).join(' ')],
@@ -2721,6 +2731,7 @@ function sendApplicationEmailDraft(){
     return;
   }
   window.location.href='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  logActivity('QUALIFICATION EMAIL DRAFT','Opened email draft for '+to+' regarding '+document.getElementById('emailApplicationId').value,'info');
   document.getElementById('emailApplicationStatus').textContent='Email draft opened. Click “Mark as contacted” after you send it.';
 }
 
@@ -2734,7 +2745,7 @@ async function markApplicationEmailed(){
       lastContactedBy:currentUser?.email||currentUser?.name||'Staff',
       contactMethod:'Email'
     });
-    logActivity('QUALIFICATION EMAIL','Prepared qualification email for '+app.email+' ('+id+')','info');
+    logActivity('QUALIFICATION EMAIL SENT','Marked qualification email as contacted for '+app.email+' ('+id+')','info');
     document.getElementById('emailApplicationStatus').textContent='Marked as contacted.';
     renderApplications();
   }catch(error){
@@ -2977,6 +2988,8 @@ function toggleAtt(idx,week,val){
   if(!hasPermission('markAttendance')){ alert('🚫 Your role cannot mark attendance.'); return; }
   attData[idx][week]=val;
   saveAtt();
+  const participant=ALL_PARTICIPANTS[idx];
+  logActivity('ATTENDANCE UPDATED',(participant?.name||'Participant')+' marked '+(val?'Present':'Absent')+' for Week '+(week+1),'info');
 }
 
 function markAllWeek(w){
@@ -2999,6 +3012,7 @@ function exportCSV(){
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='IESS_Cohort1_Attendance.csv';a.click();
+  logActivity('ATTENDANCE EXPORTED','Exported attendance records for '+ALL_PARTICIPANTS.length+' participants','info');
 }
 
 // ═══ CERTIFICATES ═══
@@ -3066,6 +3080,7 @@ function updatePreview(){
 function downloadCert(){
   const name=document.getElementById('cName').value.trim();
   if(!name){alert('Please enter participant name first');return;}
+  logActivity('CERTIFICATE DOWNLOADED','Generated certificate PDF for '+name,'info');
 
   const certEl=document.getElementById('certPreview');
   if(!certEl){alert('Certificate preview not found');return;}
@@ -3150,6 +3165,7 @@ function renderCertList(){
 
 function loadCert(i){
   const c=certificates[i];
+  if(currentUser) logActivity('CERTIFICATE VIEWED','Viewed certificate '+c.num+' for '+c.name,'info');
   document.getElementById('cName').value=c.name;
   document.getElementById('cNum').value=c.num;
   document.getElementById('cGrade').value=c.grade;
