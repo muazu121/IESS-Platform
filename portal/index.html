@@ -2309,7 +2309,8 @@ function applyPermissions(){
   if(adminSec) adminSec.style.display = hasPermission('viewActivityLog') ? '' : 'none';
   // Attendance/Participants
   if(navAttendance) navAttendance.style.display = hasPermission('markAttendance') ? '' : 'none';
-  if(navApplications) navApplications.style.display = hasPermission('manageParticipants') ? '' : 'none';
+  const canViewApplications=hasPermission('manageParticipants') || currentUser.roleCode==='communications';
+  if(navApplications) navApplications.style.display = canViewApplications ? '' : 'none';
   // Show role badge
   const sec = document.querySelector('.nav-section');
   if(sec && !document.getElementById('role-banner')){
@@ -2556,6 +2557,10 @@ function reloadApplications(){
   renderApplications();
 }
 
+function canEmailQualifiedApplicant(){
+  return Boolean(currentUser && ['chairman','communications'].includes(currentUser.roleCode));
+}
+
 function renderApplications(){
   const body=document.getElementById('applicationBody');
   if(!body) return;
@@ -2589,9 +2594,14 @@ function renderApplications(){
   body.innerHTML=filtered.map(app=>{
     const current=app.status||'Pending';
     const badgeClass=current==='Approved'?'badge-green':current==='Declined'?'badge-red':'badge-gold';
-    const actions=current==='Pending'
-      ? '<button class="btn btn-primary btn-sm" onclick="approveApplication(\''+enrollmentEscape(app.applicationId)+'\')">✓ Approve</button> <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;" onclick="declineApplication(\''+enrollmentEscape(app.applicationId)+'\')">Decline</button>'
-      : '';
+    const actions=[];
+    if(current==='Pending' && hasPermission('manageParticipants')){
+      actions.push('<button class="btn btn-primary btn-sm" onclick="approveApplication(\''+enrollmentEscape(app.applicationId)+'\')">✓ Approve</button>');
+      actions.push('<button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;" onclick="declineApplication(\''+enrollmentEscape(app.applicationId)+'\')">Decline</button>');
+    }
+    if(current==='Approved' && canEmailQualifiedApplicant()){
+      actions.push('<button class="btn btn-gold btn-sm" onclick="openApplicationEmail(\''+enrollmentEscape(app.applicationId)+'\')">✉ Email</button>');
+    }
     return '<tr>'+
       '<td style="font-size:11px;color:var(--grey);white-space:nowrap;">'+enrollmentEscape(enrollmentDate(app.createdAt))+'</td>'+
       '<td><strong>'+enrollmentEscape([app.firstName,app.lastName].filter(Boolean).join(' '))+'</strong><br><span style="font-size:10px;color:var(--grey);">'+enrollmentEscape(app.applicationId)+'</span></td>'+
@@ -2600,7 +2610,7 @@ function renderApplications(){
       '<td style="font-size:11px;">'+enrollmentEscape(app.experienceLevel||'—')+'</td>'+
       '<td style="font-size:11px;">'+enrollmentEscape(app.track||'—')+'</td>'+
       '<td><span class="badge '+badgeClass+'">'+enrollmentEscape(current)+'</span></td>'+
-      '<td style="white-space:nowrap;"><button class="btn btn-outline btn-sm" onclick="viewApplication(\''+enrollmentEscape(app.applicationId)+'\')">View</button> '+actions+'</td>'+
+      '<td style="white-space:nowrap;"><button class="btn btn-outline btn-sm" onclick="viewApplication(\''+enrollmentEscape(app.applicationId)+'\')">View</button> '+actions.join(' ')+'</td>'+
     '</tr>';
   }).join('');
 }
@@ -2638,6 +2648,66 @@ function viewApplication(id){
 function closeApplicationModal(){
   const modal=document.getElementById('applicationModal');
   if(modal) modal.style.display='none';
+}
+
+function openApplicationEmail(id){
+  const app=findApplication(id);
+  if(!app || app.status!=='Approved'){
+    alert('Approve the application before sending an enrolment email.');
+    return;
+  }
+  if(!canEmailQualifiedApplicant()){
+    alert('Your role cannot send qualification emails.');
+    return;
+  }
+  document.getElementById('emailApplicationId').value=id;
+  document.getElementById('emailApplicant').value=app.email||'';
+  document.getElementById('emailSubject').value='IESS Solar Training Application '+id+' — Approved';
+  document.getElementById('emailBody').value=
+    'Dear '+(app.firstName||'Applicant')+',\n\n'+
+    'Congratulations. Your application ('+id+') for IESS Solar Training has been approved for the next stage.\n\n'+
+    'We will now confirm the cohort dates, training schedule and enrolment steps. Please reply to this email if you have any questions.\n\n'+
+    'Kind regards,\n'+
+    (currentUser?.name||'IESS Training Team')+'\n'+
+    'Integrated Energy & Smart Systems Ltd';
+  document.getElementById('emailApplicationStatus').textContent='';
+  const modal=document.getElementById('applicationEmailModal');
+  if(modal) modal.style.display='flex';
+}
+
+function closeApplicationEmailModal(){
+  const modal=document.getElementById('applicationEmailModal');
+  if(modal) modal.style.display='none';
+}
+
+function sendApplicationEmailDraft(){
+  const to=document.getElementById('emailApplicant').value.trim();
+  const subject=document.getElementById('emailSubject').value.trim();
+  const body=document.getElementById('emailBody').value.trim();
+  if(!to || !subject || !body){
+    document.getElementById('emailApplicationStatus').textContent='Complete the recipient, subject and message first.';
+    return;
+  }
+  window.location.href='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  document.getElementById('emailApplicationStatus').textContent='Email draft opened. Click “Mark as contacted” after you send it.';
+}
+
+async function markApplicationEmailed(){
+  const id=document.getElementById('emailApplicationId').value;
+  const app=findApplication(id);
+  if(!app) return;
+  try{
+    await IESS_DB.updateApplication(id,{
+      lastContactedAt:new Date().toISOString(),
+      lastContactedBy:currentUser?.email||currentUser?.name||'Staff',
+      contactMethod:'Email'
+    });
+    logActivity('QUALIFICATION EMAIL','Prepared qualification email for '+app.email+' ('+id+')','info');
+    document.getElementById('emailApplicationStatus').textContent='Marked as contacted.';
+    renderApplications();
+  }catch(error){
+    document.getElementById('emailApplicationStatus').textContent='Could not record the email: '+error.message;
+  }
 }
 
 async function approveApplication(id){
@@ -2684,6 +2754,7 @@ async function approveApplication(id){
     }
     logActivity('APPLICATION APPROVED','Approved '+app.applicationId+' for '+app.email,'info');
     renderApplications();
+    openApplicationEmail(id);
   }catch(error){
     enrollmentFeedError='Could not approve application: '+error.message;
     renderApplications();
@@ -5365,6 +5436,24 @@ window.addEventListener('hashchange', handleRouting);
           <button type="button" onclick="closeApplicationModal()" style="width:36px;height:36px;border:1px solid var(--border);border-radius:50%;background:#fff;cursor:pointer;font-size:18px;" aria-label="Close application details">×</button>
         </div>
         <div id="applicationModalContent"></div>
+      </div>
+    </div>
+    <div id="applicationEmailModal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(5,20,10,.72);align-items:center;justify-content:center;padding:20px;">
+      <div style="width:min(680px,96vw);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,.35);">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px;">
+          <div><div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);">QUALIFIED APPLICANT</div><h2 style="margin:4px 0 0;font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--ink);">Send enrolment email</h2></div>
+          <button type="button" onclick="closeApplicationEmailModal()" style="width:36px;height:36px;border:1px solid var(--border);border-radius:50%;background:#fff;cursor:pointer;font-size:18px;" aria-label="Close email dialog">×</button>
+        </div>
+        <input type="hidden" id="emailApplicationId">
+        <div class="form-group"><label class="form-label">Recipient</label><input class="form-input" id="emailApplicant" type="email" readonly></div>
+        <div class="form-group"><label class="form-label">Subject</label><input class="form-input" id="emailSubject" maxlength="160"></div>
+        <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="emailBody" rows="11" style="min-height:230px;resize:vertical;"></textarea></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" type="button" onclick="sendApplicationEmailDraft()">✉ Open email app</button>
+          <button class="btn btn-gold" type="button" onclick="markApplicationEmailed()">✓ Mark as contacted</button>
+          <button class="btn btn-outline" type="button" onclick="closeApplicationEmailModal()">Cancel</button>
+        </div>
+        <div id="emailApplicationStatus" style="margin-top:12px;font-size:12px;color:var(--muted);"></div>
       </div>
     </div>
 </body>
