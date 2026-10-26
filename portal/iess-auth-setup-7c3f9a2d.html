@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>IESS Staff Account Setup</title>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0c1e0f;color:#fff;font:16px Arial,sans-serif}
+    main{width:min(520px,90vw);padding:36px;border:1px solid rgba(255,255,255,.16);border-radius:18px;background:#173d23;text-align:center}
+    h1{font-size:28px;margin:0 0 18px}
+    p{line-height:1.6;color:#c9d8cc}
+    #status{font-weight:700;color:#f0d49c}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>IESS Staff Account Setup</h1>
+    <p id="status">Creating the Customer Relations &amp; Training Assistant account…</p>
+  </main>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      updateProfile,
+      sendPasswordResetEmail,
+      signOut,
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const status = document.getElementById("status");
+    const email = "shaibusumaiya162@gmail.com";
+    const temporary = `Ie$$-${crypto.randomUUID()}-2026!`;
+    const app = initializeApp({
+      apiKey: "AIzaSyBjAtSFOpuMvbd9CyZQ_5MB8d1GTYqMkn4",
+      authDomain: "iess-platform.firebaseapp.com",
+      projectId: "iess-platform",
+      storageBucket: "iess-platform.firebasestorage.app",
+      messagingSenderId: "278227611224",
+      appId: "1:278227611224:web:f8a5e87f7a80328a82642d",
+    });
+    const auth = getAuth(app);
+    let account = "created";
+
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, temporary);
+      await updateProfile(result.user, {
+        displayName: "Customer Relations & Training Assistant",
+      });
+      await signOut(auth);
+    } catch (error) {
+      if (error.code === "auth/email-already-in-use") {
+        account = "already exists";
+      } else {
+        status.textContent = `Account setup failed: ${error.code || error.message}`;
+        throw error;
+      }
+    }
+
+    await sendPasswordResetEmail(auth, email);
+    status.textContent = `Account ${account}. Password-reset email sent to ${email}.`;
+    document.title = "IESS account ready";
+  </script>
+</body>
+</html>
