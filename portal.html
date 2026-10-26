@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal Access | IESS</title>
+  <meta name="description" content="Access and support information for the IESS staff, participant and certificate services.">
+  <meta name="robots" content="noindex,follow">
+  <link rel="canonical" href="https://iess-platform.vercel.app/portal.html">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/main.js" defer></script>
+  <style>
+    .portal-hero { padding: 84px 0; color: var(--white); background: linear-gradient(140deg, var(--forest-deep), var(--forest) 68%, #245f35); }
+    .portal-hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 72px; align-items: center; }
+    .portal-hero h1 { margin: 0; font-family: var(--font-display); font-size: clamp(3.1rem, 7vw, 5.6rem); font-weight: 500; letter-spacing: -.05em; line-height: .92; }
+    .portal-hero h1 em { color: var(--gold-light); font-weight: 500; }
+    .portal-hero p { max-width: 640px; color: rgba(255,255,255,.66); }
+    .portal-seal { position: relative; display: grid; min-height: 360px; place-items: center; }
+    .portal-seal::before { content: ""; position: absolute; width: 290px; height: 290px; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; box-shadow: 0 0 0 45px rgba(255,255,255,.025), 0 0 0 90px rgba(255,255,255,.018); }
+    .portal-seal img { position: relative; z-index: 1; width: min(250px, 70%); border-radius: 50%; box-shadow: 0 24px 50px rgba(0,0,0,.26); }
+    .portal-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: -42px; position: relative; z-index: 2; }
+    .portal-card { display: flex; min-height: 310px; flex-direction: column; padding: 30px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--paper); box-shadow: 0 18px 40px rgba(20,63,34,.08); }
+    .portal-card .service-icon { margin-bottom: 32px; }
+    .portal-card h2 { margin: 0; font-family: var(--font-display); font-size: 2rem; line-height: 1.05; }
+    .portal-card p { color: var(--muted); font-size: .88rem; }
+    .portal-card .btn { width: 100%; margin-top: auto; }
+    .portal-note { margin-top: 64px; display: grid; grid-template-columns: .8fr 1.2fr; gap: 52px; align-items: start; }
+    .portal-note h2 { margin: 0; font-family: var(--font-display); font-size: 2.7rem; font-weight: 500; line-height: 1; }
+    .portal-note-list { display: grid; gap: 14px; }
+    .portal-note-item { display: grid; grid-template-columns: 30px 1fr; gap: 12px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .portal-note-item span:first-child { color: var(--gold); font-family: var(--font-mono); font-size: .7rem; }
+    .portal-note-item strong { display: block; font-size: .92rem; }
+    .portal-note-item p { margin: 3px 0 0; color: var(--muted); font-size: .8rem; }
+    @media (max-width: 820px) { .portal-hero-grid, .portal-note { grid-template-columns: 1fr; } .portal-seal { min-height: 250px; } .portal-cards { grid-template-columns: 1fr; margin-top: 32px; } }
+    @media (max-width: 560px) { .portal-hero { padding: 62px 0; } .portal-card { min-height: 0; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="IESS home">
+        <img class="brand-logo" src="assets/iess-logo.jpg" alt="" width="48" height="48">
+        <span><span class="brand-name">IESS</span><span class="brand-sub">Integrated Energy &amp; Smart Systems Ltd</span></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open navigation">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Primary navigation">
+        <a href="index.html#about">About</a>
+        <a href="index.html#services">Solutions</a>
+        <a href="index.html#training">Training</a>
+        <a href="index.html#resources">Letterhead</a>
+        <a href="index.html#contact">Contact</a>
+        <a class="nav-action-mobile" href="mailto:integratedpower.iess@gmail.com?subject=IESS%20portal%20access%20request">Request access</a>
+      </nav>
+      <div class="header-actions"><a class="btn btn-primary" href="index.html">Back to website</a></div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="portal-hero">
+      <div class="container portal-hero-grid">
+        <div>
+          <p class="eyebrow">IESS digital services</p>
+          <h1>One place for learning, certification and <em>operations.</em></h1>
+          <p>The IESS portal supports authorised staff and registered participants. Access is issued individually so that training records and company information remain appropriately controlled.</p>
+        </div>
+        <div class="portal-seal" aria-label="IESS official seal">
+          <img src="assets/iess-seal.png" alt="Integrated Energy & Smart Systems Ltd official seal">
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tight" aria-labelledby="portal-options">
+      <div class="container">
+        <h2 id="portal-options" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Portal options</h2>
+        <div class="portal-cards">
+          <article class="portal-card">
+            <div class="service-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20h16M6 20V8l6-4 6 4v12M9 12h2M13 12h2M9 16h2M13 16h2"></path></svg>
+            </div>
+            <h2>Staff &amp; admin</h2>
+            <p>Management workspace for operational records, attendance, quotations, certificates and authorised reporting.</p>
+            <a class="btn btn-primary" href="mailto:integratedpower.iess@gmail.com?subject=IESS%20staff%20portal%20access">Request staff access <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="portal-card">
+            <div class="service-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9l9-5 9 5-9 5-9-5Z"></path><path d="M7 11v5c3 2 7 2 10 0v-5M21 9v6"></path></svg>
+            </div>
+            <h2>Training participants</h2>
+            <p>For registered cohort participants who need assessment, progress or certificate support.</p>
+            <a class="btn btn-gold" href="mailto:integratedpower.iess@gmail.com?subject=IESS%20participant%20portal%20support">Get participant support <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="portal-card">
+            <div class="service-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"></circle><path d="M8.5 12 7 22l5-2 5 2-1.5-10M16 6l1 1 2-2"></path></svg>
+            </div>
+            <h2>Certificate checks</h2>
+            <p>Employers and institutions can request verification using the name and certificate number they received.</p>
+            <a class="btn btn-ghost" href="mailto:integratedpower.iess@gmail.com?subject=IESS%20certificate%20verification&amp;body=Certificate%20number%3A%0AHolder%20name%3A%0AI%20am%20requesting%20verification%20because%3A%0A">Start verification <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+
+        <div class="portal-note">
+          <div>
+            <p class="eyebrow">Access support</p>
+            <h2>Keep records and credentials private.</h2>
+          </div>
+          <div class="portal-note-list">
+            <div class="portal-note-item"><span>01</span><div><strong>Use the credentials issued to you.</strong><p>Do not share a staff password or participant PIN with another person.</p></div></div>
+            <div class="portal-note-item"><span>02</span><div><strong>Use a trusted device.</strong><p>Sign out when using a shared or public computer.</p></div></div>
+            <div class="portal-note-item"><span>03</span><div><strong>Report access problems quickly.</strong><p>Email IESS with the name, cohort or role connected to the account. Do not send your password in an ordinary support message.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-bottom" style="padding-top: 24px;">
+      <p>© <span id="copyright-year">2026</span> Integrated Energy &amp; Smart Systems Ltd.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 18px;">
+        <a href="index.html">Home</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="accessibility.html">Accessibility</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
