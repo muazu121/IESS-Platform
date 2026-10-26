@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apply for IESS Solar Training | IESS</title>
+  <meta name="description" content="Apply for the IESS practical solar training programme. Submit your background, learning goals and preferred schedule for admissions review.">
+  <link rel="canonical" href="https://iess-platform.vercel.app/apply">
+  <link rel="icon" href="assets/favicon.png?v=20261026b" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css?v=20261026b">
+  <link rel="stylesheet" href="assets/apply.css?v=20261026c">
+  <script src="assets/main.js?v=20261026b" defer></script>
+  <script src="assets/apply.js?v=20261026c" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="IESS home">
+        <img class="brand-logo" src="assets/iess-logo.jpg?v=20261026b" alt="" width="48" height="48">
+        <span><span class="brand-name">IESS</span><span class="brand-sub">Integrated Energy &amp; Smart Systems Ltd</span></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open navigation">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Primary navigation">
+        <a href="/#about">About</a>
+        <a href="/#services">Solutions</a>
+        <a href="/#training">Training</a>
+        <a href="apply.html" aria-current="page">Apply</a>
+        <a href="/#impact">Impact</a>
+        <a href="/#contact">Contact</a>
+        <a class="nav-action-mobile" href="portal/">Portal access</a>
+      </nav>
+      <div class="header-actions"><a class="btn btn-primary" href="portal/">Portal access <span aria-hidden="true">↗</span></a></div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="apply-hero">
+      <div class="container apply-hero-grid">
+        <div>
+          <p class="eyebrow">IESS Academy admissions</p>
+          <h1>Apply for practical <em>solar training.</em></h1>
+          <p>Tell us about your background and what you want to achieve. Applications are reviewed by the IESS training team before a place is offered.</p>
+        </div>
+        <ol class="apply-steps" aria-label="Application process">
+          <li><span>01</span><strong>Submit your application</strong><small>Complete the required information below.</small></li>
+          <li><span>02</span><strong>Admissions review</strong><small>IESS reviews your background and training goals.</small></li>
+          <li><span>03</span><strong>Receive next steps</strong><small>Approved applicants are contacted with enrolment details.</small></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="apply-section">
+      <div class="container apply-layout">
+        <aside class="apply-aside">
+          <div class="apply-aside-card">
+            <p class="eyebrow">Before you begin</p>
+            <h2>Give accurate details.</h2>
+            <p>Your application helps IESS place you in the right cohort and identify any learning support you may need.</p>
+            <p>Fields marked <strong>*</strong> are required. You may save your progress in this browser.</p>
+            <div class="apply-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path><path d="m9 12 2 2 4-4"></path></svg>
+              <span>Your information is used for admissions and training administration. Read our <a href="privacy.html">privacy policy</a>.</span>
+            </div>
+          </div>
+        </aside>
+
+        <form class="application-form" id="training-application" novalidate>
+          <div class="application-form-header">
+            <div><span class="form-step-label">Training application</span><h2>Student information</h2></div>
+            <span class="application-draft" id="draftStatus" aria-live="polite"></span>
+          </div>
+
+          <fieldset>
+            <legend><span>01</span>Personal details</legend>
+            <div class="form-grid">
+              <div class="field"><label for="firstName">First name *</label><input id="firstName" name="firstName" autocomplete="given-name" maxlength="60" required></div>
+              <div class="field"><label for="middleName">Middle name</label><input id="middleName" name="middleName" autocomplete="additional-name" maxlength="60"></div>
+              <div class="field"><label for="lastName">Surname *</label><input id="lastName" name="lastName" autocomplete="family-name" maxlength="60" required></div>
+              <div class="field"><label for="gender">Gender</label><select id="gender" name="gender"><option value="">Prefer not to say</option><option>Female</option><option>Male</option><option>Other</option></select></div>
+              <div class="field"><label for="ageRange">Age range</label><select id="ageRange" name="ageRange"><option value="">Select age range</option><option>Under 18</option><option>18 to 24 years</option><option>25 to 34 years</option><option>35 to 44 years</option><option>45 to 54 years</option><option>55 years and above</option></select></div>
+              <div class="field"><label for="email">Email address *</label><input id="email" name="email" type="email" autocomplete="email" maxlength="120" required></div>
+              <div class="field"><label for="phone">Phone number *</label><input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="30" required></div>
+              <div class="field"><label for="whatsapp">WhatsApp number</label><input id="whatsapp" name="whatsapp" type="tel" maxlength="30"></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span>02</span>Location</legend>
+            <div class="form-grid">
+              <div class="field"><label for="country">Country *</label><select id="country" name="country" required><option value="">Select country</option><option>Nigeria</option><option>Ghana</option><option>Kenya</option><option>South Africa</option><option>Ethiopia</option><option>Tanzania</option><option>Uganda</option><option>Rwanda</option><option>Cameroon</option><option>Senegal</option><option>Bangladesh</option><option>Other</option></select></div>
+              <div class="field"><label for="state">State or region</label><input id="state" name="state" autocomplete="address-level1" maxlength="80"></div>
+              <div class="field"><label for="city">City or town</label><input id="city" name="city" autocomplete="address-level2" maxlength="80"></div>
+              <div class="field"><label for="timeZone">Time zone</label><select id="timeZone" name="timeZone"><option value="WAT">West Africa Time (WAT)</option><option value="GMT">GMT</option><option value="EAT">East Africa Time (EAT)</option><option value="SAST">South Africa Standard Time (SAST)</option><option value="BST">Bangladesh Standard Time (BST)</option><option value="Other">Other</option></select></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span>03</span>Education and experience</legend>
+            <div class="form-grid">
+              <div class="field"><label for="education">Highest education level *</label><select id="education" name="education" required><option value="">Select level</option><option>Secondary school</option><option>Certificate / Diploma</option><option>Undergraduate student</option><option>Bachelor's degree</option><option>Postgraduate degree</option><option>Technical / vocational training</option><option>Other</option></select></div>
+              <div class="field"><label for="occupation">Current occupation *</label><input id="occupation" name="occupation" autocomplete="organization-title" maxlength="100" required></div>
+              <div class="field"><label for="organisation">Employer or institution</label><input id="organisation" name="organisation" autocomplete="organization" maxlength="120"></div>
+              <div class="field"><label for="experienceLevel">Solar experience *</label><select id="experienceLevel" name="experienceLevel" required><option value="">Select experience</option><option>Complete beginner</option><option>Basic knowledge</option><option>Some practical experience</option><option>Installed or designed 1–5 systems</option><option>Professional solar experience</option></select></div>
+              <div class="field field--full"><label for="technicalBackground">Relevant technical background</label><textarea id="technicalBackground" name="technicalBackground" maxlength="800" placeholder="Electrical, engineering, installation, business or other relevant experience."></textarea></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span>04</span>Training preference</legend>
+            <div class="form-grid">
+              <div class="field"><label for="track">Training track *</label><select id="track" name="track" required><option value="">Select track</option><option>Complete Solar PV Training</option><option>Design and System Sizing</option><option>Installation and Commissioning</option><option>Solar Business and Project Delivery</option><option>Corporate or group training</option><option>Refresher training</option></select></div>
+              <div class="field"><label for="preferredFormat">Preferred format *</label><select id="preferredFormat" name="preferredFormat" required><option>Online live classes</option><option>In-person training</option><option>Hybrid</option><option>No preference</option></select></div>
+              <div class="field"><label for="preferredSchedule">Preferred schedule *</label><select id="preferredSchedule" name="preferredSchedule" required><option>Weekend classes</option><option>Weekday evening classes</option><option>Weekday daytime classes</option><option>No preference</option></select></div>
+              <div class="field"><label for="startTime">Preferred start *</label><select id="startTime" name="startTime" required><option>Next available cohort</option><option>Within 1 month</option><option>Within 3 months</option><option>Within 6 months</option></select></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span>05</span>Goals and support</legend>
+            <div class="form-grid">
+              <div class="field field--full"><label for="motivation">Why do you want to join? *</label><textarea id="motivation" name="motivation" minlength="30" maxlength="1200" required placeholder="Describe your interest, current work or the opportunity you want to pursue."></textarea></div>
+              <div class="field field--full"><label for="learningGoals">What do you want to learn or achieve? *</label><textarea id="learningGoals" name="learningGoals" minlength="20" maxlength="1200" required placeholder="For example: design safe systems, improve installation quality, prepare for employment or start a solar business."></textarea></div>
+              <div class="field field--full"><label for="accessibilityNeeds">Accessibility or learning support needs</label><textarea id="accessibilityNeeds" name="accessibilityNeeds" maxlength="600" placeholder="Optional. Tell us about any support that would help you participate fully."></textarea></div>
+              <div class="field"><label for="emergencyName">Emergency contact name</label><input id="emergencyName" name="emergencyName" maxlength="100"></div>
+              <div class="field"><label for="emergencyPhone">Emergency contact phone</label><input id="emergencyPhone" name="emergencyPhone" type="tel" maxlength="30"></div>
+              <div class="field"><label for="howHeard">How did you hear about IESS?</label><select id="howHeard" name="howHeard"><option>Select source</option><option>IESS website</option><option>Social media</option><option>Colleague or friend</option><option>Employer or institution</option><option>Professional association</option><option>Other</option></select></div>
+              <div class="field"><label for="referralCode">Referral code</label><input id="referralCode" name="referralCode" maxlength="40"></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span>06</span>Consent</legend>
+            <div class="consent-list">
+              <label class="consent"><input id="consentPrivacy" type="checkbox" name="consentPrivacy" required><span>I confirm that the information provided is accurate and I agree to the <a href="privacy.html" target="_blank">privacy policy</a>. *</span></label>
+              <label class="consent"><input id="consentTerms" type="checkbox" name="consentTerms" required><span>I understand that submitting an application does not guarantee a training place and I accept the <a href="terms.html" target="_blank">website terms</a>. *</span></label>
+              <label class="consent"><input id="receiveUpdates" type="checkbox" name="receiveUpdates"><span>I would like to receive information about future IESS training programmes and events.</span></label>
+            </div>
+          </fieldset>
+
+          <div class="application-submit">
+            <p>Applications are saved securely for review by authorised IESS staff. Required fields must be complete.</p>
+            <button class="btn btn-primary" id="submitApplication" type="submit">Submit application <span aria-hidden="true">→</span></button>
+          </div>
+          <div class="form-message" id="applicationMessage" role="alert" aria-live="assertive"></div>
+        </form>
+
+        <section class="application-success" id="applicationSuccess" hidden>
+          <div class="success-mark">✓</div>
+          <p class="eyebrow">Application received</p>
+          <h2>Thank you for applying.</h2>
+          <p>Your application has been sent to the IESS training team. Save your application number for future correspondence.</p>
+          <div class="application-number" id="applicationNumber"></div>
+          <div class="success-actions">
+            <button class="btn btn-primary" type="button" id="copyApplicationNumber">Copy application number</button>
+            <a class="btn btn-ghost" href="/">Return to IESS</a>
+          </div>
+          <p class="success-note">The team will review your application and contact you using the email or phone number supplied.</p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-bottom" style="padding-top:24px;">
+      <p>© <span id="copyright-year">2026</span> Integrated Energy &amp; Smart Systems Ltd.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:18px;"><a href="/">Home</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="accessibility.html">Accessibility</a></div>
+    </div>
+  </footer>
+</body>
+</html>

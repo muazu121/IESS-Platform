@@ -12,6 +12,7 @@ const BRANDS = [
   "Pylontech",
   "BYD",
   "BlueCarbon",
+  "Chisage",
 ];
 
 const FALLBACK = {
@@ -19,13 +20,13 @@ const FALLBACK = {
   live: false,
   mode: "benchmark",
   currency: "NGN",
-  updatedAt: "2026-06-30T00:00:00.000Z",
-  source: "IESS Nigerian market benchmark",
+  updatedAt: "2026-10-26T00:00:00.000Z",
+  source: "IESS benchmark + verified Chisage ESS offer",
   sourceUrl: "https://iess-platform.vercel.app/portal",
   brands: BRANDS,
   items: [],
   message:
-    "No official retailer price-feed URL is configured. The calculator is using the saved IESS benchmark prices until a trusted feed is connected.",
+    "Chisage ESS prices are from the verified 26 October 2026 offer list. Other brands use the saved IESS benchmark until a trusted retailer feed is connected.",
 };
 
 function normalizeFeed(feed) {
