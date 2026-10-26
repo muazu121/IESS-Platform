@@ -27,6 +27,12 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const status = document.getElementById("status");
+    const setupToken = new URLSearchParams(location.search).get("token");
+    if (setupToken !== "a7f91c3e5b2d4f68") {
+      status.textContent = "This setup link is not valid.";
+      document.title = "Setup link invalid";
+      throw new Error("Invalid setup token");
+    }
     const email = "shaibusumaiya162@gmail.com";
     const temporary = `Ie$$-${crypto.randomUUID()}-2026!`;
     const app = initializeApp({
