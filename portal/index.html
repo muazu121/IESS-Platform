@@ -1961,9 +1961,7 @@ async function sendStaffPasswordReset(){
   try{
     const auth=await ensureAuthClient();
     if(!auth) throw new Error('Authentication service is unavailable.');
-    await window.firebaseSDK.sendPasswordResetEmail(auth,email,{
-      url:location.origin+'/portal'
-    });
+    await window.firebaseSDK.sendPasswordResetEmail(auth,email);
     showStaffLoginError('Password reset email sent. Check your inbox and spam folder.');
     const error=document.getElementById('loginErr');
     if(error) error.style.color='#86efac';
