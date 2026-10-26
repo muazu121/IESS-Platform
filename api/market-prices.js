@@ -19,7 +19,7 @@ const FALLBACK = {
   live: false,
   mode: "benchmark",
   currency: "NGN",
-  updatedAt: "2026-10-26T00:00:00.000Z",
+  updatedAt: "2026-06-30T00:00:00.000Z",
   source: "IESS Nigerian market benchmark",
   sourceUrl: "https://iess-platform.vercel.app/portal",
   brands: BRANDS,
