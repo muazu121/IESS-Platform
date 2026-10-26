@@ -1691,7 +1691,7 @@ const STAFF_AUTH_PROFILES = {
     permissions: {
       viewAll: true, generateInvoice: true, deleteInvoice: true,
       viewActivityLog: true, viewTrash: true, restoreTrash: true,
-      manageParticipants: true, markAttendance: true, issueCertificate: true,
+      manageParticipants: true, markAttendance: true, issueCertificate: true, deleteCertificate: true,
       useCalculator: true, exportData: true, manageStaff: true
     }
   },
@@ -1732,6 +1732,20 @@ const STAFF_AUTH_PROFILES = {
       viewActivityLog: false, viewTrash: false, restoreTrash: false,
       manageParticipants: false, markAttendance: false, issueCertificate: false,
       useCalculator: true, exportData: false, manageStaff: false
+    }
+  },
+  "shaibusumaiya162@gmail.com": {
+    email: "shaibusumaiya162@gmail.com",
+    name: "Customer Relations & Training Assistant",
+    role: "Customer Relations & Training Assistant",
+    roleCode: "training",
+    avatar: "🎓",
+    permissions: {
+      viewAll: false, generateInvoice: true, deleteInvoice: false,
+      viewActivityLog: false, viewTrash: false, restoreTrash: false,
+      manageParticipants: true, markAttendance: true, issueCertificate: true,
+      deleteCertificate: false, useCalculator: true, exportData: false,
+      manageStaff: false
     }
   },
   "muazhabib54@gmail.com": {
@@ -2358,6 +2372,10 @@ function sp(id,el){
     alert('🚫 Access Denied\n\nTrash is restricted to Chairman/MD only.');
     return;
   }
+  if(id==='settings' && !hasPermission('manageStaff')){
+    alert('🚫 Access Denied\n\nSettings are restricted to Chairman/MD only.');
+    return;
+  }
   if(id==='invoices' && !hasPermission('generateInvoice')){
     alert('🚫 Access Denied\n\nYour role cannot access invoices.');
     return;
@@ -2558,7 +2576,7 @@ function reloadApplications(){
 }
 
 function canEmailQualifiedApplicant(){
-  return Boolean(currentUser && ['chairman','communications'].includes(currentUser.roleCode));
+  return Boolean(currentUser && ['chairman','communications','training'].includes(currentUser.roleCode));
 }
 
 function renderApplications(){
@@ -3110,7 +3128,7 @@ function renderCertList(){
         <button class="btn btn-outline btn-sm" onclick="sendCert(${i})" title="Send certificate by email" style="white-space:nowrap;">📧 Send</button>
       </td>
       <td>
-        <button class="btn btn-sm" style="background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.3);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;" onclick="deleteCert(${i})" title="Delete certificate (frees up ID for reuse)">🗑️</button>
+        ${hasPermission('deleteCertificate') ? '<button class="btn btn-sm" style="background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.3);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;" onclick="deleteCert('+i+')" title="Delete certificate (frees up ID for reuse)">🗑️</button>' : '<span style="font-size:10px;color:#94a3b8;">Protected</span>'}
       </td>
     </tr>`;
   }).join('');
@@ -3130,6 +3148,7 @@ function loadCert(i){
 }
 
 function deleteCert(i){
+  if(!requirePermission('deleteCertificate','delete certificates')) return;
   const c=certificates[i];
   if(!confirm(`Delete certificate ${c.num} issued to ${c.name}?\n\nThe certificate ID will be freed for reuse.`)) return;
   // Check if deleted cert was the one currently in preview — if so, clear form
