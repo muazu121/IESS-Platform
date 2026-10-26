@@ -837,8 +837,8 @@ tbody tr:last-child td{border:none;}
               <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">VAT %
                 <input type="number" id="qVatRate" value="7.5" min="0" max="25" step="0.5" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
               </label>
-              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Deposit %
-                <input type="number" id="qDepositPct" value="70" min="0" max="100" step="5" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+              <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Advance Payment %
+                <input type="number" id="qDepositPct" value="90" min="0" max="100" step="5" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
               </label>
             </div>
             <div style="margin-top:14px;padding:12px;background:linear-gradient(135deg,#fff4e6,#fff8f0);border:2px solid #c87d2a;border-radius:8px;">
@@ -939,6 +939,8 @@ tbody tr:last-child td{border:none;}
                     <option value="SMS">SMS Nigeria (2yr)</option>
                     <option value="Sako">Sako (2yr)</option>
                     <option value="Victron">Victron Energy (5yr, EU)</option>
+                    <option value="Must">Must (2yr)</option>
+                    <option value="PowMr">PowMr (1yr)</option>
                   </select>
                 </label>
                 <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">Battery Type
@@ -2836,7 +2838,9 @@ const PRICING = {
     SuKam:[[1,12,'Falcon+ 1kVA',130000,1],[2.5,24,'Shark 2.5kVA',280000,1],[3.5,48,'Falcon 3.5kVA',360000,1],[5,48,'Blazer 5kVA',550000,1]],
     SMS:[[5,24,'SMS 5kVA Hybrid',750000,2],[6.5,48,'SMS 6.5kVA Hybrid',1050000,2],[12,48,'SMS 12kVA Hybrid',1850000,2]],
     Sako:[[3.5,24,'Sako 3.5kVA',530000,2],[5,48,'Sunonpro 5kVA',930000,2],[11,48,'Sunonpro 11kVA',1950000,2]],
-    Victron:[[3,48,'MultiPlus-II 3kVA',1350000,5],[5,48,'MultiPlus-II 5kVA',1950000,5]]
+    Victron:[[3,48,'MultiPlus-II 3kVA',1350000,5],[5,48,'MultiPlus-II 5kVA',1950000,5]],
+    Must:[[3,24,'EP3000 Pro',520000,2],[5,48,'EP5000 Pro',920000,2],[10,48,'EP10000 Pro',1800000,2]],
+    PowMr:[[3.6,24,'POW-HVM3.6M',480000,1],[5.5,48,'POW-HVM5.5M',750000,1],[10,48,'POW-HVM10M',1500000,1]]
   },
   batteries: {
     'lithium': {
@@ -2844,16 +2848,36 @@ const PRICING = {
       Pylontech:[[48,100,990000],[48,200,1900000]],
       BYD:[[48,100,1200000],[48,200,2400000]],
       Gennex:[[48,100,940000]],
-      BlueCarbon:[[48,100,910000]]
+      BlueCarbon:[[48,100,910000]],
+      Deye:[[48,100,970000],[48,200,1850000]],
+      Growatt:[[48,100,960000],[48,200,1820000]],
+      Must:[[48,100,900000],[48,200,1650000]],
+      Narada:[[48,100,1020000],[48,200,1980000]],
+      Luminous:[[48,100,990000],[48,200,1910000]]
     },
     'lead-tubular': {
-      Luminous:[[12,200,215000],[12,220,240000]]
+      Luminous:[[12,200,215000],[12,220,240000]],
+      Felicity:[[12,200,205000]],
+      Quanta:[[12,200,220000]],
+      Amaron:[[12,200,235000]],
+      Exide:[[12,200,225000]],
+      Trojan:[[12,200,310000]],
+      Rolls:[[12,200,350000]],
+      Deka:[[12,200,285000]],
+      Ritar:[[12,200,265000]],
+      Genus:[[12,200,225000]]
     },
     'lead-gel': {
       Felicity:[[12,100,165000],[12,200,320000]],
       Amaron:[[12,100,210000],[12,200,390000]],
       Genus:[[12,200,225000]],
-      Ritar:[[12,200,400000]]
+      Ritar:[[12,200,400000]],
+      Luminous:[[12,100,195000],[12,200,360000]],
+      Quanta:[[12,200,340000]],
+      Trojan:[[12,100,290000],[12,200,520000]],
+      Victron:[[12,100,410000],[12,200,720000]],
+      MK:[[12,100,330000],[12,200,590000]],
+      Exide:[[12,100,220000],[12,200,390000]]
     }
   },
   panels: {
@@ -3253,7 +3277,7 @@ function generateQuotationPDF(){
     const qDate  = (document.getElementById('qDate')||{}).value || todayISO;
     const qValid = (document.getElementById('qValidUntil')||{}).value || addDays(qDate, 14);
     const vatRate    = parseFloat((document.getElementById('qVatRate')||{}).value || '7.5');
-    const depositPct = parseFloat((document.getElementById('qDepositPct')||{}).value || '70');
+    const depositPct = parseFloat((document.getElementById('qDepositPct')||{}).value || '90');
 
     const fmtDate = s => { try{ const d=new Date(s); if(isNaN(d.getTime())) return s; return d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){return s;} };
 
@@ -3523,12 +3547,12 @@ function generateQuotationPDF(){
       doc.text(v, M+37, y+3.5);
       y += 5;
     }
-    // Deposit note
+    // Advance-payment note
     doc.setFillColor(...PALE_ORANGE);
     doc.rect(M, y, pageW-2*M, 5, 'F');
     doc.rect(M, y, pageW-2*M, 5);
     doc.setFont('helvetica','bold'); doc.setTextColor(...G_DARK);
-    doc.text(depositPct+'% DEPOSIT REQUIRED BEFORE COMMENCEMENT OF INSTALLATION  |  Balance payable on completion  |  Deposit = '+money(depositAmount), M+2, y+3.5);
+    doc.text(depositPct+'% ADVANCE REQUIRED BEFORE INSTALLATION  |  Balance due on completion  |  Advance = '+money(depositAmount), M+2, y+3.5);
     y += 5 + 3;
 
     // ────── TERMS & CONDITIONS ──────
@@ -3542,7 +3566,7 @@ function generateQuotationPDF(){
     doc.setTextColor(20,20,20);
     doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
     const terms = [
-      '1. A '+vatRate+'% advance is required before work commencement. Balance payable on completion.',
+      '1. A '+depositPct+'% advance payment is required before work commencement. Balance payable on completion.',
       '2. This quotation is valid for 14 days from date of issue. Prices subject to exchange-rate fluctuations.',
       '3. Solar panels carry 10-year product warranty + 25-year performance warranty (manufacturer).',
       '4. Batteries: Li-ion/LiFePO4 minimum 3-year warranty; lead-acid (tubular/gel) 1-2 years subject to manufacturer.',
