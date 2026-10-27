@@ -141,6 +141,14 @@
               <div class="field"><label for="socialPlatform">Platform followed *</label><select id="socialPlatform" name="socialPlatform" required><option value="">Select platform</option><option>Instagram</option><option>Facebook</option><option>TikTok</option><option>LinkedIn</option><option>YouTube</option><option>X</option></select></div>
               <div class="field"><label for="socialHandle">Your username on that platform *</label><input id="socialHandle" name="socialHandle" maxlength="80" placeholder="@yourusername" required></div>
             </div>
+            <div class="field" style="margin-top:16px;">
+              <label for="socialProof">Screenshot evidence *</label>
+              <input id="socialProof" type="file" accept="image/png,image/jpeg,image/webp" required aria-describedby="socialProofHelp">
+              <small id="socialProofHelp" style="color:var(--muted);line-height:1.55;">Upload a screenshot showing your account following <strong>@IESmartSystems</strong>. Do not include passwords, OTPs or private messages. Maximum 8 MB.</small>
+              <div id="socialProofPreview" hidden style="margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#fff;">
+                <img alt="Selected social-media follow evidence" style="max-height:220px;max-width:100%;border-radius:6px;">
+              </div>
+            </div>
             <div class="consent-list" style="margin-top:16px;">
               <label class="consent"><input id="socialFollowConfirmed" type="checkbox" name="socialFollowConfirmed" required><span>I confirm that I have followed IESS <strong>@IESmartSystems</strong> on the platform selected above. I understand that IESS may request verification and that a false declaration may affect my application. *</span></label>
             </div>

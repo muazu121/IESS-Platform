@@ -2803,7 +2803,10 @@ function viewApplication(id){
   const content=document.getElementById('applicationModalContent');
   if(content){
     content.innerHTML='<div class="application-detail-grid" style="display:grid;grid-template-columns:150px 1fr;gap:10px 16px;font-size:12px;">'+
-      rows.map(([label,value])=>'<strong>'+enrollmentEscape(label)+'</strong><div style="white-space:pre-wrap;">'+enrollmentEscape(value||'—')+'</div>').join('')+'</div>';
+      rows.map(([label,value])=>'<strong>'+enrollmentEscape(label)+'</strong><div style="white-space:pre-wrap;">'+enrollmentEscape(value||'—')+'</div>').join('')+'</div>'+
+      (typeof app.socialProofImage==='string' && /^data:image\/(png|jpeg|webp);base64,/i.test(app.socialProofImage)
+        ? '<div style="margin-top:22px;"><div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:8px;">SOCIAL FOLLOW EVIDENCE</div><img src="'+app.socialProofImage+'" alt="Applicant social-media follow evidence" style="display:block;width:100%;max-height:420px;object-fit:contain;border:1px solid var(--border);border-radius:10px;background:#fff;"></div>'
+        : '<div style="margin-top:22px;padding:14px;border:1px dashed var(--border);border-radius:9px;color:var(--grey);font-size:12px;">No social-media screenshot supplied.</div>');
   }
   const modal=document.getElementById('applicationModal');
   if(modal) modal.style.display='flex';
@@ -2833,6 +2836,19 @@ function openSocialVerification(id){
     link.textContent='No public profile URL available';
     link.style.display='inline-flex';
   }
+  const proof=document.getElementById('socialVerifyProof');
+  const proofEmpty=document.getElementById('socialVerifyProofEmpty');
+  if(proof && proofEmpty){
+    if(typeof app.socialProofImage==='string' && /^data:image\/(png|jpeg|webp);base64,/i.test(app.socialProofImage)){
+      proof.src=app.socialProofImage;
+      proof.hidden=false;
+      proofEmpty.hidden=true;
+    }else{
+      proof.removeAttribute('src');
+      proof.hidden=true;
+      proofEmpty.hidden=false;
+    }
+  }
   document.getElementById('socialVerificationModal').style.display='flex';
 }
 
@@ -2847,7 +2863,8 @@ async function setSocialVerification(status){
   if(!app) return;
   if(status==='Verified'){
     const url=socialProfileUrl(app);
-    if(!app.socialPlatform||!app.socialHandle||!app.socialFollowConfirmed||!url){
+    if(!app.socialPlatform||!app.socialHandle||!app.socialFollowConfirmed||!url||
+       !(typeof app.socialProofImage==='string' && /^data:image\/(png|jpeg|webp);base64,/i.test(app.socialProofImage))){
       alert('The applicant has not supplied enough social-media information to verify.');
       return;
     }
@@ -5698,6 +5715,11 @@ window.addEventListener('hashchange', handleRouting);
           <div><strong>Username:</strong> <span id="socialVerifyHandle"></span></div>
           <div><strong>Required account:</strong> @IESmartSystems</div>
           <div id="socialVerifyStatus" style="margin-top:6px;color:var(--grey);"></div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:10px;color:var(--grey);font-family:'DM Mono',monospace;letter-spacing:1px;margin-bottom:6px;">APPLICANT EVIDENCE</div>
+          <img id="socialVerifyProof" alt="Applicant social-media follow evidence" style="display:block;width:100%;max-height:320px;object-fit:contain;border:1px solid var(--border);border-radius:9px;background:#fff;" hidden>
+          <div id="socialVerifyProofEmpty" style="padding:18px;border:1px dashed var(--border);border-radius:9px;color:var(--grey);font-size:12px;text-align:center;">No screenshot was supplied with this application.</div>
         </div>
         <a id="socialVerifyLink" class="btn btn-outline" href="#" target="_blank" rel="noopener" style="margin-top:14px;">Open applicant profile ↗</a>
         <p style="font-size:12px;color:var(--grey);line-height:1.6;">Open the profile and confirm that @IESmartSystems appears in the account’s following list. Private profiles may require a screenshot or alternative proof.</p>
