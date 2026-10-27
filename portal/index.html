@@ -705,6 +705,7 @@ tbody tr:last-child td{border:none;}
         </select>
         <button class="btn btn-outline" type="button" onclick="reloadApplications()">🔄 Refresh</button>
         <a class="btn btn-primary" href="/apply" target="_blank" rel="noopener">↗ Open application page</a>
+        <button class="btn btn-sm" id="deleteRejectedApplicationsBtn" type="button" onclick="deleteAllRejectedApplications()" style="display:none;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;">🗑 Delete rejected applicants</button>
       </div>
       <div id="applicationStatusSummary" style="margin:-4px 0 14px;color:var(--grey);font-size:12px;"></div>
       <div class="card">
@@ -1647,6 +1648,12 @@ window.IESS_DB = (function(){
     },{merge:true});
   }
 
+  async function deleteApplication(applicationId){
+    if(!db || !window.firebaseSDK) throw new Error('Cloud enrollment is unavailable.');
+    const { doc, deleteDoc } = window.firebaseSDK;
+    await deleteDoc(doc(db,'iess_data','iess_application_'+applicationId));
+  }
+
   function subscribeApplications(callback){
     if(!db || !window.firebaseSDK) return null;
     const { collection, query, where, onSnapshot } = window.firebaseSDK;
@@ -1673,7 +1680,7 @@ window.IESS_DB = (function(){
     tryConnect, disconnect,
     loadConfig, saveConfig,
     migrateLocalToRemote,
-    saveApplication, updateApplication, subscribeApplications,
+    saveApplication, updateApplication, deleteApplication, subscribeApplications,
     authClient: () => auth,
     status,
     KEYS
@@ -2348,6 +2355,8 @@ function applyPermissions(){
   if(navAttendance) navAttendance.style.display = hasPermission('markAttendance') ? '' : 'none';
   const canViewApplications=hasPermission('manageParticipants') || currentUser.roleCode==='communications';
   if(navApplications) navApplications.style.display = canViewApplications ? '' : 'none';
+  const deleteRejectedApplicationsBtn=document.getElementById('deleteRejectedApplicationsBtn');
+  if(deleteRejectedApplicationsBtn) deleteRejectedApplicationsBtn.style.display=currentUser.roleCode==='chairman'?'inline-flex':'none';
   // Show role badge
   const sec = document.querySelector('.nav-section');
   if(sec && !document.getElementById('role-banner')){
@@ -2709,6 +2718,13 @@ function renderApplications(){
   set('app-high',all.filter(a=>a.ranking.band==='High').length);
   set('app-medium',all.filter(a=>a.ranking.band==='Medium').length);
   set('app-low',all.filter(a=>a.ranking.band==='Low').length);
+  const deleteRejectedBtn=document.getElementById('deleteRejectedApplicationsBtn');
+  const declinedCount=all.filter(a=>a.status==='Declined').length;
+  if(deleteRejectedBtn){
+    deleteRejectedBtn.style.display=currentUser?.roleCode==='chairman'?'inline-flex':'none';
+    deleteRejectedBtn.textContent='🗑 Delete rejected applicants ('+declinedCount+')';
+    deleteRejectedBtn.disabled=declinedCount===0;
+  }
   const summary=document.getElementById('applicationStatusSummary');
   if(summary){
     summary.textContent=
@@ -2751,6 +2767,9 @@ function renderApplications(){
     }
     if(current==='Approved' && canEmailQualifiedApplicant()){
       actions.push('<button class="btn btn-gold btn-sm" onclick="openApplicationEmail(\''+enrollmentEscape(app.applicationId)+'\')">✉ Email</button>');
+    }
+    if(current==='Declined' && currentUser?.roleCode==='chairman'){
+      actions.push('<button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;" onclick="deleteRejectedApplication(\''+enrollmentEscape(app.applicationId)+'\')">🗑 Delete</button>');
     }
     return '<tr>'+
       '<td style="white-space:nowrap;"><span class="badge '+rankClass+'">'+app.ranking.band+'</span><br><strong style="font-family:DM Mono,monospace;font-size:11px;">'+app.ranking.score+'/100</strong></td>'+
@@ -3020,6 +3039,55 @@ async function declineApplication(id){
     enrollmentFeedError='Could not decline application: '+error.message;
     renderApplications();
   }
+}
+
+async function deleteRejectedApplication(id){
+  if(currentUser?.roleCode!=='chairman'){
+    alert('Only the Chairman/MD can delete rejected applications.');
+    return;
+  }
+  const app=findApplication(id);
+  if(!app) return;
+  if(app.status!=='Declined'){
+    alert('Only applications marked Declined can be deleted.');
+    return;
+  }
+  if(!confirm('Permanently delete the rejected application for '+app.email+'?\n\nThis removes the application and its uploaded evidence screenshot.')) return;
+  try{
+    await IESS_DB.deleteApplication(id);
+    enrollmentApplications=enrollmentApplications.filter(item=>item.applicationId!==id);
+    logActivity('REJECTED APPLICATION DELETED','Deleted rejected application '+id+' for '+app.email,'critical');
+    renderApplications();
+  }catch(error){
+    enrollmentFeedError='Could not delete application: '+error.message;
+    renderApplications();
+  }
+}
+
+async function deleteAllRejectedApplications(){
+  if(currentUser?.roleCode!=='chairman'){
+    alert('Only the Chairman/MD can delete rejected applications.');
+    return;
+  }
+  const rejected=enrollmentApplications.filter(app=>app.status==='Declined');
+  if(!rejected.length){
+    alert('There are no rejected applications to delete.');
+    return;
+  }
+  if(!confirm('Permanently delete all '+rejected.length+' rejected applications and their evidence screenshots?\n\nThis cannot be undone.')) return;
+  const settled=await Promise.allSettled(
+    rejected.map(app=>IESS_DB.deleteApplication(app.applicationId))
+  );
+  const deletedIds=new Set();
+  const failures=[];
+  settled.forEach((result,index)=>{
+    if(result.status==='fulfilled') deletedIds.add(rejected[index].applicationId);
+    else failures.push(rejected[index].applicationId+': '+result.reason?.message);
+  });
+  enrollmentApplications=enrollmentApplications.filter(app=>!deletedIds.has(app.applicationId));
+  logActivity('REJECTED APPLICATIONS PURGED','Deleted '+deletedIds.size+' rejected applications'+(failures.length?' · '+failures.length+' failed':''),'critical');
+  enrollmentFeedError=failures.length?'Some rejected applications could not be deleted: '+failures.join(' | '):'';
+  renderApplications();
 }
 
 // ═══ PARTICIPANTS ═══
@@ -5703,7 +5771,7 @@ window.addEventListener('hashchange', handleRouting);
       </div>
     </div>
     <div id="socialVerificationModal" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(5,20,10,.72);align-items:center;justify-content:center;padding:20px;">
-      <div style="width:min(560px,96vw);background:#fff;border-radius:16px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,.35);">
+      <div style="width:min(560px,96vw);max-height:92vh;overflow-y:auto;background:#fff;border-radius:16px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,.35);">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px;">
           <div><div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);">MANUAL CHECK</div><h2 style="margin:4px 0 0;font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--ink);">Verify social follow</h2></div>
           <button type="button" onclick="closeSocialVerification()" style="width:36px;height:36px;border:1px solid var(--border);border-radius:50%;background:#fff;cursor:pointer;font-size:18px;" aria-label="Close social verification">×</button>
