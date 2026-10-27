@@ -103,6 +103,7 @@ form.addEventListener("submit", async (event) => {
     name: [values.firstName, values.middleName, values.lastName].filter(Boolean).join(" "),
     email: values.email.toLowerCase(),
     status: "Pending",
+    socialVerificationStatus: "Pending",
     source: "Public training application",
     submittedDate: new Date().toISOString(),
     consentPrivacy: Boolean(values.consentPrivacy),

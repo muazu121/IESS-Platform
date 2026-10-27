@@ -2611,6 +2611,27 @@ function canEmailQualifiedApplicant(){
   return Boolean(currentUser && ['chairman','communications','training'].includes(currentUser.roleCode));
 }
 
+function canVerifyApplicantSocial(){
+  return Boolean(currentUser && ['chairman','communications','training'].includes(currentUser.roleCode));
+}
+
+function socialProfileUrl(app){
+  let handle=String(app.socialHandle||'').trim();
+  if(/^https?:\/\//i.test(handle)) return handle;
+  handle=handle.replace(/^@/,'').replace(/^\/+/,'');
+  if(!handle) return '';
+  const encoded=encodeURIComponent(handle);
+  const urls={
+    Instagram:'https://www.instagram.com/'+encoded+'/',
+    Facebook:'https://www.facebook.com/'+encoded,
+    TikTok:'https://www.tiktok.com/@'+encoded,
+    LinkedIn:'https://www.linkedin.com/in/'+encoded,
+    YouTube:'https://www.youtube.com/@'+encoded,
+    X:'https://x.com/'+encoded
+  };
+  return urls[app.socialPlatform]||'';
+}
+
 function applicationKeywordHits(text,keywords){
   const value=String(text||'').toLowerCase();
   return keywords.reduce((count,word)=>count+(value.includes(word)?1:0),0);
@@ -2645,7 +2666,7 @@ function scoreApplication(app){
   const readinessScore=
     (app.preferredFormat?4:0)+(app.preferredSchedule?4:0)+(app.startTime?3:0)+
     (app.track?2:0)+(app.country?2:0);
-  const socialScore=app.socialPlatform&&app.socialHandle&&Boolean(app.socialFollowConfirmed)?15:0;
+  const socialScore=app.socialVerificationStatus==='Verified'?15:0;
   const consentScore=(Boolean(app.consentPrivacy)?3:0)+(Boolean(app.consentTerms)?2:0);
   const score=Math.max(0,Math.min(100,completeness+motivationScore+goalsScore+backgroundScore+readinessScore+socialScore+consentScore));
   const band=score>=70?'High':score>=50?'Medium':'Low';
@@ -2659,8 +2680,8 @@ function scoreApplication(app){
   else if(goalsScore<7) gaps.push('training goals need clarification');
   if(backgroundScore>=8) strengths.push('relevant technical background');
   if(readinessScore>=13) strengths.push('schedule ready');
-  if(socialScore) strengths.push('social requirement declared');
-  else gaps.push('social follow declaration missing');
+  if(socialScore) strengths.push('social requirement verified');
+  else gaps.push('social follow not yet verified');
   if(!consentScore) gaps.push('consent missing');
   return {
     score,band,
@@ -2719,6 +2740,9 @@ function renderApplications(){
     const badgeClass=current==='Approved'?'badge-green':current==='Declined'?'badge-red':'badge-gold';
     const rankClass=app.ranking.band==='High'?'badge-green':app.ranking.band==='Medium'?'badge-gold':'badge-red';
     const actions=[];
+    if(canVerifyApplicantSocial() && app.socialVerificationStatus!=='Verified'){
+      actions.push('<button class="btn btn-outline btn-sm" onclick="openSocialVerification(\''+enrollmentEscape(app.applicationId)+'\')">🔎 Verify social</button>');
+    }
     if(current==='Pending' && hasPermission('approveApplication')){
       actions.push('<button class="btn btn-primary btn-sm" onclick="approveApplication(\''+enrollmentEscape(app.applicationId)+'\')">✓ Approve</button>');
     }
@@ -2768,7 +2792,10 @@ function viewApplication(id){
     ['Motivation',app.motivation],['Learning goals',app.learningGoals],
     ['Accessibility needs',app.accessibilityNeeds],['Emergency contact',[app.emergencyName,app.emergencyPhone].filter(Boolean).join(' · ')],
     ['Social platform',app.socialPlatform],['Social username',app.socialHandle],
+    ['Social profile',socialProfileUrl(app)||'Not provided'],
     ['Follow declared',app.socialFollowConfirmed?'Yes — self-declared':'No'],
+    ['Social verification',app.socialVerificationStatus||'Pending'],
+    ['Social verified by',app.socialVerifiedBy||'—'],
     ['Last contacted',app.lastContactedAt?new Date(app.lastContactedAt).toLocaleString():'—'],
     ['Contacted by',app.lastContactedBy||'—'],
     ['Status',app.status||'Pending'],['Reviewed by',app.reviewedBy||'—'],['Review note',app.reviewNote||'—']
@@ -2785,6 +2812,59 @@ function viewApplication(id){
 function closeApplicationModal(){
   const modal=document.getElementById('applicationModal');
   if(modal) modal.style.display='none';
+}
+
+function openSocialVerification(id){
+  const app=findApplication(id);
+  if(!app || !canVerifyApplicantSocial()) return;
+  const url=socialProfileUrl(app);
+  document.getElementById('socialVerifyApplicationId').value=id;
+  document.getElementById('socialVerifyName').textContent=[app.firstName,app.lastName].filter(Boolean).join(' ');
+  document.getElementById('socialVerifyPlatform').textContent=app.socialPlatform||'Not provided';
+  document.getElementById('socialVerifyHandle').textContent=app.socialHandle||'Not provided';
+  document.getElementById('socialVerifyStatus').textContent='Current status: '+(app.socialVerificationStatus||'Pending');
+  const link=document.getElementById('socialVerifyLink');
+  if(url){
+    link.href=url;
+    link.textContent='Open applicant profile ↗';
+    link.style.display='inline-flex';
+  }else{
+    link.removeAttribute('href');
+    link.textContent='No public profile URL available';
+    link.style.display='inline-flex';
+  }
+  document.getElementById('socialVerificationModal').style.display='flex';
+}
+
+function closeSocialVerification(){
+  document.getElementById('socialVerificationModal').style.display='none';
+}
+
+async function setSocialVerification(status){
+  if(!canVerifyApplicantSocial()) return;
+  const id=document.getElementById('socialVerifyApplicationId').value;
+  const app=findApplication(id);
+  if(!app) return;
+  if(status==='Verified'){
+    const url=socialProfileUrl(app);
+    if(!app.socialPlatform||!app.socialHandle||!app.socialFollowConfirmed||!url){
+      alert('The applicant has not supplied enough social-media information to verify.');
+      return;
+    }
+    if(!confirm('Confirm that '+app.socialHandle+' follows IESS @IESmartSystems on '+app.socialPlatform+'?')) return;
+  }
+  try{
+    await IESS_DB.updateApplication(id,{
+      socialVerificationStatus:status,
+      socialVerifiedBy:currentUser?.email||currentUser?.name||'Staff',
+      socialVerifiedAt:new Date().toISOString()
+    });
+    logActivity('SOCIAL VERIFICATION',status+' — '+app.socialPlatform+' '+app.socialHandle+' for '+app.email,'info');
+    closeSocialVerification();
+    renderApplications();
+  }catch(error){
+    alert('Could not save the social verification: '+error.message);
+  }
 }
 
 function openApplicationEmail(id){
@@ -2852,6 +2932,11 @@ async function approveApplication(id){
   if(!requirePermission('approveApplication','approve training applications')) return;
   const app=findApplication(id);
   if(!app) return;
+  if(app.socialVerificationStatus!=='Verified'){
+    alert('Verify the applicant’s social-media follow requirement before approving.');
+    openSocialVerification(id);
+    return;
+  }
   if(!confirm('Approve '+app.firstName+' '+app.lastName+' and add them to the participant register?')) return;
   try{
     const nextId=Math.max(1000,...ALL_PARTICIPANTS.map(p=>Number(p.id)||0))+1;
@@ -5598,6 +5683,29 @@ window.addEventListener('hashchange', handleRouting);
           <button class="btn btn-outline" type="button" onclick="closeApplicationEmailModal()">Cancel</button>
         </div>
         <div id="emailApplicationStatus" style="margin-top:12px;font-size:12px;color:var(--muted);"></div>
+      </div>
+    </div>
+    <div id="socialVerificationModal" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(5,20,10,.72);align-items:center;justify-content:center;padding:20px;">
+      <div style="width:min(560px,96vw);background:#fff;border-radius:16px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,.35);">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px;">
+          <div><div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);">MANUAL CHECK</div><h2 style="margin:4px 0 0;font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--ink);">Verify social follow</h2></div>
+          <button type="button" onclick="closeSocialVerification()" style="width:36px;height:36px;border:1px solid var(--border);border-radius:50%;background:#fff;cursor:pointer;font-size:18px;" aria-label="Close social verification">×</button>
+        </div>
+        <input type="hidden" id="socialVerifyApplicationId">
+        <div style="padding:16px;border:1px solid var(--border);border-radius:10px;background:#f8faf7;font-size:13px;line-height:1.7;">
+          <div><strong>Applicant:</strong> <span id="socialVerifyName"></span></div>
+          <div><strong>Platform:</strong> <span id="socialVerifyPlatform"></span></div>
+          <div><strong>Username:</strong> <span id="socialVerifyHandle"></span></div>
+          <div><strong>Required account:</strong> @IESmartSystems</div>
+          <div id="socialVerifyStatus" style="margin-top:6px;color:var(--grey);"></div>
+        </div>
+        <a id="socialVerifyLink" class="btn btn-outline" href="#" target="_blank" rel="noopener" style="margin-top:14px;">Open applicant profile ↗</a>
+        <p style="font-size:12px;color:var(--grey);line-height:1.6;">Open the profile and confirm that @IESmartSystems appears in the account’s following list. Private profiles may require a screenshot or alternative proof.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" type="button" onclick="setSocialVerification('Verified')">✓ Mark as verified</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;" type="button" onclick="setSocialVerification('Not Following')">Mark as not following</button>
+          <button class="btn btn-outline" type="button" onclick="closeSocialVerification()">Cancel</button>
+        </div>
       </div>
     </div>
 </body>
