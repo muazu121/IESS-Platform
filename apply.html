@@ -135,7 +135,19 @@
           </fieldset>
 
           <fieldset>
-            <legend><span>06</span>Consent</legend>
+            <legend><span>06</span>Social media requirement</legend>
+            <p style="margin:-10px 0 18px;color:var(--muted);font-size:.82rem;">IESS training is offered free of charge. Following our social channels helps us reach more people who can benefit from the programme.</p>
+            <div class="form-grid">
+              <div class="field"><label for="socialPlatform">Platform followed *</label><select id="socialPlatform" name="socialPlatform" required><option value="">Select platform</option><option>Instagram</option><option>Facebook</option><option>TikTok</option><option>LinkedIn</option><option>YouTube</option><option>X</option></select></div>
+              <div class="field"><label for="socialHandle">Your username on that platform *</label><input id="socialHandle" name="socialHandle" maxlength="80" placeholder="@yourusername" required></div>
+            </div>
+            <div class="consent-list" style="margin-top:16px;">
+              <label class="consent"><input id="socialFollowConfirmed" type="checkbox" name="socialFollowConfirmed" required><span>I confirm that I have followed IESS <strong>@IESmartSystems</strong> on the platform selected above. I understand that IESS may request verification and that a false declaration may affect my application. *</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span>07</span>Consent</legend>
             <div class="consent-list">
               <label class="consent"><input id="consentPrivacy" type="checkbox" name="consentPrivacy" required><span>I confirm that the information provided is accurate and I agree to the <a href="privacy.html" target="_blank">privacy policy</a>. *</span></label>
               <label class="consent"><input id="consentTerms" type="checkbox" name="consentTerms" required><span>I understand that submitting an application does not guarantee a training place and I accept the <a href="terms.html" target="_blank">website terms</a>. *</span></label>

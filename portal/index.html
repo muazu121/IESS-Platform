@@ -681,13 +681,13 @@ tbody tr:last-child td{border:none;}
       <div class="page-header">
         <span class="page-tag">Admissions</span>
         <h1 class="page-title">Training Applications</h1>
-        <p class="page-sub">Review new student applications and convert approved applicants into participants</p>
+        <p class="page-sub">Automatically ranked High, Medium and Low · Final approval is CEO-only</p>
       </div>
       <div class="stats-grid applications-stats-grid" style="grid-template-columns:repeat(4,1fr);">
         <div class="stat-card"><div class="stat-icon" style="background:rgba(59,130,246,.1);">📥</div><div class="stat-num" id="app-total">0</div><div class="stat-label">Total Applications</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:rgba(245,158,11,.1);">⏳</div><div class="stat-num" id="app-pending">0</div><div class="stat-label">Pending Review</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:rgba(16,185,129,.1);">✅</div><div class="stat-num" id="app-approved">0</div><div class="stat-label">Approved</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:rgba(220,38,38,.1);">❌</div><div class="stat-num" id="app-declined">0</div><div class="stat-label">Declined</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(16,185,129,.1);">🟢</div><div class="stat-num" id="app-high">0</div><div class="stat-label">High Priority</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(245,158,11,.1);">🟡</div><div class="stat-num" id="app-medium">0</div><div class="stat-label">Medium Priority</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(220,38,38,.1);">🔴</div><div class="stat-num" id="app-low">0</div><div class="stat-label">Low Priority</div></div>
       </div>
       <div class="search-bar">
         <input class="search-input" id="applicationSearch" type="search" placeholder="🔍 Search name, email, country, track or application ID" oninput="renderApplications()">
@@ -697,15 +697,22 @@ tbody tr:last-child td{border:none;}
           <option>Approved</option>
           <option>Declined</option>
         </select>
+        <select class="filter-sel" id="applicationPriorityFilter" onchange="renderApplications()">
+          <option value="">All priority levels</option>
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
+        </select>
         <button class="btn btn-outline" type="button" onclick="reloadApplications()">🔄 Refresh</button>
         <a class="btn btn-primary" href="/apply" target="_blank" rel="noopener">↗ Open application page</a>
       </div>
+      <div id="applicationStatusSummary" style="margin:-4px 0 14px;color:var(--grey);font-size:12px;"></div>
       <div class="card">
         <div class="card-body" style="padding:0;">
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Submitted</th><th>Applicant</th><th>Contact</th><th>Location</th><th>Experience</th><th>Track</th><th>Status</th><th>Actions</th></tr>
+                <tr><th>Priority</th><th>Applicant</th><th>Contact</th><th>Location</th><th>Experience</th><th>Track</th><th>Status</th><th>Actions</th></tr>
               </thead>
               <tbody id="applicationBody"></tbody>
             </table>
@@ -1706,6 +1713,7 @@ const STAFF_AUTH_PROFILES = {
       viewAll: true, generateInvoice: true, deleteInvoice: true,
       viewActivityLog: true, viewTrash: true, restoreTrash: true,
       manageParticipants: true, markAttendance: true, issueCertificate: true, deleteCertificate: true,
+      approveApplication: true, declineApplication: true,
       useCalculator: true, exportData: true, manageStaff: true
     }
   },
@@ -1758,7 +1766,8 @@ const STAFF_AUTH_PROFILES = {
       viewAll: false, generateInvoice: true, deleteInvoice: false,
       viewActivityLog: false, viewTrash: false, restoreTrash: false,
       manageParticipants: true, markAttendance: true, issueCertificate: true,
-      deleteCertificate: false, useCalculator: true, exportData: false,
+      deleteCertificate: false, approveApplication: true, declineApplication: false,
+      useCalculator: true, exportData: false,
       manageStaff: false
     }
   },
@@ -1815,7 +1824,7 @@ function hasPermission(perm){
 }
 function requirePermission(perm, actionName){
   if(!hasPermission(perm)){
-    alert('🚫 Access Denied\n\nYour role ('+currentUser.role+') cannot '+actionName+'.\n\nOnly Chairman/MD can perform this action. This attempt has been logged.');
+    alert('🚫 Access Denied\n\nYour role ('+currentUser.role+') cannot '+actionName+'. This attempt has been logged.');
     logActivity('PERMISSION DENIED', 'Attempted: '+actionName, 'warning');
     return false;
   }
@@ -2602,20 +2611,91 @@ function canEmailQualifiedApplicant(){
   return Boolean(currentUser && ['chairman','communications','training'].includes(currentUser.roleCode));
 }
 
+function applicationKeywordHits(text,keywords){
+  const value=String(text||'').toLowerCase();
+  return keywords.reduce((count,word)=>count+(value.includes(word)?1:0),0);
+}
+
+function scoreApplication(app){
+  const requiredFields=['firstName','lastName','email','phone','country','education','occupation','experienceLevel','track','preferredFormat','preferredSchedule','startTime'];
+  const completed=requiredFields.filter(key=>String(app[key]||'').trim()).length;
+  const completeness=Math.round(completed/requiredFields.length*10);
+  const motivationText=[app.motivation,app.technicalBackground].filter(Boolean).join(' ');
+  const goalText=[app.learningGoals,app.track].filter(Boolean).join(' ');
+  const motivationLength=Math.min(10,Math.floor(String(motivationText).length/35));
+  const motivationKeywords=Math.min(12,applicationKeywordHits(motivationText,[
+    'solar','energy','electric','design','install','maintenance','project','business',
+    'career','employment','community','training','technician','engineer'
+  ])*2);
+  const motivationScore=Math.min(22,motivationLength+motivationKeywords);
+  const goalLength=Math.min(8,Math.floor(String(goalText).length/35));
+  const goalKeywords=Math.min(10,applicationKeywordHits(goalText,[
+    'design','install','maintenance','troubleshoot','battery','inverter','panel',
+    'business','employment','community','certification','professional'
+  ])*2);
+  const goalsScore=Math.min(18,goalLength+goalKeywords);
+  const experienceScores={
+    'Complete beginner':1,'Basic knowledge':4,'Some practical experience':7,
+    'Installed or designed 1–5 systems':10,'Professional solar experience':12
+  };
+  const backgroundScore=Math.min(15,(experienceScores[app.experienceLevel]||0)+
+    Math.min(3,applicationKeywordHits(app.occupation,[
+      'electric','engineer','technician','installer','technical','teacher'
+    ])));
+  const readinessScore=
+    (app.preferredFormat?4:0)+(app.preferredSchedule?4:0)+(app.startTime?3:0)+
+    (app.track?2:0)+(app.country?2:0);
+  const socialScore=app.socialPlatform&&app.socialHandle&&Boolean(app.socialFollowConfirmed)?15:0;
+  const consentScore=(Boolean(app.consentPrivacy)?3:0)+(Boolean(app.consentTerms)?2:0);
+  const score=Math.max(0,Math.min(100,completeness+motivationScore+goalsScore+backgroundScore+readinessScore+socialScore+consentScore));
+  const band=score>=70?'High':score>=50?'Medium':'Low';
+  const strengths=[];
+  const gaps=[];
+  if(completeness>=9) strengths.push('complete application');
+  else gaps.push('incomplete information');
+  if(motivationScore>=14) strengths.push('strong motivation');
+  else if(motivationScore<8) gaps.push('motivation needs more detail');
+  if(goalsScore>=12) strengths.push('clear learning goals');
+  else if(goalsScore<7) gaps.push('training goals need clarification');
+  if(backgroundScore>=8) strengths.push('relevant technical background');
+  if(readinessScore>=13) strengths.push('schedule ready');
+  if(socialScore) strengths.push('social requirement declared');
+  else gaps.push('social follow declaration missing');
+  if(!consentScore) gaps.push('consent missing');
+  return {
+    score,band,
+    breakdown:{completeness,motivationScore,goalsScore,backgroundScore,readinessScore,socialScore,consentScore},
+    reasons:{strengths,gaps}
+  };
+}
+
 function renderApplications(){
   const body=document.getElementById('applicationBody');
   if(!body) return;
   const q=String(document.getElementById('applicationSearch')?.value||'').toLowerCase().trim();
   const status=String(document.getElementById('applicationStatusFilter')?.value||'');
-  const all=enrollmentApplications.slice().sort((a,b)=>{
+  const priorityFilter=String(document.getElementById('applicationPriorityFilter')?.value||'');
+  const all=enrollmentApplications.map(app=>({...app,ranking:scoreApplication(app)})).sort((a,b)=>{
+    const order={High:0,Medium:1,Low:2};
+    const rankDiff=(order[a.ranking.band]??3)-(order[b.ranking.band]??3);
+    if(rankDiff) return rankDiff;
+    if(b.ranking.score!==a.ranking.score) return b.ranking.score-a.ranking.score;
     const ad=a.createdAt?.seconds||0, bd=b.createdAt?.seconds||0;
     return bd-ad;
   });
   const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   set('app-total',all.length);
-  set('app-pending',all.filter(a=>(a.status||'Pending')==='Pending').length);
-  set('app-approved',all.filter(a=>a.status==='Approved').length);
-  set('app-declined',all.filter(a=>a.status==='Declined').length);
+  set('app-high',all.filter(a=>a.ranking.band==='High').length);
+  set('app-medium',all.filter(a=>a.ranking.band==='Medium').length);
+  set('app-low',all.filter(a=>a.ranking.band==='Low').length);
+  const summary=document.getElementById('applicationStatusSummary');
+  if(summary){
+    summary.textContent=
+      'Pending: '+all.filter(a=>(a.status||'Pending')==='Pending').length+
+      ' · Approved: '+all.filter(a=>a.status==='Approved').length+
+      ' · Declined: '+all.filter(a=>a.status==='Declined').length+
+      ' · Ranking is advisory; final approval is CEO-only.';
+  }
   const badge=document.getElementById('nav-application-count');
   if(badge) badge.textContent=all.filter(a=>(a.status||'Pending')==='Pending').length;
 
@@ -2625,8 +2705,10 @@ function renderApplications(){
     errorEl.textContent=enrollmentFeedError||'';
   }
   const filtered=all.filter(app=>{
-    const haystack=[app.applicationId,app.firstName,app.lastName,app.email,app.phone,app.country,app.track,app.occupation].join(' ').toLowerCase();
-    return (!q||haystack.includes(q)) && (!status||(app.status||'Pending')===status);
+    const haystack=[app.applicationId,app.firstName,app.lastName,app.email,app.phone,app.country,app.track,app.occupation,app.socialPlatform,app.socialHandle].join(' ').toLowerCase();
+    return (!q||haystack.includes(q)) &&
+      (!status||(app.status||'Pending')===status) &&
+      (!priorityFilter||app.ranking.band===priorityFilter);
   });
   if(!filtered.length){
     body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:42px;color:var(--grey);">'+(enrollmentFeedError?'Applications could not be loaded.':'No applications match this view.')+'</td></tr>';
@@ -2635,17 +2717,20 @@ function renderApplications(){
   body.innerHTML=filtered.map(app=>{
     const current=app.status||'Pending';
     const badgeClass=current==='Approved'?'badge-green':current==='Declined'?'badge-red':'badge-gold';
+    const rankClass=app.ranking.band==='High'?'badge-green':app.ranking.band==='Medium'?'badge-gold':'badge-red';
     const actions=[];
-    if(current==='Pending' && hasPermission('manageParticipants')){
+    if(current==='Pending' && hasPermission('approveApplication')){
       actions.push('<button class="btn btn-primary btn-sm" onclick="approveApplication(\''+enrollmentEscape(app.applicationId)+'\')">✓ Approve</button>');
+    }
+    if(current==='Pending' && hasPermission('declineApplication')){
       actions.push('<button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;" onclick="declineApplication(\''+enrollmentEscape(app.applicationId)+'\')">Decline</button>');
     }
     if(current==='Approved' && canEmailQualifiedApplicant()){
       actions.push('<button class="btn btn-gold btn-sm" onclick="openApplicationEmail(\''+enrollmentEscape(app.applicationId)+'\')">✉ Email</button>');
     }
     return '<tr>'+
-      '<td style="font-size:11px;color:var(--grey);white-space:nowrap;">'+enrollmentEscape(enrollmentDate(app.createdAt))+'</td>'+
-      '<td><strong>'+enrollmentEscape([app.firstName,app.lastName].filter(Boolean).join(' '))+'</strong><br><span style="font-size:10px;color:var(--grey);">'+enrollmentEscape(app.applicationId)+'</span></td>'+
+      '<td style="white-space:nowrap;"><span class="badge '+rankClass+'">'+app.ranking.band+'</span><br><strong style="font-family:DM Mono,monospace;font-size:11px;">'+app.ranking.score+'/100</strong></td>'+
+      '<td><strong>'+enrollmentEscape([app.firstName,app.lastName].filter(Boolean).join(' '))+'</strong><br><span style="font-size:10px;color:var(--grey);">'+enrollmentEscape(app.applicationId)+'</span><br><span style="font-size:9px;color:#94a3b8;">'+enrollmentEscape(enrollmentDate(app.createdAt))+'</span></td>'+
       '<td style="font-size:11px;">'+enrollmentEscape(app.email)+'<br>'+enrollmentEscape(app.phone)+'</td>'+
       '<td style="font-size:11px;">'+enrollmentEscape([app.city,app.state,app.country].filter(Boolean).join(', '))+'</td>'+
       '<td style="font-size:11px;">'+enrollmentEscape(app.experienceLevel||'—')+'</td>'+
@@ -2663,9 +2748,15 @@ function findApplication(id){
 function viewApplication(id){
   const app=findApplication(id);
   if(!app) return;
+  const ranking=scoreApplication(app);
   logActivity('APPLICATION VIEWED','Viewed training application '+id+' for '+app.email,'info');
   const rows=[
     ['Application ID',app.applicationId],
+    ['Automatic priority',ranking.band+' ('+ranking.score+'/100)'],
+    ['Assessment',[
+      ranking.reasons.strengths.length?'Strengths: '+ranking.reasons.strengths.join(', '):'',
+      ranking.reasons.gaps.length?'Review points: '+ranking.reasons.gaps.join(', '):''
+    ].filter(Boolean).join(' | ')],
     ['Name',[app.firstName,app.middleName,app.lastName].filter(Boolean).join(' ')],
     ['Email',app.email],['Phone',app.phone],['WhatsApp',app.whatsapp],
     ['Location',[app.city,app.state,app.country].filter(Boolean).join(', ')],
@@ -2676,6 +2767,10 @@ function viewApplication(id){
     ['Preferred start',app.startTime],['How heard',app.howHeard],
     ['Motivation',app.motivation],['Learning goals',app.learningGoals],
     ['Accessibility needs',app.accessibilityNeeds],['Emergency contact',[app.emergencyName,app.emergencyPhone].filter(Boolean).join(' · ')],
+    ['Social platform',app.socialPlatform],['Social username',app.socialHandle],
+    ['Follow declared',app.socialFollowConfirmed?'Yes — self-declared':'No'],
+    ['Last contacted',app.lastContactedAt?new Date(app.lastContactedAt).toLocaleString():'—'],
+    ['Contacted by',app.lastContactedBy||'—'],
     ['Status',app.status||'Pending'],['Reviewed by',app.reviewedBy||'—'],['Review note',app.reviewNote||'—']
   ];
   const content=document.getElementById('applicationModalContent');
@@ -2754,7 +2849,7 @@ async function markApplicationEmailed(){
 }
 
 async function approveApplication(id){
-  if(!requirePermission('manageParticipants','approve training applications')) return;
+  if(!requirePermission('approveApplication','approve training applications')) return;
   const app=findApplication(id);
   if(!app) return;
   if(!confirm('Approve '+app.firstName+' '+app.lastName+' and add them to the participant register?')) return;
@@ -2805,7 +2900,7 @@ async function approveApplication(id){
 }
 
 async function declineApplication(id){
-  if(!requirePermission('manageParticipants','decline training applications')) return;
+  if(!requirePermission('declineApplication','decline training applications')) return;
   const app=findApplication(id);
   if(!app) return;
   const reason=prompt('Reason for declining '+app.firstName+' '+(app.lastName||'')+' (optional):','');
