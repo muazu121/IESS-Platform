@@ -2694,7 +2694,7 @@ function renderApplications(){
       'Pending: '+all.filter(a=>(a.status||'Pending')==='Pending').length+
       ' · Approved: '+all.filter(a=>a.status==='Approved').length+
       ' · Declined: '+all.filter(a=>a.status==='Declined').length+
-      ' · Ranking is advisory; final approval is CEO-only.';
+      ' · Ranking uses completeness, motivation, learning goals, relevant background, training readiness, social declaration and consent. Gender, age and country are not scored.';
   }
   const badge=document.getElementById('nav-application-count');
   if(badge) badge.textContent=all.filter(a=>(a.status||'Pending')==='Pending').length;
