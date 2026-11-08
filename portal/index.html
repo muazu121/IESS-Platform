@@ -1108,7 +1108,7 @@ tbody tr:last-child td{border:none;}
             <div class="result-item"><span class="result-label">Estimated Cost</span><span class="result-value" id="r-cost">--</span></div>
           </div>
           <div class="card">
-            <div class="card-header"><div class="card-title">Cost Breakdown</div><div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="calcSolar()">🔄 Refresh</button><button class="btn btn-primary btn-sm" onclick="generateQuotationPDF()" style="background:#1A5C2A;color:#fff;border:none;">📄 Generate Quotation PDF</button></div></div>
+            <div class="card-header"><div class="card-title">Cost Breakdown</div><div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" onclick="calcSolar()">🔄 Refresh</button><button class="btn btn-primary btn-sm" id="generateQuotationBtn" onclick="generateQuotationPDF()" style="background:#1A5C2A;color:#fff;border:none;">📄 Generate Quotation PDF</button></div></div>
             <div class="card-body" id="r-breakdown"></div>
           </div>
         </div>
@@ -1772,9 +1772,9 @@ const STAFF_AUTH_PROFILES = {
     permissions: {
       viewAll: true, viewApplications: true, generateInvoice: false, deleteInvoice: false,
       viewActivityLog: true, clearActivityLog: false, viewTrash: false, restoreTrash: false,
-      manageParticipants: false, markAttendance: false, issueCertificate: false, deleteCertificate: false,
+      manageParticipants: false, markAttendance: false, issueCertificate: true, deleteCertificate: false,
       approveApplication: false, declineApplication: false,
-      useCalculator: false, exportData: true, manageStaff: false
+      useCalculator: true, exportData: true, manageStaff: false
     }
   },
   "abdulhaqqahmad@gmail.com": {
@@ -2389,6 +2389,8 @@ function applyPermissions(){
   if(deleteRejectedApplicationsBtn) deleteRejectedApplicationsBtn.style.display=currentUser.roleCode==='chairman'?'inline-flex':'none';
   const clearActivityLogBtn=document.getElementById('clearActivityLogBtn');
   if(clearActivityLogBtn) clearActivityLogBtn.style.display=hasPermission('clearActivityLog')?'':'none';
+  const generateQuotationBtn=document.getElementById('generateQuotationBtn');
+  if(generateQuotationBtn) generateQuotationBtn.style.display=hasPermission('generateInvoice')?'inline-flex':'none';
   // Show role badge
   const sec = document.querySelector('.nav-section');
   if(sec && !document.getElementById('role-banner')){
@@ -4063,6 +4065,7 @@ function calcSolar(){
 
 // ═══ QUOTATION PDF GENERATOR ═══
 function generateQuotationPDF(){
+  if(!requirePermission('generateInvoice','generate quotations')) return;
   try{
     if(!window.LAST_BOM){ calcSolar(); }
     const b = window.LAST_BOM;
