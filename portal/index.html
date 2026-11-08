@@ -1218,10 +1218,10 @@ tbody tr:last-child td{border:none;}
       </div>
     </div>
 
-    <!-- ACTIVITY LOG PAGE (Chairman only) -->
+    <!-- ACTIVITY LOG PAGE (CEO + authorised monitoring) -->
     <div id="page-activity" class="page">
       <div class="page-header">
-        <span class="page-tag" style="background:linear-gradient(135deg,#ef4444,#c87d2a);">👑 Chairman Only</span>
+        <span class="page-tag" style="background:linear-gradient(135deg,#ef4444,#c87d2a);">Restricted Oversight</span>
         <h1 class="page-title">📜 Activity Log</h1>
         <p class="page-sub">Every action by every team member — full audit trail with timestamps</p>
       </div>
@@ -1245,7 +1245,7 @@ tbody tr:last-child td{border:none;}
               <option value="info">Info Only</option>
             </select>
             <button class="btn btn-outline btn-sm" onclick="exportActivityLog()">📤 Export</button>
-            <button class="btn btn-outline btn-sm" onclick="clearActivityLog()" style="color:#ef4444;border-color:#ef4444;">🗑️ Clear All</button>
+            <button class="btn btn-outline btn-sm" id="clearActivityLogBtn" onclick="clearActivityLog()" style="display:none;color:#ef4444;border-color:#ef4444;">🗑️ Clear All</button>
           </div>
         </div>
         <div class="card-body" id="activity-log-body" style="max-height:600px;overflow-y:auto;">
@@ -1720,7 +1720,7 @@ const STAFF_AUTH_PROFILES = {
       viewAll: true, generateInvoice: true, deleteInvoice: true,
       viewActivityLog: true, viewTrash: true, restoreTrash: true,
       manageParticipants: true, markAttendance: true, issueCertificate: true, deleteCertificate: true,
-      approveApplication: true, declineApplication: true,
+      approveApplication: true, declineApplication: true, clearActivityLog: true,
       useCalculator: true, exportData: true, manageStaff: true
     }
   },
@@ -1761,6 +1761,34 @@ const STAFF_AUTH_PROFILES = {
       viewActivityLog: false, viewTrash: false, restoreTrash: false,
       manageParticipants: false, markAttendance: false, issueCertificate: false,
       useCalculator: true, exportData: false, manageStaff: false
+    }
+  },
+  "adamaliyu16@gmail.com": {
+    email: "adamaliyu16@gmail.com",
+    name: "Aliyu Adam Adeiza",
+    role: "Monitoring and Evaluation Officer/Director",
+    roleCode: "monitoring",
+    avatar: "📊",
+    permissions: {
+      viewAll: true, viewApplications: true, generateInvoice: false, deleteInvoice: false,
+      viewActivityLog: true, clearActivityLog: false, viewTrash: false, restoreTrash: false,
+      manageParticipants: false, markAttendance: false, issueCertificate: false, deleteCertificate: false,
+      approveApplication: false, declineApplication: false,
+      useCalculator: false, exportData: true, manageStaff: false
+    }
+  },
+  "abdulhaqqahmad@gmail.com": {
+    email: "abdulhaqqahmad@gmail.com",
+    name: "Ahmad Abdulhaqq",
+    role: "Logistics and Supply Chain Director",
+    roleCode: "logistics",
+    avatar: "🚚",
+    permissions: {
+      viewAll: false, viewApplications: false, generateInvoice: true, deleteInvoice: false,
+      viewActivityLog: false, clearActivityLog: false, viewTrash: false, restoreTrash: false,
+      manageParticipants: false, markAttendance: false, issueCertificate: false, deleteCertificate: false,
+      approveApplication: false, declineApplication: false,
+      useCalculator: true, exportData: true, manageStaff: false
     }
   },
   "shaibusumaiya162@gmail.com": {
@@ -2347,16 +2375,20 @@ function applyPermissions(){
   if(navTrash) navTrash.style.display = hasPermission('viewTrash') ? '' : 'none';
   // Settings (cloud sync) only for Chairman
   const navSettings = document.getElementById('nav-settings');
-  if(navSettings) navSettings.style.display = hasPermission('viewActivityLog') ? '' : 'none';
+  if(navSettings) navSettings.style.display = hasPermission('manageStaff') ? '' : 'none';
   // Admin section header
   const adminSec = document.getElementById('admin-section');
-  if(adminSec) adminSec.style.display = hasPermission('viewActivityLog') ? '' : 'none';
+  const canViewAdmin=hasPermission('viewActivityLog') || hasPermission('viewTrash') || hasPermission('manageStaff');
+  if(adminSec) adminSec.style.display = canViewAdmin ? '' : 'none';
   // Attendance/Participants
   if(navAttendance) navAttendance.style.display = hasPermission('markAttendance') ? '' : 'none';
-  const canViewApplications=hasPermission('manageParticipants') || currentUser.roleCode==='communications';
+  if(navParticipants) navParticipants.style.display = (hasPermission('viewAll') || hasPermission('manageParticipants')) ? '' : 'none';
+  const canViewApplications=hasPermission('manageParticipants') || hasPermission('viewApplications') || currentUser.roleCode==='communications';
   if(navApplications) navApplications.style.display = canViewApplications ? '' : 'none';
   const deleteRejectedApplicationsBtn=document.getElementById('deleteRejectedApplicationsBtn');
   if(deleteRejectedApplicationsBtn) deleteRejectedApplicationsBtn.style.display=currentUser.roleCode==='chairman'?'inline-flex':'none';
+  const clearActivityLogBtn=document.getElementById('clearActivityLogBtn');
+  if(clearActivityLogBtn) clearActivityLogBtn.style.display=hasPermission('clearActivityLog')?'':'none';
   // Show role badge
   const sec = document.querySelector('.nav-section');
   if(sec && !document.getElementById('role-banner')){
@@ -2406,6 +2438,18 @@ function sp(id,el){
   }
   if(id==='settings' && !hasPermission('manageStaff')){
     alert('🚫 Access Denied\n\nSettings are restricted to Chairman/MD only.');
+    return;
+  }
+  if(id==='participants' && !(hasPermission('viewAll') || hasPermission('manageParticipants'))){
+    alert('🚫 Access Denied\n\nYour role cannot view participant records.');
+    return;
+  }
+  if(id==='applications' && !(hasPermission('manageParticipants') || hasPermission('viewApplications') || currentUser?.roleCode==='communications')){
+    alert('🚫 Access Denied\n\nYour role cannot view training applications.');
+    return;
+  }
+  if(id==='attendance' && !(hasPermission('markAttendance') || hasPermission('viewAll'))){
+    alert('🚫 Access Denied\n\nYour role cannot view attendance records.');
     return;
   }
   if(id==='invoices' && !hasPermission('generateInvoice')){
@@ -4706,7 +4750,7 @@ function exportActivityLog(){
 }
 
 function clearActivityLog(){
-  if(!hasPermission('viewActivityLog')) return;
+  if(!requirePermission('clearActivityLog','clear the activity log')) return;
   if(!confirm('⚠️ CLEAR ACTIVITY LOG\n\nThis will permanently delete all '+loadActivityLog().length+' log entries.\n\nThis action CANNOT be undone. Continue?')) return;
   IESS_DB.remove('iess_activity_log');
   logActivity('LOG CLEARED', 'All previous log entries were cleared by Chairman', 'critical');
