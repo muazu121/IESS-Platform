@@ -482,7 +482,7 @@ tbody tr:last-child td{border:none;}
       <button class="nav-item" onclick="sp('participants',this)"><span class="nav-icon">👥</span>Participants <span id="nav-participant-count" style="margin-left:auto;background:var(--gold);color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-family:'DM Mono',monospace;">333</span></button>
       <button class="nav-item" id="nav-applications" onclick="sp('applications',this)"><span class="nav-icon">📥</span>Applications <span id="nav-application-count" style="margin-left:auto;background:#3b82f6;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-family:'DM Mono',monospace;">0</span></button>
       <button class="nav-item" onclick="sp('attendance',this)"><span class="nav-icon">📋</span>Attendance</button>
-      <button class="nav-item" onclick="sp('quizzes',this)"><span class="nav-icon">📝</span>Quizzes <span id="nav-quiz-badge" style="margin-left:auto;background:#8b5cf6;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-family:'DM Mono',monospace;">5</span></button>
+      <button class="nav-item" onclick="sp('quizzes',this)"><span class="nav-icon">📝</span>Quizzes <span id="nav-quiz-badge" style="margin-left:auto;background:#8b5cf6;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-family:'DM Mono',monospace;">4</span></button>
       <div class="nav-section">Certification</div>
       <button class="nav-item" onclick="sp('certificates',this)"><span class="nav-icon">🏆</span>Certificates</button>
       <div class="nav-section">Tools</div>
@@ -560,6 +560,19 @@ tbody tr:last-child td{border:none;}
           <div class="dashboard-insights-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;" id="dash-insights"></div>
         </div>
       </div>
+
+    <div class="card" id="staff-participant-scores-card" style="margin-top:22px;">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div class="card-title">Participant Assessment Records</div>
+          <div style="font-size:12px;color:var(--grey);margin-top:4px;">Saved session and final-exam scores from the participant portal</div>
+        </div>
+        <span class="badge badge-blue" id="staff-participant-score-count">0 records</span>
+      </div>
+      <div class="card-body">
+        <div id="staff-participant-score-summary"></div>
+      </div>
+    </div>
     </div>
 
     <!-- PARTICIPANTS -->
@@ -1295,54 +1308,44 @@ tbody tr:last-child td{border:none;}
         <div class="card-header"><div class="card-title">📚 Available Assessments</div></div>
         <div class="card-body">
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;">
-            <div class="quiz-card" data-quiz="week1" style="border:2px solid #8b5cf6;border-radius:10px;padding:16px;background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
+            <div class="quiz-card" data-quiz="equipment" style="border:2px solid #8b5cf6;border-radius:10px;padding:16px;background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <div style="font-weight:700;color:#7c3aed;font-size:14px;">Week 1 Quiz</div>
-                <div style="background:#8b5cf6;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">15% Weight</div>
+                <div style="font-weight:700;color:#7c3aed;font-size:14px;">Session 1 Quiz</div>
+                <div style="background:#8b5cf6;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">20% Weight</div>
               </div>
-              <div style="font-size:13px;color:#555;margin-bottom:6px;">☀️ Solar Energy Fundamentals</div>
-              <div style="font-size:11px;color:#888;margin-bottom:12px;">10 questions · 8 minutes · After Session 1</div>
-              <button onclick="launchQuiz('week1')" style="width:100%;padding:9px;background:#8b5cf6;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
+              <div style="font-size:13px;color:#555;margin-bottom:6px;">☀️ Solar Equipment Essentials</div>
+              <div style="font-size:11px;color:#888;margin-bottom:12px;">12 random questions · 10 minutes · After Session 1</div>
+              <button onclick="launchQuiz('equipment')" style="width:100%;padding:9px;background:#8b5cf6;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
             </div>
 
-            <div class="quiz-card" data-quiz="week2" style="border:2px solid #06b6d4;border-radius:10px;padding:16px;background:linear-gradient(135deg,#ecfeff,#cffafe);">
+            <div class="quiz-card" data-quiz="design" style="border:2px solid #06b6d4;border-radius:10px;padding:16px;background:linear-gradient(135deg,#ecfeff,#cffafe);">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <div style="font-weight:700;color:#0891b2;font-size:14px;">Week 2 Quiz</div>
-                <div style="background:#06b6d4;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">15% Weight</div>
+                <div style="font-weight:700;color:#0891b2;font-size:14px;">Session 2 Quiz</div>
+                <div style="background:#06b6d4;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">20% Weight</div>
               </div>
-              <div style="font-size:13px;color:#555;margin-bottom:6px;">📐 System Sizing & Calculations</div>
-              <div style="font-size:11px;color:#888;margin-bottom:12px;">10 questions · 8 minutes · After Session 2</div>
-              <button onclick="launchQuiz('week2')" style="width:100%;padding:9px;background:#06b6d4;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
+              <div style="font-size:13px;color:#555;margin-bottom:6px;">📐 Design, Installation & Commissioning</div>
+              <div style="font-size:11px;color:#888;margin-bottom:12px;">12 random questions · 10 minutes · After Session 2</div>
+              <button onclick="launchQuiz('design')" style="width:100%;padding:9px;background:#06b6d4;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
             </div>
 
-            <div class="quiz-card" data-quiz="week3" style="border:2px solid #10b981;border-radius:10px;padding:16px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);">
+            <div class="quiz-card" data-quiz="business" style="border:2px solid #10b981;border-radius:10px;padding:16px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <div style="font-weight:700;color:#059669;font-size:14px;">Week 3 Quiz</div>
-                <div style="background:#10b981;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">15% Weight</div>
+                <div style="font-weight:700;color:#059669;font-size:14px;">Session 3 Quiz</div>
+                <div style="background:#10b981;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">20% Weight</div>
               </div>
-              <div style="font-size:13px;color:#555;margin-bottom:6px;">🔧 Installation & Safety</div>
-              <div style="font-size:11px;color:#888;margin-bottom:12px;">10 questions · 8 minutes · After Session 3</div>
-              <button onclick="launchQuiz('week3')" style="width:100%;padding:9px;background:#10b981;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
+              <div style="font-size:13px;color:#555;margin-bottom:6px;">💼 Solar Entrepreneurship & Sales</div>
+              <div style="font-size:11px;color:#888;margin-bottom:12px;">12 random questions · 10 minutes · After Session 3</div>
+              <button onclick="launchQuiz('business')" style="width:100%;padding:9px;background:#10b981;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
             </div>
 
-            <div class="quiz-card" data-quiz="week4" style="border:2px solid #f59e0b;border-radius:10px;padding:16px;background:linear-gradient(135deg,#fffbeb,#fef3c7);">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <div style="font-weight:700;color:#d97706;font-size:14px;">Week 4 Quiz</div>
-                <div style="background:#f59e0b;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">15% Weight</div>
-              </div>
-              <div style="font-size:13px;color:#555;margin-bottom:6px;">⚙️ Maintenance & Troubleshooting</div>
-              <div style="font-size:11px;color:#888;margin-bottom:12px;">10 questions · 8 minutes · After Session 4</div>
-              <button onclick="launchQuiz('week4')" style="width:100%;padding:9px;background:#f59e0b;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">▶ Take Quiz</button>
-            </div>
-
-            <div class="quiz-card" data-quiz="final" style="border:3px solid #dc2626;border-radius:10px;padding:16px;background:linear-gradient(135deg,#fef2f2,#fee2e2);grid-column:span 2;">
+            <div class="quiz-card" data-quiz="final3" style="border:3px solid #dc2626;border-radius:10px;padding:16px;background:linear-gradient(135deg,#fef2f2,#fee2e2);grid-column:1/-1;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                 <div style="font-weight:700;color:#991b1b;font-size:16px;">🎯 FINAL CERTIFICATION EXAM</div>
                 <div style="background:#dc2626;color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:700;">40% Weight</div>
               </div>
-              <div style="font-size:13px;color:#555;margin-bottom:6px;">📜 Comprehensive Solar PV Systems Assessment</div>
-              <div style="font-size:11px;color:#888;margin-bottom:12px;">25 questions · 20 minutes · After all 4 sessions completed · Determines final grade</div>
-              <button onclick="launchQuiz('final')" style="width:100%;padding:11px;background:#dc2626;color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;">▶ START FINAL EXAM</button>
+              <div style="font-size:13px;color:#555;margin-bottom:6px;">📜 Comprehensive Equipment, Design and Business Assessment</div>
+              <div style="font-size:11px;color:#888;margin-bottom:12px;">30 random questions · 25 minutes · After all 3 sessions completed · Determines final grade</div>
+              <button onclick="launchQuiz('final3')" style="width:100%;padding:11px;background:#dc2626;color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;">▶ START FINAL EXAM</button>
             </div>
           </div>
         </div>
@@ -1355,11 +1358,10 @@ tbody tr:last-child td{border:none;}
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <select id="quizFilter" onchange="renderQuizResults()" style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;font-size:13px;">
               <option value="all">All Quizzes</option>
-              <option value="week1">Week 1</option>
-              <option value="week2">Week 2</option>
-              <option value="week3">Week 3</option>
-              <option value="week4">Week 4</option>
-              <option value="final">Final Exam</option>
+              <option value="equipment">Session 1: Equipment</option>
+              <option value="design">Session 2: Design</option>
+              <option value="business">Session 3: Business</option>
+              <option value="final3">Final Exam</option>
             </select>
             <input type="text" id="quizSearch" placeholder="🔍 Search by name/email..." oninput="renderQuizResults()" style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;font-size:13px;min-width:200px;">
             <button class="btn btn-outline btn-sm" onclick="exportQuizResults()">📥 Export CSV</button>
@@ -2175,16 +2177,19 @@ function showParticipantPortal(){
   
   // Build portal UI
   const results = loadQuizResults();
-  const myResults = results.filter(r => r.userEmail === PARTICIPANT_SESSION.email);
+  const myResults = results.filter(r =>
+    r.userEmail === PARTICIPANT_SESSION.email &&
+    ASSESSMENT_QUIZ_IDS.includes(r.quizId)
+  );
   
-  // Calculate overall progress (4 weekly quizzes + 1 final exam = 5 assessment groups, but week4 now covers W4+W5 combined)
+  // Three session quizzes + one final exam = four assessment groups
   const completedQuizzes = myResults.map(r => r.quizId);
-  const totalQuizzes = 5; // week1, week2, week3, week4(combined), final
+  const totalQuizzes = ASSESSMENT_QUIZ_IDS.length;
   const completedCount = new Set(completedQuizzes).size;
   
   // ═══ CUMULATIVE WEIGHTED SCORE ═══
   // Each quiz contributes (score × weight / 100) percentage points toward the final 100%
-  // Example: 90% on W1 (15% weight) → contributes 90×15/100 = 13.5% toward final
+  // Example: 90% on Session 1 (20% weight) → contributes 90×20/100 = 18% toward final
   // Display two views:
   //   (a) Cumulative pts earned out of 100 possible (cumulativeEarned)
   //   (b) Weighted average of attempted quizzes (overallScore) — shows current standing
@@ -2216,7 +2221,7 @@ function showParticipantPortal(){
       // Welcome banner
       '<div style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(99,102,241,0.15));border:1px solid rgba(139,92,246,0.3);border-radius:16px;padding:24px;margin-bottom:24px;">'+
         '<div style="font-size:22px;font-weight:700;margin-bottom:6px;">Welcome, '+PARTICIPANT_SESSION.name.split(' ')[0]+'! 👋</div>'+
-        '<div style="font-size:13px;color:rgba(255,255,255,0.7);">Complete your 4 weekly quizzes + the Final Exam to earn your IESS Solar Training Certificate. Day 4 covers Week 4 + Week 5 content combined.</div>'+
+        '<div style="font-size:13px;color:rgba(255,255,255,0.7);">Complete the three post-session quizzes and the Final Exam to earn your IESS Solar Training Certificate.</div>'+
       '</div>'+
       
       // Progress overview
@@ -2238,14 +2243,16 @@ function showParticipantPortal(){
         '</div>'+
       '</div>'+
       
+      // Personal saved scores
+      renderParticipantScoreSummary(myResults)+
+
       // Quiz cards
       '<div style="font-size:18px;font-weight:700;margin-bottom:14px;">📝 Your Assessments</div>'+
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;">'+
-        renderParticipantQuizCard('week1', myResults)+
-        renderParticipantQuizCard('week2', myResults)+
-        renderParticipantQuizCard('week3', myResults)+
-        renderParticipantQuizCard('week4', myResults)+
-        '<div style="grid-column:1/-1;margin-top:8px;">'+renderParticipantQuizCard('final', myResults, true)+'</div>'+
+        renderParticipantQuizCard('equipment', myResults)+
+        renderParticipantQuizCard('design', myResults)+
+        renderParticipantQuizCard('business', myResults)+
+        '<div style="grid-column:1/-1;margin-top:8px;">'+renderParticipantQuizCard('final3', myResults, true)+'</div>'+
       '</div>'+
       
       // Footer info
@@ -2255,7 +2262,7 @@ function showParticipantPortal(){
         '• Quizzes are <strong>timed</strong> and have anti-cheat detection<br>'+
         '• Keep your <strong>camera ON</strong> during Zoom sessions when taking quizzes<br>'+
         '• Switching tabs or copy-paste will be logged as cheating<br>'+
-        '• Final score = (Week 1-4 × 15%) + (Final Exam × 40%)<br>'+
+        '• Final score = (Session 1 × 20%) + (Session 2 × 20%) + (Session 3 × 20%) + (Final Exam × 40%)<br>'+
         '• Need help? Contact Engr. Muazu via WhatsApp +234 803 859 0108'+
       '</div>'+
     '</div>'+
@@ -2285,6 +2292,18 @@ function renderParticipantQuizCard(quizId, myResults, isFinal){
     '</div>';
   } else {
     // Not yet taken
+    const missingSessions = isFinal
+      ? SESSION_QUIZ_IDS.filter(id => !myResults.some(r => r.quizId === id))
+      : [];
+    if(isFinal && missingSessions.length > 0){
+      const missingNames = missingSessions.map(id => QUIZ_BANKS[id].title.split(':')[0]).join(', ');
+      return '<div style="border:2px solid '+color+';border-radius:14px;padding:22px;background:rgba(255,255,255,0.03);opacity:0.78;">'+
+        '<div style="font-weight:700;color:'+color+';font-size:17px;">🔒 🎯 Final Certification Exam</div>'+
+        '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin:10px 0;">Complete all three session quizzes first. Missing: <strong>'+missingNames+'</strong></div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:12px;">30 random questions · 25 minutes · 40% of final grade</div>'+
+        '<button disabled style="width:100%;padding:14px;background:#475569;color:#cbd5e1;border:none;border-radius:8px;font-weight:700;cursor:not-allowed;font-size:15px;">🔒 FINAL EXAM LOCKED</button>'+
+      '</div>';
+    }
     return '<div style="border:2px solid '+color+';border-radius:14px;padding:18px;background:rgba(255,255,255,0.03);'+(isFinal?'padding:22px;':'')+'">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'+
         '<div style="font-weight:700;color:'+color+';font-size:'+(isFinal?'17px':'14px')+';">'+(isFinal?'🎯 ':'')+bank.title.split(':')[0]+'</div>'+
@@ -2295,6 +2314,47 @@ function renderParticipantQuizCard(quizId, myResults, isFinal){
       '<button onclick="participantStartQuiz(\''+quizId+'\')" style="width:100%;padding:'+(isFinal?'14px':'11px')+';background:'+color+';color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:'+(isFinal?'15px':'13px')+';">▶ '+(isFinal?'START FINAL EXAM':'Take Quiz')+'</button>'+
     '</div>';
   }
+}
+
+function renderParticipantScoreSummary(myResults){
+  const rows = ASSESSMENT_QUIZ_IDS.map(id => {
+    const bank = QUIZ_BANKS[id];
+    const result = myResults.find(r => r.quizId === id);
+    if(!result){
+      return '<tr>'+
+        '<td style="padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.08);">'+bank.title+'</td>'+
+        '<td style="padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center;color:rgba(255,255,255,0.42);">Not completed</td>'+
+        '<td style="padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center;color:rgba(255,255,255,0.42);">—</td>'+
+        '<td style="padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.42);">—</td>'+
+      '</tr>';
+    }
+    const scoreColor = result.disqualified || result.score < 50 ? '#ef4444' : result.score >= 80 ? '#fbbf24' : result.score >= 65 ? '#10b981' : '#60a5fa';
+    const attempted = result.timestamp ? new Date(result.timestamp).toLocaleString() : '—';
+    return '<tr>'+
+      '<td style="padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600;">'+bank.title+'</td>'+
+      '<td style="padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center;font-size:18px;font-weight:800;color:'+scoreColor+';">'+result.score+'%</td>'+
+      '<td style="padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center;font-weight:700;color:'+scoreColor+';">'+result.grade+'</td>'+
+      '<td style="padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(255,255,255,0.58);">'+attempted+'</td>'+
+    '</tr>';
+  }).join('');
+
+  const completedCount = myResults.filter(r => ASSESSMENT_QUIZ_IDS.includes(r.quizId)).length;
+  return '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:18px;margin-bottom:24px;">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">'+
+      '<div style="font-size:17px;font-weight:700;">📊 My Saved Scores</div>'+
+      '<div style="font-size:11px;color:rgba(255,255,255,0.55);">'+completedCount+' of '+ASSESSMENT_QUIZ_IDS.length+' assessments stored</div>'+
+    '</div>'+
+    '<div style="overflow-x:auto;">'+
+      '<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:620px;">'+
+        '<thead><tr style="color:rgba(255,255,255,0.55);text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;">'+
+          '<th style="padding:8px 12px;">Assessment</th><th style="padding:8px 12px;text-align:center;">Score</th>'+
+          '<th style="padding:8px 12px;text-align:center;">Grade</th><th style="padding:8px 12px;">Attempted</th>'+
+        '</tr></thead>'+
+        '<tbody>'+rows+'</tbody>'+
+      '</table>'+
+    '</div>'+
+    '<div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.45);">Scores are saved to your participant email and synchronised through the IESS cloud database.</div>'+
+  '</div>';
 }
 
 function participantStartQuiz(quizId){
@@ -2506,6 +2566,85 @@ function sp(id,el){
 function toggleSB(){document.getElementById('sidebar').classList.toggle('open');}
 function closeSB(){document.getElementById('sidebar').classList.remove('open');}
 
+function renderStaffParticipantScores(){
+  const body = document.getElementById('staff-participant-score-summary');
+  const countBadge = document.getElementById('staff-participant-score-count');
+  if(!body || !countBadge) return;
+
+  const results = loadQuizResults().filter(r =>
+    r.userRole === 'Participant' &&
+    ASSESSMENT_QUIZ_IDS.includes(r.quizId)
+  );
+
+  const participants = new Map();
+  results.forEach(result => {
+    const key = String(result.userEmail || '').toLowerCase();
+    if(!key) return;
+    if(!participants.has(key)){
+      participants.set(key, {
+        name: result.userName || 'Participant',
+        email: result.userEmail || key,
+        scores: {},
+        weighted: 0,
+        completedWeight: 0,
+        lastAttempt: null
+      });
+    }
+    const entry = participants.get(key);
+    entry.scores[result.quizId] = result;
+    entry.weighted += (Number(result.score) || 0) * (Number(result.weight) || 0) / 100;
+    entry.completedWeight += Number(result.weight) || 0;
+    const stamp = new Date(result.timestamp);
+    if(!entry.lastAttempt || stamp > entry.lastAttempt) entry.lastAttempt = stamp;
+  });
+
+  const rows = [...participants.values()].sort((a,b) =>
+    (b.lastAttempt?.getTime() || 0) - (a.lastAttempt?.getTime() || 0)
+  );
+
+  countBadge.textContent = rows.length + (rows.length === 1 ? ' participant' : ' participants');
+  if(rows.length === 0){
+    body.innerHTML = '<div style="text-align:center;padding:28px;color:var(--grey);">No participant assessment records have been saved yet. Scores will appear here automatically after participants submit their quizzes.</div>';
+    return;
+  }
+
+  const scoreCell = (result) => {
+    if(!result) return '<td style="padding:10px 9px;text-align:center;color:#94a3b8;">—</td>';
+    const color = result.disqualified || result.score < 50 ? '#ef4444' : result.score >= 80 ? '#c87d2a' : result.score >= 65 ? '#059669' : '#3b82f6';
+    return '<td style="padding:10px 9px;text-align:center;font-weight:800;color:'+color+';">'+result.score+'%</td>';
+  };
+
+  body.innerHTML = '<div style="overflow-x:auto;">'+
+    '<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:840px;">'+
+      '<thead><tr style="background:#f7faf8;border-bottom:2px solid var(--border);text-align:left;">'+
+        '<th style="padding:10px 12px;">Participant</th>'+
+        '<th style="padding:10px 9px;text-align:center;">Session 1</th>'+
+        '<th style="padding:10px 9px;text-align:center;">Session 2</th>'+
+        '<th style="padding:10px 9px;text-align:center;">Session 3</th>'+
+        '<th style="padding:10px 9px;text-align:center;">Final</th>'+
+        '<th style="padding:10px 9px;text-align:center;">Weighted</th>'+
+        '<th style="padding:10px 9px;">Last Saved</th>'+
+      '</tr></thead>'+
+      '<tbody>'+
+        rows.map(entry => {
+          const weighted = Math.round(entry.weighted * 10) / 10;
+          const last = entry.lastAttempt ? entry.lastAttempt.toLocaleString() : '—';
+          return '<tr style="border-bottom:1px solid #e8eef0;">'+
+            '<td style="padding:10px 12px;"><div style="font-weight:700;">'+entry.name+'</div><div style="font-size:10px;color:#78909c;">'+entry.email+'</div></td>'+
+            scoreCell(entry.scores.equipment)+
+            scoreCell(entry.scores.design)+
+            scoreCell(entry.scores.business)+
+            scoreCell(entry.scores.final3)+
+            '<td style="padding:10px 9px;text-align:center;font-weight:800;color:var(--green);">'+weighted.toFixed(1)+'/100</td>'+
+            '<td style="padding:10px 9px;font-size:10px;color:#607d8b;">'+last+'</td>'+
+          '</tr>';
+        }).join('')+
+      '</tbody>'+
+    '</table>'+
+  '</div>'+
+  '<div style="margin-top:10px;font-size:11px;color:var(--grey);">Weighted total uses the current assessment weights: Session quizzes 20% each and Final Exam 40%. Missing assessments remain unfilled.</div>';
+}
+
 // ═══ INIT ═══
 function initPlatform(){
   // Load any manually added participants from localStorage
@@ -2532,6 +2671,7 @@ function initPlatform(){
   try{ updateNavInvoiceCount(); }catch(e){}
   // Render quiz results
   try{ renderQuizResults(); }catch(e){console.error('renderQuizResults err:',e);}
+  try{ renderStaffParticipantScores(); }catch(e){console.error('renderStaffParticipantScores err:',e);}
   try{ initEnrollmentFeed(); }catch(e){console.error('application feed err:',e);}
   try{
     const today = new Date();
@@ -4900,6 +5040,7 @@ IESS_DB.onUpdate(function(key){
     if(key === 'iess_att' && document.getElementById('page-attendance')?.classList.contains('active')) renderAttendance();
     if(key === 'iess_invoices' && document.getElementById('page-invoices')?.classList.contains('active')) renderInvoices();
     if(key === 'iess_quiz_results' && document.getElementById('page-quizzes')?.classList.contains('active')) renderQuizResults();
+    if(key === 'iess_quiz_results' && document.getElementById('page-dashboard')?.classList.contains('active')) renderStaffParticipantScores();
     if(key === 'iess_activity_log' && document.getElementById('page-activity')?.classList.contains('active')) renderActivityLog();
     if(key === 'iess_invoices_trash' && document.getElementById('page-trash')?.classList.contains('active')) renderTrash();
     if(key === 'iess_market_prices'){
@@ -5196,6 +5337,142 @@ QUIZ_BANKS.final.questions = [
   ...QUIZ_BANKS.week4.questions
 ];
 
+// ═════════════════════════════════════════════════════════════════
+// IESS THREE-SESSION ASSESSMENT BANKS (2026 TRAINER DECK ALIGNED)
+// Each session bank contains 28 questions; the quiz randomizes 12.
+// The final exam randomizes 30 questions across all three banks.
+// ═════════════════════════════════════════════════════════════════
+Object.assign(QUIZ_BANKS, {
+  equipment: {
+    title: 'Session 1: Solar Equipment Essentials',
+    color: '#8b5cf6',
+    duration: 600,
+    questionsToShow: 12,
+    weight: 20,
+    questions: [
+      {q:'What is the main function of a photovoltaic module?', opts:['Convert sunlight into DC electricity','Convert DC into AC electricity','Store electrical energy','Measure solar irradiance'], correct:0},
+      {q:'Which module technology usually provides more power per square metre when roof space is limited?', opts:['Monocrystalline','Polycrystalline','Thin film','Amorphous silicon'], correct:0},
+      {q:'When is polycrystalline a practical module choice?', opts:['When the module must be flexible','When only a curved surface is available','When suitable roof area is plentiful and initial cost is a priority','When rear-side reflected light is the main design objective'], correct:2},
+      {q:'Bifacial modules usually produce the best benefit when they are installed:', opts:['Flat against a dark roof with no rear clearance','Over a reflective surface with adequate rear clearance','Under permanent deep shade','Inside a sealed room'], correct:1},
+      {q:'Which module type is most suitable for a curved or lightweight surface where conventional framed glass cannot be used?', opts:['Bifacial glass module','Monocrystalline glass module','Thin-film module','Polycrystalline glass module'], correct:2},
+      {q:'A 100 W appliance runs for 5 hours. How much energy does it use?', opts:['105 Wh','500 Wh','5 Wh','2,000 Wh'], correct:1},
+      {q:'Which unit directly measures electrical energy over time?', opts:['Voltage (V)','Current (A)','Kilowatt-hour (kWh)','Power factor'], correct:2},
+      {q:'What is the main job of an inverter?', opts:['Store energy in a battery','Convert DC electricity into usable AC electricity','Increase the physical strength of the array','Clean the solar modules'], correct:1},
+      {q:'Which inverter type can coordinate PV, a battery, the grid and often a generator?', opts:['Grid-tied string inverter only','Hybrid inverter','Microinverter only','Central inverter only'], correct:1},
+      {q:'A grid-tied string inverter without batteries normally stops exporting or forming AC when:', opts:['Clouds pass over the array','The grid is unavailable','The modules become warm','The load is very small'], correct:1},
+      {q:'What is a key advantage of a microinverter system?', opts:['It eliminates all electronic conversion losses','It provides per-module conversion and monitoring','It removes the need for module connectors','It guarantees backup without a battery'], correct:1},
+      {q:'What does an MPPT charge controller do?', opts:['Tracks the array maximum-power point','Converts AC into DC','Replaces the battery management system','Measures earth resistance'], correct:0},
+      {q:'A PWM charge controller is commonly used when:', opts:['The PV and battery voltages are closely matched in a small system','The array voltage is far above the battery voltage','The system uses only microinverters','The battery has no charge limits'], correct:0},
+      {q:'Why are inverter continuous rating and surge rating both important?', opts:['Continuous covers sustained load, while surge covers short start-up events','They are always the same number','Surge only matters for lighting','Continuous rating measures battery cycle life'], correct:0},
+      {q:'Why should batteries be compared in nominal kWh rather than amp-hours alone?', opts:['Amp-hours already include voltage and time','kWh includes both voltage and charge capacity','Amp-hours apply only to lithium batteries','kWh removes the need for depth-of-discharge checks'], correct:1},
+      {q:'What is the nominal energy of a 12 V, 100 Ah battery?', opts:['1.2 kWh','2.4 kWh','12 kWh','100 kWh'], correct:0},
+      {q:'Which statement best compares LFP with lead-acid batteries?', opts:['LFP usually offers greater usable depth and longer cycle life at higher initial cost','LFP always has a lower initial cost','Lead-acid has a higher usable depth','Lead-acid requires no ventilation or charging controls'], correct:0},
+      {q:'Which describes a typical AGM battery?', opts:['Sealed with low maintenance but limited depth and cycle life','Vented and requiring regular watering','A battery with no need for a charger','A battery that can ignore charge-voltage limits'], correct:0},
+      {q:'Why is string open-circuit voltage checked at the coldest expected temperature?', opts:['Cold voltage falls to zero','Cold temperature can raise Voc above the inverter limit','Only cold voltage affects battery capacity','Cold temperature reverses module polarity'], correct:1},
+      {q:'What is the main purpose of a combiner box?', opts:['Join multiple PV strings and contain specified protection or monitoring','Store energy overnight','Convert AC into DC','Support the roof structure'], correct:0},
+      {q:'What is the function of a DC isolator?', opts:['Provide a visible safe isolation point on the DC circuit','Increase inverter output','Balance battery cell voltage','Measure irradiance'], correct:0},
+      {q:'What does a surge protective device do?', opts:['Limits transient overvoltage on circuits that need protection','Stores energy for cloudy days','Changes PV voltage into battery voltage','Measures module temperature'], correct:0},
+      {q:'Which practice is required for MC4 connectors?', opts:['Use matched connector systems and correct crimping','Mix any brands at random','Use pliers instead of the specified tool','Leave exposed copper strands outside the connector'], correct:0},
+      {q:'What is a clamp meter primarily used to measure?', opts:['Current without opening the conductor','Earth resistance by driving rods','Solar irradiance','Battery temperature'], correct:0},
+      {q:'Which instrument proves insulation resistance before energizing a circuit?', opts:['Insulation resistance tester','Clamp meter','Spirit level','Irradiance meter'], correct:0},
+      {q:'What does a solar irradiance meter record during commissioning?', opts:['Plane-of-array sunlight at the time of the power test','AC grid frequency only','Battery serial numbers','Module clamp torque'], correct:0},
+      {q:'Why use a torque wrench on solar electrical and mounting connections?', opts:['To tighten terminals and clamps to the specified torque','To measure insulation resistance','To crimp MC4 pins','To measure daily energy'], correct:0},
+      {q:'What does appropriate fall protection require beyond wearing a harness?', opts:['A planned anchor, inspection and rescue method','Only a hard hat','Only non-slip shoes','A second unused harness'], correct:0}
+    ]
+  },
+  design: {
+    title: 'Session 2: Solar Design & Commissioning',
+    color: '#06b6d4',
+    duration: 600,
+    questionsToShow: 12,
+    weight: 20,
+    questions: [
+      {q:'After collecting the customer brief, what should a designer inspect before selecting equipment?', opts:['The site, available sources and actual loads','Only the supplier catalogue','The final paint colour','The inverter box size in isolation'], correct:0},
+      {q:'Which information belongs in the design basis?', opts:['Critical loads, backup duration, available sources, constraints and acceptance criteria','Only the panel brand','Only the price','Only the roof colour'], correct:0},
+      {q:'Which items are essential during a solar site inspection?', opts:['Roof condition, dimensions, access, shading, cable route and equipment locations','Only the building address','Only the customer photograph','Only the inverter model'], correct:0},
+      {q:'What should happen when roof load capacity is uncertain?', opts:['Assume it is adequate','Obtain structural verification before approval','Ignore the roof because panels are light','Increase the inverter size'], correct:1},
+      {q:'Why is shading inspected at different times and seasons?', opts:['Shadows move and can affect strings differently throughout the year','Modules only work at noon','Shading only affects batteries','Cloud cover is irrelevant'], correct:0},
+      {q:'A defensible load audit should include:', opts:['Power, quantity, operating hours or duty cycle, and simultaneous peak','Only appliance names','Only the total number of rooms','Only daily sunlight hours'], correct:0},
+      {q:'A daily load is 3.63 kWh. With a 1.25 design allowance, what is the design energy?', opts:['2.90 kWh/day','3.63 kWh/day','4.54 kWh/day','5.44 kWh/day'], correct:2},
+      {q:'Which formula gives an illustrative daily PV energy estimate?', opts:['Array kWp × peak-sun hours × system efficiency','Array kWp + inverter kVA + battery kWh','Peak load × number of rooms','Battery Ah ÷ panel count'], correct:0},
+      {q:'Using 4.54 kWh/day, 4.5 peak-sun hours and 75% efficiency, what is the calculated array size?', opts:['0.75 kWp','1.01 kWp','1.35 kWp','4.54 kWp'], correct:2},
+      {q:'The coldest expected string Voc must remain:', opts:['Below the inverter maximum DC input voltage','Above the inverter AC output voltage','Equal to the battery nominal voltage','Above the inverter surge rating'], correct:0},
+      {q:'Why must hot-temperature string voltage also be checked?', opts:['The string must remain inside the inverter MPPT window','Module voltage always rises with heat','It changes battery chemistry','It determines roof wind load'], correct:0},
+      {q:'Which formula estimates battery nominal kWh correctly?', opts:['Required usable kWh ÷ (depth of discharge × efficiency)','Required usable kWh × array voltage','Peak load × backup hours','Inverter kVA ÷ panel wattage'], correct:0},
+      {q:'A 3.63 kWh load is required at 80% depth and 90% efficiency. What nominal battery energy is needed?', opts:['2.61 kWh','3.63 kWh','5.04 kWh','8.07 kWh'], correct:2},
+      {q:'If the customer needs two days of autonomy, the required usable battery energy should be:', opts:['Divided by two','Multiplied by two before applying depth and efficiency','Left unchanged','Reduced to the inverter rating'], correct:1},
+      {q:'What two load characteristics are needed when sizing an inverter?', opts:['Continuous load and start-up surge','Roof area and cable colour','Battery brand and paint finish','Peak-sun hours and tax rate'], correct:0},
+      {q:'A 2 kW inverter operates at 90% efficiency on a 51.2 V battery. What approximate DC input current is drawn?', opts:['17.4 A','35.2 A','43.4 A','92.0 A'], correct:2},
+      {q:'Applying a 125% design factor to 43.4 A gives approximately:', opts:['34.7 A','43.4 A','54.3 A','86.8 A'], correct:2},
+      {q:'What should be checked first when selecting a cable?', opts:['Current-carrying capacity for the installation conditions','The cable colour','The supplier logo','The inverter display size'], correct:0},
+      {q:'The teaching formula for AC voltage drop uses one-way length multiplied by two because:', opts:['The current travels out and back through two conductors','AC current is twice DC current','Every circuit has two batteries','It converts kW to kWh'], correct:0},
+      {q:'What is the role of a surge protective device?', opts:['Limit transient overvoltage','Replace the DC isolator','Store energy','Measure current'], correct:0},
+      {q:'What determines the acceptable earth resistance and earthing design?', opts:['The governing standard, authority and project conditions','A random breaker size','The panel brand','The customer’s favourite number'], correct:0},
+      {q:'A complete single-line diagram should show:', opts:['Sources, converters, isolators, protective devices, earthing and controlled loads','Only the panel count','Only the battery model','Only the final price'], correct:0},
+      {q:'What is the purpose of the design review before procurement?', opts:['Find contradictions and incompatibilities across the complete design','Replace testing with visual opinion','Remove all exclusions','Choose the cheapest brand without datasheets'], correct:0},
+      {q:'A useful bill of materials should include:', opts:['Approved equipment, models, ratings, quantities and required consumables','Only major equipment names','Only labour','A single total price'], correct:0},
+      {q:'Before energizing an installation, which checks belong on the commissioning record?', opts:['Polarity, continuity, torque, insulation and earthing','Only inverter screen colour','Only installation duration','Only the customer signature'], correct:0},
+      {q:'What makes a commissioning test result credible?', opts:['Recorded value, instrument, conditions, pass criterion and responsible person','A verbal “it works”','A photograph of the panel box','A price comparison'], correct:0},
+      {q:'What should be included in handover?', opts:['Approved documents, test results, operating limits, maintenance and customer training','Only the invoice','Only the Wi-Fi password','Only the battery serial number'], correct:0},
+      {q:'A design is ready for release when:', opts:['Site evidence, load audit, calculations, equipment compatibility, drawings and acceptance criteria agree','The lowest quotation is received','The customer asks to start immediately','The panel count looks reasonable'], correct:0}
+    ]
+  },
+  business: {
+    title: 'Session 3: Solar Business & Entrepreneurship',
+    color: '#10b981',
+    duration: 600,
+    questionsToShow: 12,
+    weight: 20,
+    questions: [
+      {q:'What should a sustainable solar entrepreneur primarily sell?', opts:['A working customer outcome backed by evidence and service','The largest panel in stock','A guaranteed zero bill','The shortest possible quotation'], correct:0},
+      {q:'What is a useful business niche?', opts:['A repeatable set of customer problems you can diagnose and solve','Every possible customer type at once','A product you cannot support','The lowest price in every segment'], correct:0},
+      {q:'Which customer segment is most directly motivated by lost sales and uptime?', opts:['Shops and small businesses','Users who only need a decorative panel','Buyers who never experience outages','Customers with no decision process'], correct:0},
+      {q:'What is the purpose of an offer ladder?', opts:['Give customers clear steps from useful information to full delivery','Hide every price until installation','Offer only one take-it-or-leave-it package','Replace the technical audit'], correct:0},
+      {q:'A lead-generation system should track:', opts:['Lead source, qualification, follow-up and conversion','Only total likes on social media','Only the number of business cards printed','Only the seller’s age'], correct:0},
+      {q:'What is the best first objective in a customer discovery conversation?', opts:['Understand the outage or cost problem before presenting equipment','Quote immediately','Discuss your favourite battery brand','Ask the customer to sign'], correct:0},
+      {q:'A sales-focused customer audit should cover:', opts:['Load, site, source, customer outcome, commercial process and risk','Only roof length','Only the budget','Only product brands'], correct:0},
+      {q:'What should a seller do when an audit has a high-risk unknown load or source condition?', opts:['Return, measure or test before quoting','Guess and add a random discount','Ignore it because the customer is in a hurry','Promise the system will work'], correct:0},
+      {q:'How should audit evidence be converted into a solution?', opts:['Link each major component to a measured constraint or customer outcome','List every product without explanation','Use only the cheapest components','Avoid mentioning exclusions'], correct:0},
+      {q:'When offering two customer options, each option should be:', opts:['Technically complete and transparent about trade-offs','Missing critical protection to look cheaper','Based on obsolete supplier prices','Deliberately vague about scope'], correct:0},
+      {q:'Why is the lowest supplier price risky as a sourcing strategy?', opts:['Warranty, authenticity, support and availability may fail after the sale','Lower prices always produce lower energy','Suppliers cannot issue datasheets','All low-priced products are counterfeit'], correct:0},
+      {q:'Which evidence supports supplier due diligence?', opts:['Authorised identity, exact datasheet, certification, serial traceability and written warranty','A verbal “original” claim only','A social-media advert only','A price list with no company name'], correct:0},
+      {q:'Which is a warning sign of product authenticity risk?', opts:['Removed, mismatched or unverifiable serial labels','A complete manufacturer datasheet','A traceable warranty claim route','A known authorised distributor'], correct:0},
+      {q:'Why must a quotation show the exact model and rating?', opts:['It makes the promised equipment, compatibility and price traceable','It guarantees lower cost','It replaces testing','It removes the need for a bill of materials'], correct:0},
+      {q:'A landed-cost model should include:', opts:['Materials, BOS, labour, logistics, compliance, service risk and overhead','Only panel and battery prices','Only labour','Only the amount the customer can pay'], correct:0},
+      {q:'Which pricing formula recovers overhead, risk and intended profit as percentages of selling price?', opts:['Direct cost ÷ (1 − overhead% − risk% − profit%)','Direct cost × profit percentage only','Direct cost + one random number','Battery Ah × inverter kW'], correct:0},
+      {q:'Direct cost is ₦2,000,000 with 8% overhead, 4% risk and 15% profit. What is the illustrative selling price?', opts:['₦2,000,000','₦2,270,000','₦2,739,726','₦3,200,000'], correct:2},
+      {q:'What is the difference between markup and margin?', opts:['Markup is based on cost, while margin is based on selling price','They are always identical','Margin is only for batteries','Markup removes overhead'], correct:0},
+      {q:'Why must a quotation include scope and exclusions?', opts:['To define responsibilities and prevent hidden work or disputes','To make the document longer','To avoid stating the equipment','To remove acceptance criteria'], correct:0},
+      {q:'What should payment milestones do?', opts:['Fund procurement and protect the final testing and handover stage','Require no written contract','Always collect 100% after one year','Pay suppliers without a purchase order'], correct:0},
+      {q:'A strong closing document should confirm:', opts:['Scope, equipment, price, exclusions, payment, schedule and acceptance','Only the customer name','Only the deposit amount','Only the salesperson’s promise'], correct:0},
+      {q:'How should a seller respond to “It is too expensive”?', opts:['Explore the cost of the problem, scope and whole-life value with evidence','Immediately remove all protection equipment','Argue with the customer','Reduce the warranty without explaining'], correct:0},
+      {q:'A competitor quotes less. What should the seller compare first?', opts:['Scope, model, warranty, protection, testing and exclusions','Salesperson age','Advert colour','Office furniture'], correct:0},
+      {q:'Why keep a project ledger of actual labour, transport, variations and rework?', opts:['To control margin and improve future estimates','To replace the quotation','To avoid paying suppliers','To increase battery capacity'], correct:0},
+      {q:'Why can a profitable quotation still create a cash-flow problem?', opts:['Procurement and labour may require cash before customer payments arrive','Profit and cash are always identical','Solar projects have no deposits','Batteries cannot be purchased'], correct:0},
+      {q:'Which after-sales service can create recurring revenue?', opts:['Scheduled inspection, cleaning, monitoring and preventive maintenance','One-time installation only','Unsupported WhatsApp promises','Selling an oversized inverter'], correct:0},
+      {q:'What evidence helps a person secure a solar sales or technical job?', opts:['A project portfolio, measurable outcomes, references, safety record and clean quotation samples','Only a general CV with no examples','Only social-media follower count','Only a promised sales target'], correct:0},
+      {q:'What distinguishes a sales manager from an individual seller?', opts:['The manager coaches the team, controls forecast and improves conversion and margin','The manager avoids all customer contact','The manager only chooses paint colours','The manager ignores CRM records'], correct:0}
+    ]
+  },
+  final3: {
+    title: 'Final Certification Exam: Equipment, Design & Business',
+    color: '#dc2626',
+    duration: 1500,
+    questionsToShow: 30,
+    weight: 40,
+    questions: []
+  }
+});
+
+QUIZ_BANKS.final3.questions = [
+  ...QUIZ_BANKS.equipment.questions,
+  ...QUIZ_BANKS.design.questions,
+  ...QUIZ_BANKS.business.questions
+];
+
+const SESSION_QUIZ_IDS = ['equipment', 'design', 'business'];
+const ASSESSMENT_QUIZ_IDS = [...SESSION_QUIZ_IDS, 'final3'];
+
 // Quiz state
 let CURRENT_QUIZ = null;
 let QUIZ_ANSWERS = [];
@@ -5231,6 +5508,16 @@ function launchQuiz(quizId){
   const isAdmin = !isParticipant && currentUser && currentUser.role === 'Chairman/MD';
   
   const results = loadQuizResults();
+  if(quizId === 'final3' && isParticipant){
+    const missingSessions = SESSION_QUIZ_IDS.filter(id =>
+      !results.some(r => r.quizId === id && r.userEmail === identityEmail)
+    );
+    if(missingSessions.length > 0){
+      const missingNames = missingSessions.map(id => QUIZ_BANKS[id].title.split(':')[0]).join(', ');
+      alert('🔒 Final Exam Locked\n\nComplete all three session quizzes before starting the Final Exam.\n\nMissing: '+missingNames);
+      return;
+    }
+  }
   const existing = results.find(r => r.quizId === quizId && r.userEmail === identityEmail);
   if(existing && !isAdmin){
     alert('📋 Already Attempted\n\nYou have already taken this quiz.\n\nScore: '+existing.score+'%\nGrade: '+existing.grade+'\nDate: '+new Date(existing.timestamp).toLocaleString()+'\n\nEach quiz can only be attempted once.');
