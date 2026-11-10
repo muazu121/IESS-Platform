@@ -3089,6 +3089,47 @@ async function setSocialVerification(status){
   }
 }
 
+function buildApprovalEmailDraft(app,id){
+  const whatsappLink='https://chat.whatsapp.com/G0TCd8e0GkaFjOIWm6PYzJ?s=cl&p=i&mlu=4&ilr=4&iam=2';
+  return 'Dear '+(app.firstName||'Participant')+',\n\n'+
+    'Congratulations! Your application ('+id+') for the IESS Practical Solar Training Programme has been approved.\n\n'+
+    'Training details:\n'+
+    '• Dates: 12–14 November 2026\n'+
+    '• Time: 8:00 PM – 9:30 PM West Africa Time (Nigeria)\n'+
+    '• Each session: 1 hour of training, 20 minutes of questions and answers, and 10 minutes for the quiz\n\n'+
+    'Please join the official IESS training WhatsApp group now for joining links, reminders and further communication:\n'+
+    whatsappLink+'\n\n'+
+    'Participant dashboard and post-session quizzes:\n'+
+    'https://iess-platform.vercel.app/portal\n\n'+
+    'We look forward to welcoming you to the training.\n\n'+
+    'Kind regards,\n'+
+    'IESS Training Team\n'+
+    'Integrated Energy & Smart Systems Ltd';
+}
+
+async function sendApprovalEmailAutomatically(app,id){
+  const firebaseUser=IESS_DB.authClient()?.currentUser;
+  if(!firebaseUser) throw new Error('Your staff login session is not ready. Sign in again and retry.');
+  const idToken=await firebaseUser.getIdToken();
+  const response=await fetch('/api/send-approval-email',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer '+idToken
+    },
+    body:JSON.stringify({
+      recipient:app.email,
+      applicationId:id,
+      firstName:app.firstName||'Participant'
+    })
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok || !result.ok){
+    throw new Error(result.error||('Automatic email failed with HTTP '+response.status+'.'));
+  }
+  return result;
+}
+
 function openApplicationEmail(id){
   const app=findApplication(id);
   if(!app || app.status!=='Approved'){
@@ -3101,14 +3142,8 @@ function openApplicationEmail(id){
   }
   document.getElementById('emailApplicationId').value=id;
   document.getElementById('emailApplicant').value=app.email||'';
-  document.getElementById('emailSubject').value='IESS Solar Training Application '+id+' — Approved';
-  document.getElementById('emailBody').value=
-    'Dear '+(app.firstName||'Applicant')+',\n\n'+
-    'Congratulations. Your application ('+id+') for IESS Solar Training has been approved for the next stage.\n\n'+
-    'We will now confirm the cohort dates, training schedule and enrolment steps. Please reply to this email if you have any questions.\n\n'+
-    'Kind regards,\n'+
-    (currentUser?.name||'IESS Training Team')+'\n'+
-    'Integrated Energy & Smart Systems Ltd';
+  document.getElementById('emailSubject').value='Congratulations — Your IESS Solar Training Application Is Approved';
+  document.getElementById('emailBody').value=buildApprovalEmailDraft(app,id);
   document.getElementById('emailApplicationStatus').textContent='';
   const modal=document.getElementById('applicationEmailModal');
   if(modal) modal.style.display='flex';
@@ -3150,6 +3185,40 @@ async function markApplicationEmailed(){
   }
 }
 
+async function sendApplicationApprovalEmailFromModal(){
+  const id=document.getElementById('emailApplicationId').value;
+  const app=findApplication(id);
+  const status=document.getElementById('emailApplicationStatus');
+  if(!app){
+    if(status) status.textContent='Application could not be found.';
+    return;
+  }
+  if(status) status.textContent='Sending approval email automatically…';
+  try{
+    const sent=await sendApprovalEmailAutomatically(app,id);
+    await IESS_DB.updateApplication(id,{
+      approvalEmailStatus:'Sent',
+      approvalEmailSentAt:new Date().toISOString(),
+      approvalEmailMessageId:sent.messageId||'',
+      lastContactedAt:new Date().toISOString(),
+      lastContactedBy:currentUser?.email||currentUser?.name||'Staff',
+      contactMethod:'Automatic Email'
+    });
+    app.approvalEmailStatus='Sent';
+    const participant=ALL_PARTICIPANTS.find(p=>String(p.email||'').toLowerCase()===String(app.email||'').toLowerCase());
+    if(participant){
+      participant.emailSent='Yes';
+      IESS_DB.set('iess_extra_participants',JSON.stringify(ALL_PARTICIPANTS.filter(p=>Number(p.id)>=1000)));
+    }
+    if(status) status.textContent='Approval email sent successfully to '+app.email+'.';
+    logActivity('APPROVAL EMAIL SENT','Automatic approval email sent to '+app.email+' for '+id,'info');
+    renderApplications();
+  }catch(error){
+    if(status) status.textContent='Automatic email failed: '+error.message;
+    logActivity('APPROVAL EMAIL FAILED','Automatic approval email failed for '+app.email+': '+error.message,'warning');
+  }
+}
+
 async function approveApplication(id){
   if(!requirePermission('approveApplication','approve training applications')) return;
   const app=findApplication(id);
@@ -3159,7 +3228,7 @@ async function approveApplication(id){
     openSocialVerification(id);
     return;
   }
-  if(!confirm('Approve '+app.firstName+' '+app.lastName+' and add them to the participant register?')) return;
+  if(!confirm('Approve '+app.firstName+' '+app.lastName+', add them to the participant register, and send the congratulatory email automatically?')) return;
   try{
     const nextId=Math.max(1000,...ALL_PARTICIPANTS.map(p=>Number(p.id)||0))+1;
     const email=String(app.email||'').toLowerCase();
@@ -3169,8 +3238,14 @@ async function approveApplication(id){
       status:'Approved',
       reviewedBy:currentUser?.name||'Staff',
       reviewedAt:new Date().toISOString(),
-      participantId
+      participantId,
+      approvalEmailStatus:'Pending'
     });
+    app.status='Approved';
+    app.reviewedBy=currentUser?.name||'Staff';
+    app.reviewedAt=new Date().toISOString();
+    app.participantId=participantId;
+    app.approvalEmailStatus='Pending';
     if(!existing){
       const newP={
         id:participantId,
@@ -3198,8 +3273,49 @@ async function approveApplication(id){
       renderAnalytics();
     }
     logActivity('APPLICATION APPROVED','Approved '+app.applicationId+' for '+app.email,'info');
+    let emailSendError='';
+    try{
+      const sent=await sendApprovalEmailAutomatically(app,id);
+      app.approvalEmailStatus='Sent';
+      app.approvalEmailSentAt=new Date().toISOString();
+      app.approvalEmailMessageId=sent.messageId||'';
+      app.lastContactedAt=new Date().toISOString();
+      app.lastContactedBy=currentUser?.email||currentUser?.name||'Staff';
+      app.contactMethod='Automatic Email';
+      const participant=ALL_PARTICIPANTS.find(p=>String(p.email||'').toLowerCase()===email);
+      if(participant){
+        participant.emailSent='Yes';
+        IESS_DB.set('iess_extra_participants',JSON.stringify(ALL_PARTICIPANTS.filter(p=>Number(p.id)>=1000)));
+      }
+      await IESS_DB.updateApplication(id,{
+        approvalEmailStatus:'Sent',
+        approvalEmailSentAt:app.approvalEmailSentAt,
+        approvalEmailMessageId:app.approvalEmailMessageId,
+        lastContactedAt:app.lastContactedAt,
+        lastContactedBy:app.lastContactedBy,
+        contactMethod:'Automatic Email'
+      });
+      logActivity('APPROVAL EMAIL SENT','Automatic approval email sent to '+app.email+' for '+id,'info');
+    }catch(emailError){
+      emailSendError=emailError.message||'Automatic email failed.';
+      app.approvalEmailStatus='Failed';
+      app.approvalEmailError=emailSendError;
+      try{
+        await IESS_DB.updateApplication(id,{
+          approvalEmailStatus:'Failed',
+          approvalEmailError:emailSendError
+        });
+      }catch(e){}
+      logActivity('APPROVAL EMAIL FAILED','Automatic approval email failed for '+app.email+': '+emailSendError,'warning');
+    }
     renderApplications();
-    openApplicationEmail(id);
+    if(emailSendError){
+      enrollmentFeedError='Application approved, but the automatic email could not be sent. '+emailSendError;
+      renderApplications();
+      openApplicationEmail(id);
+    }else{
+      alert('✓ Application approved and congratulatory email sent to '+app.email+'.');
+    }
   }catch(error){
     enrollmentFeedError='Could not approve application: '+error.message;
     renderApplications();
@@ -6097,6 +6213,7 @@ window.addEventListener('hashchange', handleRouting);
         <div class="form-group"><label class="form-label">Subject</label><input class="form-input" id="emailSubject" maxlength="160"></div>
         <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="emailBody" rows="11" style="min-height:230px;resize:vertical;"></textarea></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" type="button" onclick="sendApplicationApprovalEmailFromModal()">✉ Send automatically</button>
           <button class="btn btn-primary" type="button" onclick="sendApplicationEmailDraft()">✉ Open email app</button>
           <button class="btn btn-gold" type="button" onclick="markApplicationEmailed()">✓ Mark as contacted</button>
           <button class="btn btn-outline" type="button" onclick="closeApplicationEmailModal()">Cancel</button>
