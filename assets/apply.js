@@ -28,6 +28,8 @@ const draftStatus = document.getElementById("draftStatus");
 const socialProofInput = document.getElementById("socialProof");
 const socialProofPreview = document.getElementById("socialProofPreview");
 const storageKey = "iess_training_application_draft";
+form.hidden = true;
+submitButton.disabled = true;
 const intakeSettingsRef = doc(db, "iess_data", "iess_application_settings");
 const DEFAULT_INTAKE_SETTINGS = {
   mode: "auto",
