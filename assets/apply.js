@@ -2,6 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore,
   doc,
+  getDoc,
+  onSnapshot,
   setDoc,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -26,6 +28,79 @@ const draftStatus = document.getElementById("draftStatus");
 const socialProofInput = document.getElementById("socialProof");
 const socialProofPreview = document.getElementById("socialProofPreview");
 const storageKey = "iess_training_application_draft";
+const intakeSettingsRef = doc(db, "iess_data", "iess_application_settings");
+const DEFAULT_INTAKE_SETTINGS = {
+  mode: "auto",
+  deadlineWat: "2026-11-11T23:59",
+  deadlineIso: "2026-11-11T23:59:59+01:00",
+  closedMessage:
+    "Applications for this IESS training cohort are now closed. Follow IESS @IESmartSystems for information about future training opportunities.",
+};
+let intakeSettings = { ...DEFAULT_INTAKE_SETTINGS };
+let closedPanel = null;
+
+function applicationIntakeIsOpen(settings = intakeSettings) {
+  if (settings.mode === "open") return true;
+  if (settings.mode === "closed") return false;
+  const deadline = Date.parse(settings.deadlineIso || "");
+  return Number.isFinite(deadline) && Date.now() < deadline;
+}
+
+async function loadIntakeSettings() {
+  try {
+    const snapshot = await getDoc(intakeSettingsRef);
+    intakeSettings = {
+      ...DEFAULT_INTAKE_SETTINGS,
+      ...(snapshot.exists() ? snapshot.data() : {}),
+    };
+  } catch (error) {
+    console.warn("Application intake settings could not be loaded.", error);
+    intakeSettings = { ...DEFAULT_INTAKE_SETTINGS };
+  }
+  renderIntakeState();
+}
+
+function renderIntakeState() {
+  const isOpen = applicationIntakeIsOpen();
+  if (isOpen) {
+    form.hidden = false;
+    submitButton.disabled = false;
+    if (closedPanel) closedPanel.hidden = true;
+    return;
+  }
+
+  form.hidden = true;
+  successPanel.hidden = true;
+  if (!closedPanel) {
+    closedPanel = document.createElement("section");
+    closedPanel.id = "applicationClosedPanel";
+    closedPanel.className = "application-success";
+    form.parentElement.insertBefore(closedPanel, form);
+  }
+  const message =
+    intakeSettings.closedMessage || DEFAULT_INTAKE_SETTINGS.closedMessage;
+  closedPanel.innerHTML = `
+    <div class="success-mark">✓</div>
+    <p class="eyebrow">Application intake closed</p>
+    <h2>Thank you for your interest.</h2>
+    <p>${escapeHtml(message)}</p>
+    <div class="success-actions">
+      <a class="btn btn-primary" href="/">Return to IESS</a>
+      <a class="btn btn-ghost" href="https://iess-platform.vercel.app/portal">Participant portal</a>
+    </div>
+  `;
+  closedPanel.hidden = false;
+  closedPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
 
 function applicationId() {
   const date = new Date();
@@ -133,6 +208,18 @@ function restoreDraft() {
   }
 }
 
+loadIntakeSettings();
+onSnapshot(
+  intakeSettingsRef,
+  (snapshot) => {
+    intakeSettings = {
+      ...DEFAULT_INTAKE_SETTINGS,
+      ...(snapshot.exists() ? snapshot.data() : {}),
+    };
+    renderIntakeState();
+  },
+  (error) => console.warn("Application intake updates unavailable.", error)
+);
 restoreDraft();
 let draftTimer;
 form.addEventListener("input", () => {
@@ -143,6 +230,12 @@ form.addEventListener("input", () => {
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   setMessage("");
+
+  await loadIntakeSettings();
+  if (!applicationIntakeIsOpen()) {
+    renderIntakeState();
+    return;
+  }
 
   if (!form.checkValidity()) {
     form.reportValidity();
@@ -173,6 +266,8 @@ form.addEventListener("submit", async (event) => {
     status: "Pending",
     socialVerificationStatus: "Pending",
     source: "Public training application",
+    intakeMode: intakeSettings.mode || "auto",
+    intakeValidatedAt: new Date().toISOString(),
     submittedDate: new Date().toISOString(),
     consentPrivacy: Boolean(values.consentPrivacy),
     consentTerms: Boolean(values.consentTerms),

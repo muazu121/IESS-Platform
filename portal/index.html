@@ -561,6 +561,41 @@ tbody tr:last-child td{border:none;}
         </div>
       </div>
 
+    <div class="card" id="application-intake-card" style="margin-top:22px;display:none;">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div class="card-title">Application Intake Control</div>
+          <div style="font-size:12px;color:var(--grey);margin-top:4px;">Chairman/MD control for the public training application form</div>
+        </div>
+        <span class="badge" id="application-intake-status-badge">Loading</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="form-group">
+            <label class="form-label" for="applicationIntakeMode">Intake mode</label>
+            <select class="form-select" id="applicationIntakeMode">
+              <option value="auto">Automatic deadline</option>
+              <option value="open">Force open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="applicationIntakeDeadline">Deadline (WAT / Nigeria)</label>
+            <input class="form-input" id="applicationIntakeDeadline" type="datetime-local">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="applicationIntakeClosedMessage">Message shown when applications are closed</label>
+          <textarea class="form-input" id="applicationIntakeClosedMessage" rows="3" maxlength="500"></textarea>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px;">
+          <div id="applicationIntakeHelp" style="font-size:12px;color:var(--grey);line-height:1.55;"></div>
+          <button class="btn btn-primary" type="button" id="saveApplicationIntakeSettings" onclick="saveApplicationIntakeSettings()">Save application controls</button>
+        </div>
+        <div id="applicationIntakeSaveStatus" style="margin-top:10px;font-size:12px;"></div>
+      </div>
+    </div>
+
     <div class="card" id="staff-participant-scores-card" style="margin-top:22px;">
       <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
         <div>
@@ -1452,7 +1487,7 @@ const firebaseConfig = {
 window.IESS_DB = (function(){
   const KEYS = ['iess_certs','iess_att','iess_invoices','iess_invoices_trash',
                 'iess_quiz_results','iess_activity_log','iess_extra_participants',
-                'iess_market_prices'];
+         'iess_market_prices','iess_application_settings'];
   
   // ═══════════════════════════════════════════════════════════
   // HARDCODED FIREBASE CONFIG — IESS Platform Production
@@ -2566,6 +2601,91 @@ function sp(id,el){
 function toggleSB(){document.getElementById('sidebar').classList.toggle('open');}
 function closeSB(){document.getElementById('sidebar').classList.remove('open');}
 
+const DEFAULT_APPLICATION_INTAKE_SETTINGS={
+  mode:'auto',
+  deadlineWat:'2026-11-11T23:59',
+  deadlineIso:'2026-11-11T23:59:59+01:00',
+  closedMessage:'Applications for this IESS training cohort are now closed. Follow IESS @IESmartSystems for information about future training opportunities.'
+};
+
+function loadApplicationIntakeSettings(){
+  try{
+    const saved=JSON.parse(IESS_DB.get('iess_application_settings')||'null');
+    return {...DEFAULT_APPLICATION_INTAKE_SETTINGS,...(saved||{})};
+  }catch(e){
+    return {...DEFAULT_APPLICATION_INTAKE_SETTINGS};
+  }
+}
+
+function applicationIntakeIsOpen(settings){
+  if(settings.mode==='open') return true;
+  if(settings.mode==='closed') return false;
+  const deadline=Date.parse(settings.deadlineIso||'');
+  return Number.isFinite(deadline) && Date.now()<deadline;
+}
+
+function renderApplicationIntakeControl(){
+  const card=document.getElementById('application-intake-card');
+  if(!card) return;
+  const isCeo=currentUser?.roleCode==='chairman';
+  card.style.display=isCeo?'block':'none';
+  if(!isCeo) return;
+
+  const settings=loadApplicationIntakeSettings();
+  const mode=document.getElementById('applicationIntakeMode');
+  const deadline=document.getElementById('applicationIntakeDeadline');
+  const closedMessage=document.getElementById('applicationIntakeClosedMessage');
+  const badge=document.getElementById('application-intake-status-badge');
+  const help=document.getElementById('applicationIntakeHelp');
+  if(mode) mode.value=settings.mode;
+  if(deadline) deadline.value=settings.deadlineWat;
+  if(closedMessage) closedMessage.value=settings.closedMessage;
+
+  const open=applicationIntakeIsOpen(settings);
+  if(badge){
+    badge.textContent=open?'OPEN':'CLOSED';
+    badge.className='badge '+(open?'badge-green':'badge-red');
+  }
+  if(help){
+    help.textContent=open
+      ? 'The public application form is currently accepting submissions.'
+      : 'The public application form is currently closed. Existing applications remain available for review.';
+  }
+}
+
+function saveApplicationIntakeSettings(){
+  if(currentUser?.roleCode!=='chairman'){
+    alert('Only the Chairman/MD can change application intake settings.');
+    return;
+  }
+  const mode=document.getElementById('applicationIntakeMode')?.value||'auto';
+  const deadlineWat=document.getElementById('applicationIntakeDeadline')?.value||'';
+  const closedMessage=document.getElementById('applicationIntakeClosedMessage')?.value.trim()||'';
+  const status=document.getElementById('applicationIntakeSaveStatus');
+  if(mode==='auto' && !deadlineWat){
+    if(status) status.textContent='Choose a deadline when using automatic closing.';
+    return;
+  }
+  const deadlineIso=deadlineWat?new Date(deadlineWat+':00+01:00').toISOString():'';
+  const settings={
+    mode,
+    deadlineWat,
+    deadlineIso,
+    closedMessage:closedMessage||DEFAULT_APPLICATION_INTAKE_SETTINGS.closedMessage,
+    updatedAt:new Date().toISOString(),
+    updatedBy:currentUser?.email||currentUser?.name||'Chairman/MD'
+  };
+  IESS_DB.set('iess_application_settings',JSON.stringify(settings));
+  if(status){
+    status.textContent=applicationIntakeIsOpen(settings)
+      ? 'Saved. The public application form is now OPEN.'
+      : 'Saved. The public application form is now CLOSED.';
+    status.style.color=applicationIntakeIsOpen(settings)?'#059669':'#dc2626';
+  }
+  logActivity('APPLICATION INTAKE UPDATED',mode.toUpperCase()+' · Deadline: '+(deadlineWat||'none'),'warning');
+  renderApplicationIntakeControl();
+}
+
 function renderStaffParticipantScores(){
   const body = document.getElementById('staff-participant-score-summary');
   const countBadge = document.getElementById('staff-participant-score-count');
@@ -2660,6 +2780,7 @@ function initPlatform(){
     attFiltered=ALL_PARTICIPANTS.slice();
   }catch(e){}
   renderDashboard();
+  try{ renderApplicationIntakeControl(); }catch(e){console.error('renderApplicationIntakeControl err:',e);}
   renderParticipants();
   renderAttendance();
   renderCertList();
@@ -5157,6 +5278,7 @@ IESS_DB.onUpdate(function(key){
     if(key === 'iess_invoices' && document.getElementById('page-invoices')?.classList.contains('active')) renderInvoices();
     if(key === 'iess_quiz_results' && document.getElementById('page-quizzes')?.classList.contains('active')) renderQuizResults();
     if(key === 'iess_quiz_results' && document.getElementById('page-dashboard')?.classList.contains('active')) renderStaffParticipantScores();
+    if(key === 'iess_application_settings' && document.getElementById('page-dashboard')?.classList.contains('active')) renderApplicationIntakeControl();
     if(key === 'iess_activity_log' && document.getElementById('page-activity')?.classList.contains('active')) renderActivityLog();
     if(key === 'iess_invoices_trash' && document.getElementById('page-trash')?.classList.contains('active')) renderTrash();
     if(key === 'iess_market_prices'){
