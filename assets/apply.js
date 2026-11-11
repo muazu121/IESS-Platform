@@ -83,6 +83,7 @@ function renderIntakeState() {
 
   form.hidden = true;
   successPanel.hidden = true;
+  submitButton.disabled = true;
   if (!closedPanel) {
     closedPanel = document.createElement("section");
     closedPanel.id = "applicationClosedPanel";
