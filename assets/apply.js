@@ -39,6 +39,17 @@ const DEFAULT_INTAKE_SETTINGS = {
 let intakeSettings = { ...DEFAULT_INTAKE_SETTINGS };
 let closedPanel = null;
 
+function normalizeIntakeSettings(data = {}) {
+  if (typeof data.value === "string") {
+    try {
+      return { ...data, ...JSON.parse(data.value) };
+    } catch (error) {
+      console.warn("Stored application intake settings are invalid.", error);
+    }
+  }
+  return data;
+}
+
 function applicationIntakeIsOpen(settings = intakeSettings) {
   if (settings.mode === "open") return true;
   if (settings.mode === "closed") return false;
@@ -49,9 +60,10 @@ function applicationIntakeIsOpen(settings = intakeSettings) {
 async function loadIntakeSettings() {
   try {
     const snapshot = await getDoc(intakeSettingsRef);
+    const stored = normalizeIntakeSettings(snapshot.exists() ? snapshot.data() : {});
     intakeSettings = {
       ...DEFAULT_INTAKE_SETTINGS,
-      ...(snapshot.exists() ? snapshot.data() : {}),
+      ...stored,
     };
   } catch (error) {
     console.warn("Application intake settings could not be loaded.", error);
@@ -212,9 +224,10 @@ loadIntakeSettings();
 onSnapshot(
   intakeSettingsRef,
   (snapshot) => {
+    const stored = normalizeIntakeSettings(snapshot.exists() ? snapshot.data() : {});
     intakeSettings = {
       ...DEFAULT_INTAKE_SETTINGS,
-      ...(snapshot.exists() ? snapshot.data() : {}),
+      ...stored,
     };
     renderIntakeState();
   },
