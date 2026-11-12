@@ -1554,6 +1554,49 @@ window.IESS_DB = (function(){
     updateListeners.push(cb);
     return () => { updateListeners = updateListeners.filter(f => f !== cb); };
   }
+
+  function quizResultKey(result){
+    return String(result.userEmail||'').trim().toLowerCase()+'|'+String(result.quizId||'');
+  }
+
+  function mergeQuizResultLists(...lists){
+    const merged=new Map();
+    lists.flat().forEach(result=>{
+      if(!result || !result.userEmail || !result.quizId) return;
+      const key=quizResultKey(result);
+      const current=merged.get(key);
+      const currentTime=Date.parse(current?.timestamp||'')||0;
+      const incomingTime=Date.parse(result.timestamp||'')||0;
+      if(!current || incomingTime>=currentTime) merged.set(key,result);
+    });
+    return [...merged.values()].sort((a,b)=>
+      (Date.parse(b.timestamp||'')||0)-(Date.parse(a.timestamp||'')||0)
+    );
+  }
+
+  function quizResultDocumentId(result){
+    const email=String(result.userEmail||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'_');
+    const quiz=String(result.quizId||'quiz').replace(/[^a-z0-9_-]/gi,'_');
+    return 'quiz_result_'+email+'_'+quiz;
+  }
+
+  async function saveQuizResultCloud(result){
+    if(!db || !window.firebaseSDK){
+      const state=await tryConnect();
+      if(!state.ok) throw new Error('Cloud score storage is unavailable.');
+    }
+    const {doc,setDoc,serverTimestamp}=window.firebaseSDK;
+    await setDoc(
+      doc(db,'iess_data',quizResultDocumentId(result)),
+      {
+        type:'quiz_result',
+        ...result,
+        updatedAt:serverTimestamp()
+      },
+      {merge:true}
+    );
+    return true;
+  }
   
   // ── Async Firestore operations ──
   async function _remoteSet(key, value){
@@ -1597,7 +1640,7 @@ window.IESS_DB = (function(){
       console.log('[IESS_DB] ✓ Firebase connected, project:', cfg.projectId);
       
       // Subscribe to all data keys for real-time sync
-      const { collection, onSnapshot } = window.firebaseSDK;
+      const { collection, onSnapshot, query, where } = window.firebaseSDK;
       const unsub = onSnapshot(collection(db, 'iess_data'), (snap) => {
         snap.docChanges().forEach(change => {
           const key = change.doc.id;
@@ -1611,8 +1654,15 @@ window.IESS_DB = (function(){
             }
           } else {
             // 'added' or 'modified'
-            const incoming = data?.value;
+            let incoming = data?.value;
             if(typeof incoming !== 'string') return;
+            if(key==='iess_quiz_results'){
+              let legacy=[];
+              try{ legacy=JSON.parse(incoming||'[]'); }catch(e){}
+              let current=[];
+              try{ current=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){}
+              incoming=JSON.stringify(mergeQuizResultLists(current,legacy));
+            }
             const cur = localStorage.getItem(key);
             if(cur !== incoming){
               localStorage.setItem(key, incoming);
@@ -1626,6 +1676,22 @@ window.IESS_DB = (function(){
         connected = false;
       });
       unsubFns.push(unsub);
+
+      const quizUnsub = onSnapshot(
+        query(collection(db,'iess_data'),where('type','==','quiz_result')),
+        (snap) => {
+          const cloudResults=snap.docs.map(item=>item.data()).filter(Boolean);
+          let current=[];
+          try{ current=JSON.parse(localStorage.getItem('iess_quiz_results')||'[]'); }catch(e){}
+          const merged=JSON.stringify(mergeQuizResultLists(current,cloudResults));
+          if(localStorage.getItem('iess_quiz_results')!==merged){
+            localStorage.setItem('iess_quiz_results',merged);
+            updateListeners.forEach(cb => { try{ cb('iess_quiz_results'); }catch(e){} });
+          }
+        },
+        (err) => console.warn('[IESS_DB] Quiz result listener error:', err.message)
+      );
+      unsubFns.push(quizUnsub);
       
       return { ok: true };
     }catch(e){
@@ -1732,7 +1798,7 @@ window.IESS_DB = (function(){
     loadConfig, saveConfig,
     migrateLocalToRemote,
     saveApplication, updateApplication, deleteApplication, subscribeApplications,
-    getApprovedApplications,
+    getApprovedApplications, saveQuizResultCloud,
     authClient: () => auth,
     status,
     KEYS
@@ -2724,7 +2790,7 @@ function renderStaffParticipantScores(){
   if(!body || !countBadge) return;
 
   const results = loadQuizResults().filter(r =>
-    r.userRole === 'Participant' &&
+    (!r.userRole || r.userRole === 'Participant') &&
     ASSESSMENT_QUIZ_IDS.includes(r.quizId)
   );
 
@@ -6157,7 +6223,7 @@ function flagCheat(type, description){
   }
 }
 
-function submitQuiz(timeout, disqualified){
+async function submitQuiz(timeout, disqualified){
   if(QUIZ_TIMER) clearInterval(QUIZ_TIMER);
   stopAntiCheatMonitoring();
   
@@ -6221,7 +6287,7 @@ function submitQuiz(timeout, disqualified){
     timedOut: !!timeout,
     weight: CURRENT_QUIZ.bank.weight
   };
-  saveQuizResult(result);
+  const saveState=await saveQuizResult(result);
   
   // Show result screen
   document.getElementById('quiz-question-area').style.display = 'none';
@@ -6240,6 +6306,7 @@ function submitQuiz(timeout, disqualified){
     '<div><strong>Time Taken:</strong> '+formatTime(timeTaken)+'</div>'+
     '<div><strong>Quiz:</strong> '+CURRENT_QUIZ.bank.title+'</div>'+
     '<div><strong>Weight:</strong> '+CURRENT_QUIZ.bank.weight+'%</div>'+
+    '<div><strong>Cloud record:</strong> '+(saveState.cloudSaved?'Saved':'Pending sync')+'</div>'+
     '</div>';
   
   if(QUIZ_CHEAT_COUNT > 0){
@@ -6266,12 +6333,24 @@ function closeQuiz(){
 function loadQuizResults(){
   try{ return JSON.parse(IESS_DB.get('iess_quiz_results')||'[]'); }catch(e){ return []; }
 }
-function saveQuizResult(result){
+async function saveQuizResult(result){
   const results = loadQuizResults();
   // Remove old attempt by same user for same quiz (overwrite)
-  const filtered = results.filter(r => !(r.quizId === result.quizId && r.userEmail === result.userEmail));
+  const filtered = results.filter(r => !(
+    r.quizId === result.quizId &&
+    normalizedParticipantEmail(r.userEmail) === normalizedParticipantEmail(result.userEmail)
+  ));
   filtered.unshift(result);
   IESS_DB.set('iess_quiz_results', JSON.stringify(filtered));
+  try{
+    await IESS_DB.saveQuizResultCloud(result);
+    result.cloudSaved=true;
+    return {cloudSaved:true};
+  }catch(error){
+    console.error('Quiz score cloud save failed:',error);
+    result.cloudSaved=false;
+    return {cloudSaved:false,error:error.message};
+  }
 }
 
 function renderQuizResults(){
