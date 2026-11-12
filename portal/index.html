@@ -1708,13 +1708,11 @@ window.IESS_DB = (function(){
     if(!db || !window.firebaseSDK) throw new Error('Cloud participant register is unavailable.');
     const { collection, query, where, getDocs } = window.firebaseSDK;
     const snap = await getDocs(
-      query(
-        collection(db,'iess_data'),
-        where('type','==','enrollment_application'),
-        where('status','==','Approved')
-      )
+      query(collection(db,'iess_data'),where('type','==','enrollment_application'))
     );
-    return snap.docs.map(item=>({id:item.id,...item.data()}));
+    return snap.docs
+      .map(item=>({id:item.id,...item.data()}))
+      .filter(item=>item.status==='Approved');
   }
   
   // ── Status check ──
