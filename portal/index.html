@@ -1683,6 +1683,15 @@ window.IESS_DB = (function(){
           const cloudResults=snap.docs.map(item=>item.data()).filter(Boolean);
           let current=[];
           try{ current=JSON.parse(localStorage.getItem('iess_quiz_results')||'[]'); }catch(e){}
+          const cloudKeys=new Set(cloudResults.map(quizResultKey));
+          const localOnly=current.filter(result=>!cloudKeys.has(quizResultKey(result)));
+          if(localOnly.length){
+            Promise.allSettled(localOnly.map(result=>saveQuizResultCloud(result)))
+              .then(uploads=>{
+                const uploaded=uploads.filter(item=>item.status==='fulfilled').length;
+                if(uploaded) console.log('[IESS_DB] Migrated '+uploaded+' local quiz score(s) to Firestore');
+              });
+          }
           const merged=JSON.stringify(mergeQuizResultLists(current,cloudResults));
           if(localStorage.getItem('iess_quiz_results')!==merged){
             localStorage.setItem('iess_quiz_results',merged);
