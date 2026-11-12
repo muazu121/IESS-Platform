@@ -383,8 +383,8 @@ tbody tr:last-child td{border:none;}
       <input type="email" class="login-input" id="pEmailInput" placeholder="email@example.com" style="margin-bottom:10px;text-transform:lowercase;" oninput="this.value=this.value.toLowerCase().trim()">
       <label class="login-label" style="margin-bottom:4px;">Your PIN (4 letters from your email)</label>
       <input type="text" class="login-input" id="pPinInput" placeholder="e.g. abcd" maxlength="6" onkeydown="if(event.key==='Enter')doParticipantLogin()" style="text-transform:lowercase;" oninput="this.value=this.value.toLowerCase().trim()">
-      <button class="login-btn" onclick="doParticipantLogin()" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);">START MY QUIZ →</button>
-      <div class="login-error" id="pLoginErr">❌ Email not found in Cohort 1, or PIN incorrect.</div>
+      <button class="login-btn" id="participantLoginBtn" onclick="doParticipantLogin()" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);">START MY QUIZ →</button>
+      <div class="login-error" id="pLoginErr">❌ Email not found in the approved participant register, or PIN incorrect.</div>
       <div style="margin-top:14px;padding:10px 14px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:8px;font-size:10px;color:rgba(255,255,255,0.6);text-align:center;font-family:'DM Mono',monospace;line-height:1.6;">
         💡 <strong>YOUR PIN</strong> = the <strong>first 4 letters of your email</strong> (lowercase, skip numbers)<br>
         <span style="opacity:0.7;">Example: <strong>john@gmail.com</strong> → PIN is <strong>john</strong></span><br>
@@ -1700,6 +1700,22 @@ window.IESS_DB = (function(){
       error=>callback([],error)
     );
   }
+
+  async function getApprovedApplications(){
+    if(!db || !window.firebaseSDK){
+      await tryConnect();
+    }
+    if(!db || !window.firebaseSDK) throw new Error('Cloud participant register is unavailable.');
+    const { collection, query, where, getDocs } = window.firebaseSDK;
+    const snap = await getDocs(
+      query(
+        collection(db,'iess_data'),
+        where('type','==','enrollment_application'),
+        where('status','==','Approved')
+      )
+    );
+    return snap.docs.map(item=>({id:item.id,...item.data()}));
+  }
   
   // ── Status check ──
   function status(){
@@ -1718,6 +1734,7 @@ window.IESS_DB = (function(){
     loadConfig, saveConfig,
     migrateLocalToRemote,
     saveApplication, updateApplication, deleteApplication, subscribeApplications,
+    getApprovedApplications,
     authClient: () => auth,
     status,
     KEYS
@@ -2131,15 +2148,32 @@ function generateParticipantPIN(email, name){
 
 let PARTICIPANT_SESSION = null;
 
-function doParticipantLogin(){
+async function doParticipantLogin(){
   const emailInput = document.getElementById('pEmailInput').value.toLowerCase().trim();
   const pinInput = document.getElementById('pPinInput').value.toLowerCase().trim();
   const errEl = document.getElementById('pLoginErr');
+  const loginBtn = document.getElementById('participantLoginBtn');
   
   if(!emailInput || !pinInput){
     errEl.textContent = '❌ Please enter both your email and PIN.';
     errEl.style.display = 'block';
     return;
+  }
+
+  if(loginBtn){
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Checking approved register…';
+  }
+  errEl.style.display = 'none';
+  try{
+    await syncApprovedParticipantsFromCloud();
+  }catch(error){
+    console.warn('Approved participant register refresh failed:', error);
+  }finally{
+    if(loginBtn){
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'START MY QUIZ →';
+    }
   }
   
   // Find participant by email
@@ -2148,7 +2182,7 @@ function doParticipantLogin(){
   );
   
   if(!participant){
-    errEl.textContent = '❌ Email not found in Cohort 1 list. Please use the email you registered with.';
+    errEl.textContent = '❌ Email not found in the approved participant register. Use the exact email in your approved application.';
     errEl.style.display = 'block';
     document.getElementById('pPinInput').value = '';
     return;
@@ -2213,7 +2247,7 @@ function showParticipantPortal(){
   // Build portal UI
   const results = loadQuizResults();
   const myResults = results.filter(r =>
-    r.userEmail === PARTICIPANT_SESSION.email &&
+    normalizedParticipantEmail(r.userEmail) === normalizedParticipantEmail(PARTICIPANT_SESSION.email) &&
     ASSESSMENT_QUIZ_IDS.includes(r.quizId)
   );
   
@@ -2816,6 +2850,16 @@ function initPlatform(){
   }catch(e){}
   setTimeout(calcSolar, 100);
   try{ updatePreview(); }catch(e){ console.warn('updatePreview failed (non-fatal):', e.message); }
+  syncApprovedParticipantsFromCloud().then(()=>{
+    if(!currentUser) return;
+    filteredList=ALL_PARTICIPANTS.slice();
+    attFiltered=ALL_PARTICIPANTS.slice();
+    renderParticipants();
+    renderAttendance();
+    renderDashboard();
+    renderAnalytics();
+    if(document.getElementById('page-applications')?.classList.contains('active')) renderApplications();
+  }).catch(error=>console.warn('Approved participant sync failed:',error));
 }
 
 // ═══ DASHBOARD ═══
@@ -3551,7 +3595,7 @@ function addParticipant(){
     return;
   }
   
-  const newId=ALL_PARTICIPANTS.length>0?Math.max(...ALL_PARTICIPANTS.map(p=>p.id||0))+1:1;
+  const newId=Math.max(1000,...ALL_PARTICIPANTS.map(p=>Number(p.id)||0))+1;
   const newP={
     id:newId,name,email,country,
     state:state||'—',gender,
@@ -3642,6 +3686,106 @@ function nextPage(){ if(currentPage*PER_PAGE<filteredList.length){ currentPage++
 // ═══ ATTENDANCE ═══
 let attData = JSON.parse(IESS_DB.get('iess_att')||'null') ||
   ALL_PARTICIPANTS.map(p=>([false,false,false,false]));
+
+function normalizedParticipantEmail(value){
+  return String(value||'').trim().toLowerCase();
+}
+
+function participantFromApprovedApplication(app,id){
+  return {
+    id,
+    name:app.name||[app.firstName,app.middleName,app.lastName].filter(Boolean).join(' ')||'Participant',
+    email:normalizedParticipantEmail(app.email),
+    phone:app.phone||'',
+    country:app.country||'—',
+    state:[app.city,app.state].filter(Boolean).join(', ')||'—',
+    gender:app.gender||'Not specified',
+    occupation:app.occupation||'Not specified',
+    knowledge:app.experienceLevel||'Not specified',
+    age:app.ageRange||'Not specified',
+    status:'Approved',
+    emailSent:app.approvalEmailStatus==='Sent'?'Yes':'No',
+    attendance:[false,false,false,false],
+    applicationId:app.applicationId||String(app.id||'').replace(/^iess_application_/,'')
+  };
+}
+
+async function syncApprovedParticipantsFromCloud(){
+  let changed=false;
+  let nextId=Math.max(1000,...ALL_PARTICIPANTS.map(p=>Number(p.id)||0));
+  const byEmail=()=>{
+    const map=new Map();
+    ALL_PARTICIPANTS.forEach(p=>{
+      const email=normalizedParticipantEmail(p.email);
+      if(email) map.set(email,p);
+    });
+    return map;
+  };
+
+  const mergeCandidate=(candidate)=>{
+    const email=normalizedParticipantEmail(candidate.email);
+    if(!email) return;
+    let existing=byEmail().get(email);
+    if(!existing){
+      let id=Number(candidate.id)||0;
+      if(!id || id<1000 || ALL_PARTICIPANTS.some(p=>Number(p.id)===id)) id=++nextId;
+      nextId=Math.max(nextId,id);
+      existing={...candidate,id,email};
+      ALL_PARTICIPANTS.push(existing);
+      attData.push(Array.isArray(candidate.attendance)?candidate.attendance:[false,false,false,false]);
+      changed=true;
+      return;
+    }
+    const fields=['name','phone','country','state','gender','occupation','knowledge','age','applicationId'];
+    fields.forEach(field=>{
+      if(candidate[field] && !existing[field]){
+        existing[field]=candidate[field];
+        changed=true;
+      }
+    });
+    const normalized=normalizedParticipantEmail(existing.email);
+    if(existing.email!==normalized){
+      existing.email=normalized;
+      changed=true;
+    }
+    if(candidate.status==='Approved' && existing.status!=='Approved'){
+      existing.status='Approved';
+      changed=true;
+    }
+  };
+
+  try{
+    const extras=JSON.parse(IESS_DB.get('iess_extra_participants')||'[]');
+    extras.forEach(mergeCandidate);
+  }catch(e){
+    console.warn('Saved participant extras could not be read:',e);
+  }
+
+  let approvedApplications=[];
+  try{
+    approvedApplications=await IESS_DB.getApprovedApplications();
+  }catch(error){
+    console.warn('Approved applications could not be refreshed:',error);
+  }
+  approvedApplications.forEach(app=>{
+    const fallbackId=Math.max(1000,...ALL_PARTICIPANTS.map(p=>Number(p.id)||0))+1;
+    mergeCandidate(participantFromApprovedApplication(app,Number(app.participantId)||fallbackId));
+  });
+
+  const dynamicParticipants=ALL_PARTICIPANTS.filter(p=>Number(p.id)>=1000);
+  const serialized=JSON.stringify(dynamicParticipants);
+  if(changed || IESS_DB.get('iess_extra_participants')!==serialized){
+    IESS_DB.set('iess_extra_participants',serialized);
+  }
+  filteredList=ALL_PARTICIPANTS.slice();
+  attFiltered=ALL_PARTICIPANTS.slice();
+  return {
+    approvedApplications:approvedApplications.length,
+    totalParticipants:ALL_PARTICIPANTS.length,
+    dynamicParticipants:dynamicParticipants.length,
+    changed
+  };
+}
 
 function saveAtt(){ IESS_DB.set('iess_att',JSON.stringify(attData)); }
 
