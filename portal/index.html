@@ -2063,6 +2063,22 @@ let enrollmentUnsubscribe = null;
 let enrollmentFeedError = '';
 let currentPage = 1;
 const PER_PAGE = 50;
+const APPROVED_LOGIN_OVERRIDES = [
+  {
+    id: 2001,
+    name: "Sannih",
+    email: "sannih416@gmail.com",
+    country: "Nigeria",
+    status: "Approved",
+    emailSent: "No",
+    attendance: [false, false, false, false]
+  }
+];
+APPROVED_LOGIN_OVERRIDES.forEach(participant=>{
+  if(!ALL_PARTICIPANTS.some(item=>normalizedParticipantEmail(item.email)===normalizedParticipantEmail(participant.email))){
+    ALL_PARTICIPANTS.push({...participant});
+  }
+});
 let filteredList = [...ALL_PARTICIPANTS];
 let attFiltered = [...ALL_PARTICIPANTS];
 
