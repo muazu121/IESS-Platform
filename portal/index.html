@@ -1115,10 +1115,10 @@ tbody tr:last-child td{border:none;}
                   <input type="number" id="inverterEfficiencyPct" value="90" min="80" max="98" step="1" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
                 </label>
                 <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">DC Cable Run (m)
-                  <input type="number" id="dcCableRunM" value="30" min="1" max="500" step="1" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+                  <input type="number" id="dcCableRunM" value="0" min="0" max="500" step="1" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
                 </label>
                 <label style="display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--text-2);">AC Cable Run (m)
-                  <input type="number" id="acCableRunM" value="15" min="1" max="500" step="1" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
+                  <input type="number" id="acCableRunM" value="0" min="0" max="500" step="1" onchange="calcSolar()" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;">
                 </label>
               </div>
             </div>
@@ -4586,8 +4586,11 @@ function calcSolar(){
   const peakSunHours = Math.max(2,parseFloat((document.getElementById('peakSunHours')||{}).value || '4.5'));
   const systemLossPct = Math.min(40,Math.max(10,parseFloat((document.getElementById('systemLossPct')||{}).value || '25')));
   const inverterEfficiencyPct = Math.min(98,Math.max(80,parseFloat((document.getElementById('inverterEfficiencyPct')||{}).value || '90')));
-  const dcMetres = Math.max(1,parseFloat((document.getElementById('dcCableRunM')||{}).value || '30'));
-  const acMetres = Math.max(1,parseFloat((document.getElementById('acCableRunM')||{}).value || '15'));
+  // Preserve an entered zero: cable length is often unknown until after the site survey.
+  const dcInput = parseFloat((document.getElementById('dcCableRunM')||{}).value);
+  const acInput = parseFloat((document.getElementById('acCableRunM')||{}).value);
+  const dcMetres = Number.isFinite(dcInput) ? Math.min(500,Math.max(0,dcInput)) : 0;
+  const acMetres = Number.isFinite(acInput) ? Math.min(500,Math.max(0,acInput)) : 0;
 
   // Core sizing math
   const kWh = wh/1000;
