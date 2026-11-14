@@ -991,7 +991,7 @@ tbody tr:last-child td{border:none;}
           </div>
           <div class="card-body">
             <div style="font-size:11px;color:#666;margin-bottom:8px;padding:8px;background:#fff8e1;border-radius:6px;border-left:3px solid #f59e0b;">
-              💡 <strong>Tip:</strong> Tick <strong>"Surge"</strong> for motor-driven appliances (AC, Pump, Fridge, Freezer, Washing Machine) — they need 3× extra startup power.
+              💡 <strong>Tip:</strong> Enter the hours an appliance is powered, then set its <strong>Duty Cycle</strong> to the percentage of that time it draws full rated power. Use 50% for a typical fridge, 60–80% for an AC, and 100% for continuous loads. Tick <strong>"Surge"</strong> for motor-driven appliances (AC, Pump, Fridge, Freezer, Washing Machine) because they need 3× startup power.
             </div>
             <div style="overflow-x:auto;">
             <table style="width:100%;font-size:12px;">
@@ -1000,6 +1000,7 @@ tbody tr:last-child td{border:none;}
                 <th style="padding:6px;text-align:center;">Watts</th>
                 <th style="padding:6px;text-align:center;">Qty</th>
                 <th style="padding:6px;text-align:center;">Hrs/Day</th>
+                <th style="padding:6px;text-align:center;" title="Average percentage of the powered hours during which the appliance draws its rated watts">Duty %</th>
                 <th style="padding:6px;text-align:center;">Surge</th>
                 <th style="padding:6px;text-align:right;">Wh/Day</th>
                 <th style="padding:6px;"></th>
@@ -1639,22 +1640,21 @@ window.IESS_DB = (function(){
       connected = true;
       console.log('[IESS_DB] ✓ Firebase connected, project:', cfg.projectId);
       
-      // Subscribe to all data keys for real-time sync
-      const { collection, onSnapshot, query, where } = window.firebaseSDK;
-      const unsub = onSnapshot(collection(db, 'iess_data'), (snap) => {
-        snap.docChanges().forEach(change => {
-          const key = change.doc.id;
-          if(!KEYS.includes(key)) return;
-          const data = change.doc.data();
-          if(change.type === 'removed'){
-            const cur = localStorage.getItem(key);
-            if(cur !== null){
-              localStorage.removeItem(key);
-              updateListeners.forEach(cb => { try{ cb(key); }catch(e){} });
+      // Subscribe only to the known settings/data documents. Listening to the
+      // whole collection consumes the Firestore quota through large evidence images.
+      const { doc: firestoreDoc, onSnapshot } = window.firebaseSDK;
+      for(const key of KEYS){
+        const docUnsub = onSnapshot(
+          firestoreDoc(db,'iess_data',key),
+          (snap) => {
+            if(!snap.exists()){
+              if(localStorage.getItem(key)!==null){
+                localStorage.removeItem(key);
+                updateListeners.forEach(cb => { try{ cb(key); }catch(e){} });
+              }
+              return;
             }
-          } else {
-            // 'added' or 'modified'
-            let incoming = data?.value;
+            let incoming = snap.data()?.value;
             if(typeof incoming !== 'string') return;
             if(key==='iess_quiz_results'){
               let legacy=[];
@@ -1663,44 +1663,15 @@ window.IESS_DB = (function(){
               try{ current=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){}
               incoming=JSON.stringify(mergeQuizResultLists(current,legacy));
             }
-            const cur = localStorage.getItem(key);
-            if(cur !== incoming){
-              localStorage.setItem(key, incoming);
-              console.log('[IESS_DB] ⇣ synced from remote: '+key);
+            if(localStorage.getItem(key)!==incoming){
+              localStorage.setItem(key,incoming);
               updateListeners.forEach(cb => { try{ cb(key); }catch(e){} });
             }
-          }
-        });
-      }, (err) => {
-        console.warn('[IESS_DB] Snapshot listener error:', err.message);
-        connected = false;
-      });
-      unsubFns.push(unsub);
-
-      const quizUnsub = onSnapshot(
-        query(collection(db,'iess_data'),where('type','==','quiz_result')),
-        (snap) => {
-          const cloudResults=snap.docs.map(item=>item.data()).filter(Boolean);
-          let current=[];
-          try{ current=JSON.parse(localStorage.getItem('iess_quiz_results')||'[]'); }catch(e){}
-          const cloudKeys=new Set(cloudResults.map(quizResultKey));
-          const localOnly=current.filter(result=>!cloudKeys.has(quizResultKey(result)));
-          if(localOnly.length){
-            Promise.allSettled(localOnly.map(result=>saveQuizResultCloud(result)))
-              .then(uploads=>{
-                const uploaded=uploads.filter(item=>item.status==='fulfilled').length;
-                if(uploaded) console.log('[IESS_DB] Migrated '+uploaded+' local quiz score(s) to Firestore');
-              });
-          }
-          const merged=JSON.stringify(mergeQuizResultLists(current,cloudResults));
-          if(localStorage.getItem('iess_quiz_results')!==merged){
-            localStorage.setItem('iess_quiz_results',merged);
-            updateListeners.forEach(cb => { try{ cb('iess_quiz_results'); }catch(e){} });
-          }
-        },
-        (err) => console.warn('[IESS_DB] Quiz result listener error:', err.message)
-      );
-      unsubFns.push(quizUnsub);
+          },
+          (err) => console.warn('[IESS_DB] Document listener error for '+key+':', err.message)
+        );
+        unsubFns.push(docUnsub);
+      }
       
       return { ok: true };
     }catch(e){
@@ -1776,18 +1747,22 @@ window.IESS_DB = (function(){
     );
   }
 
-  async function getApprovedApplications(){
+  async function getApprovedApplications(email){
+    if(!email) return [];
     if(!db || !window.firebaseSDK){
       await tryConnect();
     }
     if(!db || !window.firebaseSDK) throw new Error('Cloud participant register is unavailable.');
     const { collection, query, where, getDocs } = window.firebaseSDK;
     const snap = await getDocs(
-      query(collection(db,'iess_data'),where('type','==','enrollment_application'))
+      query(
+        collection(db,'iess_data'),
+        where('email','==',String(email).trim().toLowerCase())
+      )
     );
     return snap.docs
       .map(item=>({id:item.id,...item.data()}))
-      .filter(item=>item.status==='Approved');
+      .filter(item=>item.type==='enrollment_application' && item.status==='Approved');
   }
   
   // ── Status check ──
@@ -2066,6 +2041,42 @@ const PER_PAGE = 50;
 const APPROVED_LOGIN_OVERRIDES = [
   {
     id: 2001,
+    name: "Nsidibe Michael Etim",
+    email: "nsidibemetim@gmail.com",
+    country: "Nigeria",
+    status: "Approved",
+    emailSent: "Yes",
+    attendance: [false, false, false, false]
+  },
+  {
+    id: 2002,
+    name: "Daniel Gyimah Yeboah",
+    email: "dankwakuyeboah27@gmail.com",
+    country: "Ghana",
+    status: "Approved",
+    emailSent: "Yes",
+    attendance: [false, false, false, false]
+  },
+  {
+    id: 2003,
+    name: "Idaraobong Sunday Jumbo",
+    email: "jumboidaraobong@gmail.com",
+    country: "Nigeria",
+    status: "Approved",
+    emailSent: "Yes",
+    attendance: [false, false, false, false]
+  },
+  {
+    id: 2004,
+    name: "Sufiyan Omeiza Saeed",
+    email: "saeedsufiyan76@gmail.com",
+    country: "Nigeria",
+    status: "Approved",
+    emailSent: "Yes",
+    attendance: [false, false, false, false]
+  },
+  {
+    id: 2005,
     name: "Sannih",
     email: "sannih416@gmail.com",
     country: "Nigeria",
@@ -2255,7 +2266,7 @@ async function doParticipantLogin(){
   }
   errEl.style.display = 'none';
   try{
-    await syncApprovedParticipantsFromCloud();
+    await syncApprovedParticipantsFromCloud(emailInput);
   }catch(error){
     console.warn('Approved participant register refresh failed:', error);
   }finally{
@@ -3799,7 +3810,7 @@ function participantFromApprovedApplication(app,id){
   };
 }
 
-async function syncApprovedParticipantsFromCloud(){
+async function syncApprovedParticipantsFromCloud(emailToFind){
   let changed=false;
   let nextId=Math.max(1000,...ALL_PARTICIPANTS.map(p=>Number(p.id)||0));
   const byEmail=()=>{
@@ -3851,10 +3862,13 @@ async function syncApprovedParticipantsFromCloud(){
   }
 
   let approvedApplications=[];
-  try{
-    approvedApplications=await IESS_DB.getApprovedApplications();
-  }catch(error){
-    console.warn('Approved applications could not be refreshed:',error);
+  const targetEmail=normalizedParticipantEmail(emailToFind);
+  if(targetEmail && !byEmail().has(targetEmail)){
+    try{
+      approvedApplications=await IESS_DB.getApprovedApplications(targetEmail);
+    }catch(error){
+      console.warn('Approved application lookup failed:',error);
+    }
   }
   approvedApplications.forEach(app=>{
     const fallbackId=Math.max(1000,...ALL_PARTICIPANTS.map(p=>Number(p.id)||0))+1;
@@ -4530,7 +4544,7 @@ function chooseCable(system,currentA){
 function calcSolar(){
   try{
   // ═══ READ EDITABLE APPLIANCE ROWS ═══
-  // Each row has: [name input, watts input, qty input, hrs input, surge checkbox]
+  // Each row has: [name, watts, qty, powered hours, duty cycle, surge]
   const rows = document.querySelectorAll('#appTable tr.app-row');
   let wh = 0;
   let totalContinuousW = 0;
@@ -4540,10 +4554,13 @@ function calcSolar(){
     const watts = parseFloat(r.querySelector('.app-watts')?.value) || 0;
     const qty = parseFloat(r.querySelector('.app-qty')?.value) || 0;
     const hrs = parseFloat(r.querySelector('.app-hrs')?.value) || 0;
+    const dutyValue = parseFloat(r.querySelector('.app-duty')?.value);
+    const dutyPct = Number.isFinite(dutyValue) ? Math.min(100,Math.max(0,dutyValue)) : 100;
     const surge = r.querySelector('.app-surge')?.checked || false;
-    const rowWh = watts * qty * hrs;
+    const rowWh = watts * qty * hrs * (dutyPct/100);
     wh += rowWh;
-    // Continuous demand (Watts) — used for inverter sizing
+    // Duty cycle reduces daily energy, but inverter continuous and surge ratings
+    // must still cover the appliance's full rated demand while it is running.
     const continuousW = watts * qty;
     totalContinuousW += continuousW;
     // Only the largest motor contributes startup surge. The rest run continuously.
@@ -5149,18 +5166,19 @@ function generateQuotationPDF(){
 }
 // ═══ APPLIANCE TABLE MANAGEMENT ═══
 const DEFAULT_APPLIANCES = [
-  {name:'LED Bulbs', watts:10, qty:6, hrs:6, surge:false},
-  {name:'Ceiling Fan', watts:75, qty:2, hrs:8, surge:false},
-  {name:'TV 32 inch', watts:60, qty:1, hrs:5, surge:false},
-  {name:'Refrigerator', watts:150, qty:1, hrs:24, surge:true},
-  {name:'Phone Charger', watts:10, qty:3, hrs:3, surge:false},
-  {name:'Laptop', watts:65, qty:1, hrs:6, surge:false},
-  {name:'Air Conditioner 1.5HP', watts:1500, qty:0, hrs:8, surge:true},
-  {name:'Water Pump 1HP', watts:750, qty:0, hrs:2, surge:true}
+  {name:'LED Bulbs', watts:10, qty:6, hrs:6, duty:100, surge:false},
+  {name:'Ceiling Fan', watts:75, qty:2, hrs:8, duty:100, surge:false},
+  {name:'TV 32 inch', watts:60, qty:1, hrs:5, duty:100, surge:false},
+  {name:'Refrigerator', watts:150, qty:1, hrs:24, duty:50, surge:true},
+  {name:'Phone Charger', watts:10, qty:3, hrs:3, duty:100, surge:false},
+  {name:'Laptop', watts:65, qty:1, hrs:6, duty:100, surge:false},
+  {name:'Air Conditioner 1.5HP', watts:1500, qty:0, hrs:8, duty:70, surge:true},
+  {name:'Water Pump 1HP', watts:750, qty:0, hrs:2, duty:100, surge:true}
 ];
 
 function buildApplianceRow(app){
-  app = app || {name:'', watts:0, qty:1, hrs:1, surge:false};
+  app = app || {name:'', watts:0, qty:1, hrs:1, duty:100, surge:false};
+  const duty = Number.isFinite(Number(app.duty)) ? Math.min(100,Math.max(0,Number(app.duty))) : 100;
   const tr = document.createElement('tr');
   tr.className = 'app-row';
   tr.style.borderBottom = '1px solid #eee';
@@ -5169,6 +5187,7 @@ function buildApplianceRow(app){
     '<td style="padding:5px;text-align:center;"><input type="number" class="app-watts" value="'+app.watts+'" min="0" style="width:70px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;font-size:12px;" oninput="calcSolar()"></td>'+
     '<td style="padding:5px;text-align:center;"><input type="number" class="app-qty" value="'+app.qty+'" min="0" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;font-size:12px;" oninput="calcSolar()"></td>'+
     '<td style="padding:5px;text-align:center;"><input type="number" class="app-hrs" value="'+app.hrs+'" min="0" max="24" step="0.5" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;font-size:12px;" oninput="calcSolar()"></td>'+
+    '<td style="padding:5px;text-align:center;"><input type="number" class="app-duty" value="'+duty+'" min="0" max="100" step="5" title="Percentage of powered hours at full rated power" style="width:55px;padding:5px;border:1px solid var(--border);border-radius:5px;text-align:center;font-size:12px;" oninput="calcSolar()"></td>'+
     '<td style="padding:5px;text-align:center;"><label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;"><input type="checkbox" class="app-surge" '+(app.surge?'checked':'')+' onchange="calcSolar()" style="cursor:pointer;width:16px;height:16px;accent-color:#c87d2a;"></label></td>'+
     '<td style="padding:5px;text-align:right;font-family:\'DM Mono\',monospace;font-size:11px;color:#1a5c2a;font-weight:600;" class="app-wh">0 Wh</td>'+
     '<td style="padding:5px;text-align:center;"><button onclick="removeAppliance(this)" style="padding:4px 8px;border:1px solid #ef4444;background:#fff;color:#ef4444;border-radius:4px;font-size:11px;cursor:pointer;" title="Remove">✕</button></td>';
@@ -5187,7 +5206,7 @@ function renderAppliances(list){
 function addAppliance(){
   const tbody = document.getElementById('appTable');
   if(!tbody) return;
-  const newRow = buildApplianceRow({name:'', watts:0, qty:1, hrs:1, surge:false});
+  const newRow = buildApplianceRow({name:'', watts:0, qty:1, hrs:1, duty:100, surge:false});
   tbody.appendChild(newRow);
   // Focus the name field
   setTimeout(()=>{
